@@ -72,6 +72,7 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 //////////////
 // NAMESPACES
@@ -172,6 +173,7 @@ private:
   std::vector<float>* m_matchtrk_consistency; 
   std::vector<int>*   m_matchtrk_nstub;
   std::vector<int>*   m_matchtrk_genuine;
+  std::vector<int>*   m_matchtrk_nCommonStubs;
 
   // ALL stubs
   std::vector<float>* m_allstub_x;
@@ -286,6 +288,7 @@ void L1TrackNtupleMaker::beginJob()
   m_matchtrk_nstub = new std::vector<int>;
   m_matchtrk_consistency = new std::vector<float>;
   m_matchtrk_genuine     = new std::vector<int>;
+  m_matchtrk_nCommonStubs     = new std::vector<int>;
 
   m_allstub_x = new std::vector<float>;
   m_allstub_y = new std::vector<float>;
@@ -345,6 +348,7 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("matchtrk_nstub",   &m_matchtrk_nstub);
   eventTree->Branch("matchtrk_genuine", &m_matchtrk_genuine);
   eventTree->Branch("matchtrk_consistency", &m_matchtrk_consistency);
+  eventTree->Branch("matchtrk_nCommonStubs", &m_matchtrk_nCommonStubs);
 
   if (SaveStubs) {
     eventTree->Branch("allstub_x", &m_allstub_x);
@@ -422,6 +426,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_matchtrk_consistency->clear();
   m_matchtrk_nstub->clear();
   m_matchtrk_genuine->clear();
+  m_matchtrk_nCommonStubs->clear();
 
   if (SaveStubs) {
     m_allstub_x->clear();
@@ -799,7 +804,6 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     }
 
     
-
     // ----------------------------------------------------------------------------------------------
     // look for L1 tracks matched to the tracking particle
     std::vector< edm::Ptr< TTTrack< Ref_PixelDigi_ > > > matchedTracks = MCTruthTTTrackHandle->findTTTrackPtrs(tp_ptr);
@@ -807,6 +811,10 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     int nMatch = 0;
     int i_track = -1;
 
+    bool trackMatchIsGenuine = false;
+    bool trackMatchIsCombinatoric = false;
+    unsigned int highestNumberOfCommonStubs = 0;
+    unsigned int numberOfIncorrectStubsOnBestTrack = 999;
     if (matchedTracks.size() > 0) { 
     
       if (DebugMode && (matchedTracks.size()>1)) cout << "WARNING: TrackingParticle has more than one matched L1 track!" << endl;
@@ -816,52 +824,97 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       // loop over matched L1 tracks
       for (int it=0; it<(int)matchedTracks.size(); it++) {
 
-	bool tmp_trk_genuine = false;
+	      bool tmp_trk_genuine = false;
+        bool tmp_trk_combinatoric = false;
 	if (MCTruthTTTrackHandle->isGenuine(matchedTracks.at(it))) tmp_trk_genuine = true;
-	if (!tmp_trk_genuine) continue;
+        if (MCTruthTTTrackHandle->isCombinatoric(matchedTracks.at(it))) tmp_trk_combinatoric = true;
 
-	if (DebugMode) {
-	  if (MCTruthTTTrackHandle->findTrackingParticlePtr(matchedTracks.at(it)).isNull()) {
-	    cout << "track matched to TP is NOT uniquely matched to a TP" << endl;
-	  }
-	  else {
-	    edm::Ptr< TrackingParticle > my_tp = MCTruthTTTrackHandle->findTrackingParticlePtr(matchedTracks.at(it));
-	    cout << "TP matched to track matched to TP ... tp pt = " << my_tp->p4().pt() << " eta = " << my_tp->momentum().eta() 
-		 << " phi = " << my_tp->momentum().phi() << " z0 = " << my_tp->vertex().z() << endl;
-	  }
-	  cout << "   ... matched L1 track has pt = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).perp() 
-	       << " eta = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).eta()
-	       << " phi = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).phi()
-	       << " chi2 = " << matchedTracks.at(it)->getChi2(L1Tk_nPar) 
-	       << " consistency = " << matchedTracks.at(it)->getStubPtConsistency(L1Tk_nPar) 
-	       << " z0 = " << matchedTracks.at(it)->getPOCA(L1Tk_nPar).z() 
-	       << " nstub = " << matchedTracks.at(it)->getStubRefs().size();
-	  if (tmp_trk_genuine) cout << " (genuine!) " << endl;
-	  else cout << " (NOT genuine) !!!!!" << endl;
-	}
+        if (tmp_trk_genuine) {
 
-	// require L1 track to be genuine and have at least three stubs for it to be a valid match
-	if (matchedTracks.at(it)->getStubRefs().size() < 3) cout << " matchedTracks.at(it)->getStubRefs().size() = " << matchedTracks.at(it)->getStubRefs().size() << endl;
-	if (matchedTracks.at(it)->getStubRefs().size() < 3) continue;
-	
-	float dmatch_pt  = 999;
-	float dmatch_eta = 999;
-	float dmatch_phi = 999;
-	int match_id = 999;
+        	if (DebugMode) {
+        	  if (MCTruthTTTrackHandle->findTrackingParticlePtr(matchedTracks.at(it)).isNull()) {
+        	    cout << "track matched to TP is NOT uniquely matched to a TP" << endl;
+        	  }
+        	  else {
+        	    edm::Ptr< TrackingParticle > my_tp = MCTruthTTTrackHandle->findTrackingParticlePtr(matchedTracks.at(it));
+        	    cout << "TP matched to track matched to TP ... tp pt = " << my_tp->p4().pt() << " eta = " << my_tp->momentum().eta() 
+        		 << " phi = " << my_tp->momentum().phi() << " z0 = " << my_tp->vertex().z() << endl;
+        	  }
+        	  cout << "   ... matched L1 track has pt = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).perp() 
+        	       << " eta = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).eta()
+        	       << " phi = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).phi()
+        	       << " chi2 = " << matchedTracks.at(it)->getChi2(L1Tk_nPar) 
+        	       << " consistency = " << matchedTracks.at(it)->getStubPtConsistency(L1Tk_nPar) 
+        	       << " z0 = " << matchedTracks.at(it)->getPOCA(L1Tk_nPar).z() 
+        	       << " nstub = " << matchedTracks.at(it)->getStubRefs().size();
+        	  if (tmp_trk_genuine) cout << " (genuine!) " << endl;
+        	  else cout << " (NOT genuine) !!!!!" << endl;
+        	}
 
-	edm::Ptr< TrackingParticle > my_tp = MCTruthTTTrackHandle->findTrackingParticlePtr(matchedTracks.at(it));
-	dmatch_pt  = fabs(my_tp->p4().pt() - tmp_tp_pt);
-	dmatch_eta = fabs(my_tp->p4().eta() - tmp_tp_eta);
-	dmatch_phi = fabs(my_tp->p4().phi() - tmp_tp_phi);
-	match_id = my_tp->pdgId();
-	
-	if (dmatch_pt<0.1 && dmatch_eta<0.1 && dmatch_phi<0.1 && tmp_tp_pdgid==match_id) {	    
-	  nMatch++;
-	  if (i_track < 0) i_track = it;
-	}
+        	// require L1 track to be genuine and have at least three stubs for it to be a valid match
+        	if (matchedTracks.at(it)->getStubRefs().size() < 3) cout << " matchedTracks.at(it)->getStubRefs().size() = " << matchedTracks.at(it)->getStubRefs().size() << endl;
+        	if (matchedTracks.at(it)->getStubRefs().size() < 3) continue;
+        	
+        	float dmatch_pt  = 999;
+        	float dmatch_eta = 999;
+        	float dmatch_phi = 999;
+        	int match_id = 999;
+
+        	edm::Ptr< TrackingParticle > my_tp = MCTruthTTTrackHandle->findTrackingParticlePtr(matchedTracks.at(it));
+        	dmatch_pt  = fabs(my_tp->p4().pt() - tmp_tp_pt);
+        	dmatch_eta = fabs(my_tp->p4().eta() - tmp_tp_eta);
+        	dmatch_phi = fabs(my_tp->p4().phi() - tmp_tp_phi);
+        	match_id = my_tp->pdgId();
+        	
+        	if (dmatch_pt<0.1 && dmatch_eta<0.1 && dmatch_phi<0.1 && tmp_tp_pdgid==match_id) {	    
+        	  nMatch++;
+            i_track = it;
+            trackMatchIsGenuine = true;
+            trackMatchIsCombinatoric = false;
+            highestNumberOfCommonStubs = matchedTracks.at(it)->getStubRefs().size();
+            numberOfIncorrectStubsOnBestTrack = 0;
+        	}
+        }
+        else if ( tmp_trk_combinatoric ) {
+                // Track stubs
+                std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > trackStubs = matchedTracks.at(it)->getStubRefs(); 
+
+                // Loop over stubs in track, and see if it has at least 4 stubs in common with tracking particle
+                unsigned int numberOfCommonStubs = 0;
+                for ( unsigned int stubIndex = 0; stubIndex < trackStubs.size(); stubIndex++ ) {
+                        if ( find( theStubRefs.begin(), theStubRefs.end(), trackStubs[stubIndex] ) != theStubRefs.end() ) {
+                                ++numberOfCommonStubs;
+                        }
+                }
+
+                unsigned int numberOfIncorrectStubs = trackStubs.size() - numberOfCommonStubs;
+
+                if ( numberOfCommonStubs >= 4 ) {
+                      ++nMatch;
+
+                  if ( numberOfCommonStubs > highestNumberOfCommonStubs ) {
+                    // This combinatoric track is a better match
+                    i_track = it;
+                    trackMatchIsGenuine = false;
+                    trackMatchIsCombinatoric = true;
+                    highestNumberOfCommonStubs = numberOfCommonStubs;
+                    numberOfIncorrectStubsOnBestTrack = numberOfIncorrectStubs;
+                  }
+                  else if ( numberOfCommonStubs == highestNumberOfCommonStubs ) {
+                    // This combinatoric track has the same number of common stubs as a previous match
+                    // Choose the track with the fewest incorrect stubs
+                    if ( numberOfIncorrectStubs < numberOfIncorrectStubsOnBestTrack ) {
+                      i_track = it;
+                      trackMatchIsGenuine = false;
+                      trackMatchIsCombinatoric = true;
+                      highestNumberOfCommonStubs = numberOfCommonStubs;
+                      numberOfIncorrectStubsOnBestTrack = numberOfIncorrectStubs;
+                    }
+                  }
+                }
+              }
 
       }//end loop over matched L1 tracks
-
     }// end has at least 1 matched L1 track
     // ----------------------------------------------------------------------------------------------
         
@@ -875,9 +928,12 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     float tmp_matchtrk_consistency = -999;
     int tmp_matchtrk_nstub  = -999;
     int tmp_matchtrk_genuine = -999;
-    
+    int tmp_matchtrk_nCommonStubs  = -999;
+
 
     if (nMatch > 1 && DebugMode) cout << "WARNING *** 2 or more matches to genuine L1 tracks ***" << endl;
+
+    if ( trackMatchIsCombinatoric && trackMatchIsGenuine ) cout << "WARNING Match cannot be genuine and combinatoric" << endl;   
 
     if (nMatch > 0) {
       tmp_matchtrk_pt   = matchedTracks.at(i_track)->getMomentum(L1Tk_nPar).perp();
@@ -894,7 +950,9 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       tmp_matchtrk_chi2 = matchedTracks.at(i_track)->getChi2(L1Tk_nPar);
       tmp_matchtrk_consistency = matchedTracks.at(i_track)->getStubPtConsistency(L1Tk_nPar);
       tmp_matchtrk_nstub  = (int) matchedTracks.at(i_track)->getStubRefs().size();
-      tmp_matchtrk_genuine = 1;
+      tmp_matchtrk_genuine = trackMatchIsGenuine;
+
+      tmp_matchtrk_nCommonStubs = highestNumberOfCommonStubs;
 
     }//end (nMatch > 0)
 
@@ -922,6 +980,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_matchtrk_consistency->push_back(tmp_matchtrk_consistency);
     m_matchtrk_nstub->push_back(tmp_matchtrk_nstub);
     m_matchtrk_genuine->push_back(tmp_matchtrk_genuine);
+    m_matchtrk_nCommonStubs->push_back(tmp_matchtrk_nCommonStubs);
     
   } //end loop tracking particles
   
