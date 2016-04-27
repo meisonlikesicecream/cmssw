@@ -813,6 +813,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     bool trackMatchIsGenuine = false;
     bool trackMatchIsCombinatoric = false;
+    bool trackMatchIsUnkown = false;
     unsigned int highestNumberOfCommonStubs = 0;
     unsigned int numberOfIncorrectStubsOnBestTrack = 999;
     if (matchedTracks.size() > 0) { 
@@ -826,8 +827,10 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 	      bool tmp_trk_genuine = false;
         bool tmp_trk_combinatoric = false;
-	if (MCTruthTTTrackHandle->isGenuine(matchedTracks.at(it))) tmp_trk_genuine = true;
+        bool tmp_trk_unkown = false;
+	      if (MCTruthTTTrackHandle->isGenuine(matchedTracks.at(it))) tmp_trk_genuine = true;
         if (MCTruthTTTrackHandle->isCombinatoric(matchedTracks.at(it))) tmp_trk_combinatoric = true;
+        if (MCTruthTTTrackHandle->isUnknown(matchedTracks.at(it))) tmp_trk_unkown = true;
 
         if (tmp_trk_genuine) {
 
@@ -875,7 +878,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
             numberOfIncorrectStubsOnBestTrack = 0;
         	}
         }
-        else if ( tmp_trk_combinatoric ) {
+        else if ( tmp_trk_combinatoric || tmp_trk_unkown ) {
                 // Track stubs
                 std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > trackStubs = matchedTracks.at(it)->getStubRefs(); 
 
@@ -896,7 +899,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
                     // This combinatoric track is a better match
                     i_track = it;
                     trackMatchIsGenuine = false;
-                    trackMatchIsCombinatoric = true;
+                    if ( tmp_trk_combinatoric ) trackMatchIsCombinatoric = true;
+                    if ( tmp_trk_unkown ) trackMatchIsUnkown = true;
                     highestNumberOfCommonStubs = numberOfCommonStubs;
                     numberOfIncorrectStubsOnBestTrack = numberOfIncorrectStubs;
                   }
@@ -906,7 +910,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
                     if ( numberOfIncorrectStubs < numberOfIncorrectStubsOnBestTrack ) {
                       i_track = it;
                       trackMatchIsGenuine = false;
-                      trackMatchIsCombinatoric = true;
+                      if ( tmp_trk_combinatoric ) trackMatchIsCombinatoric = true;
+                      if ( tmp_trk_unkown ) trackMatchIsUnkown = true;
                       highestNumberOfCommonStubs = numberOfCommonStubs;
                       numberOfIncorrectStubsOnBestTrack = numberOfIncorrectStubs;
                     }
@@ -956,6 +961,12 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     }//end (nMatch > 0)
 
+
+    if ( trackMatchIsUnkown ) {
+      cout << "Best match is an unkown match" << endl;
+      cout << tmp_matchtrk_nstub << " " << highestNumberOfCommonStubs << endl;
+      cout << tmp_matchtrk_pt << " " << tmp_tp_pt << endl;
+    }
     m_tp_pt->push_back(tmp_tp_pt);
     m_tp_eta->push_back(tmp_tp_eta);
     m_tp_phi->push_back(tmp_tp_phi);
