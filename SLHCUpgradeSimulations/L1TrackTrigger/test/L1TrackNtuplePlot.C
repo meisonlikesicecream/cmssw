@@ -40,7 +40,7 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, bool
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
+void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
 
   // type:              this is the input file you want to process (minus ".root" extension)
   // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
@@ -58,12 +58,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   // ----------------------------------------------------------------------------------------------------------------
   // define input options
 
-  int L1Tk_minNstub = 4;  
-  float L1Tk_maxChi2 = 100.;  
-  float L1Tk_maxChi2dof = 9999.;  
+  int L1Tk_minNstub = 5;  
+  float L1Tk_maxChi2 = 999999999.;  
+  float L1Tk_maxChi2dof = 999999999.;  
   
-  bool doDetailedPlots = false; //turn on to make full set of plots
-  bool makeCanvas = false;      //make PDF file with all the plots
+  bool doDetailedPlots = true; //turn on to make full set of plots
+  bool makeCanvas = true;      //make PDF file with all the plots
   bool useTight = false;        //use tight quality cut selection (as used for Technical Proposal MET studies)
   bool doGausFit = false;       //do gaussian fit for resolution vs eta/pt plots
   bool doLooseMatch = false;
@@ -87,8 +87,14 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
 
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
-  TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  tree->Add(type+".root");
+  // TChain* tree = new TChain("L1TrackNtuple/eventTree");
+  // tree->Add(type+".root");
+
+  TString type = inputFile + fitter;
+  // TString type = "test";
+  TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
+  tree->Add(inputFile+".root");
+
   
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;
