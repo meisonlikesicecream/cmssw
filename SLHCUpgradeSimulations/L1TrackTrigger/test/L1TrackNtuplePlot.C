@@ -66,7 +66,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   bool makeCanvas = true;      //make PDF file with all the plots
   bool useTight = false;        //use tight quality cut selection (as used for Technical Proposal MET studies)
   bool doGausFit = false;       //do gaussian fit for resolution vs eta/pt plots
-  bool doLooseMatch = false;
+  bool doLooseMatch = true;
 
 
   //some counters for integrated efficiencies
@@ -83,6 +83,9 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   int n10_match_eta2p5 = 0;
   int n10_match_eta1p75 = 0;
   int n10_match_eta1p0 = 0;
+
+  unsigned int nTracks = 0;
+  unsigned int nTracksWithIncorrectStubs = 0;
 
 
   // ----------------------------------------------------------------------------------------------------------------
@@ -127,6 +130,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   vector<float>* matchtrk_chi2;
   vector<float>* matchtrk_consistency; 
   vector<int>*   matchtrk_nstub;
+  vector<int>*   matchtrk_ncommonstubs;
 
   TBranch* b_tp_pt;
   TBranch* b_tp_eta;
@@ -148,6 +152,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   TBranch* b_matchtrk_chi2; 
   TBranch* b_matchtrk_consistency; 
   TBranch* b_matchtrk_nstub;
+  TBranch* b_matchtrk_ncommonstubs;
 
   tp_pt  = 0;
   tp_eta = 0;
@@ -192,6 +197,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
     tree->SetBranchAddress("loosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("loosematchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
     tree->SetBranchAddress("loosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
+    tree->SetBranchAddress("loosematchtrk_ncommonstubs", &matchtrk_ncommonstubs, &b_matchtrk_ncommonstubs);
   }
   else {
     tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -240,6 +246,8 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   TH1F* h_match_trk_nstub_C = new TH1F("match_trk_nstub_C", ";Number of stubs; L1 tracks / 1.0", 15, 0, 15);
   TH1F* h_match_trk_nstub_I = new TH1F("match_trk_nstub_I", ";Number of stubs; L1 tracks / 1.0", 15, 0, 15);
   TH1F* h_match_trk_nstub_F = new TH1F("match_trk_nstub_F", ";Number of stubs; L1 tracks / 1.0", 15, 0, 15);
+
+  TH1F* h_match_trk_nincorrectstubs = new TH1F("match_trk_nincorrectstubs",   ";Number of incorrect stubs; L1 tracks / 1.0", 3, -0.5, 2.5);
 
   // chi2 histograms
   // note: last bin is an overflow bin
@@ -466,7 +474,15 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   TH2F* h_2d_dphi_eta        = new TH2F("2d_dphi_eta",        ";Tracking particle #eta; |#Delta#phi| (L1 - sim) [rad]",    50,-2.5,2.5, 100, 0,  0.007);
   TH2F* h_2d_dptRel_eta      = new TH2F("2d_dptRel_eta",      ";Tracking particle #eta; |#Deltap_{T} / p_{T}| (L1 - sim)", 50,-2.5,2.5, 100, 0,  1.2);
 
-
+  // resolution vs. n incorrect stubs histograms
+  const int nStubsRANGE = 3;
+  TString stubsRange[nStubsRANGE] = {"0", "1", "2", };
+  TH1F* h_absResVsIncorrectStubs_pt[nStubsRANGE];
+  TH1F* h_absResVsIncorrectStubs_eta[nStubsRANGE];
+  for (int i=0; i<nStubsRANGE; i++) {
+    h_absResVsIncorrectStubs_pt[i]   = new TH1F("absResVsNIncorrectStubs_pt_"+stubsRange[i],   ";p_{T} residual (L1 - sim); L1 tracks / 0.0002", nBinsPtRelRes,-maxPtRelRes,maxPtRelRes);
+    h_absResVsIncorrectStubs_eta[i]   = new TH1F("absResVsNIncorrectStubs_eta_"+stubsRange[i],   ";#eta residual (L1 - sim); L1 tracks / 0.0002", nBinsEtaRes,-maxEtaRes,maxEtaRes);
+  }
   
   // ----------------------------------------------------------------------------------------------------------------
   //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
@@ -646,6 +662,19 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
       if (fabs(tp_eta->at(it)) < 0.8) h_match_trk_nstub_C->Fill(matchtrk_nstub->at(it));
       else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) h_match_trk_nstub_I->Fill(matchtrk_nstub->at(it));
       else if (fabs(tp_eta->at(it)) >= 1.6) h_match_trk_nstub_F->Fill(matchtrk_nstub->at(it));
+
+      if ( doLooseMatch ) {
+        ++nTracks;
+        if ( matchtrk_nstub->at(it) - matchtrk_ncommonstubs->at(it) > 0 ) {
+          ++nTracksWithIncorrectStubs;
+        //   std::cout << matchtrk_nstub->at(it) << " " << matchtrk_ncommonstubs->at(it) << std::endl;
+        }
+        h_match_trk_nincorrectstubs->Fill(matchtrk_nstub->at(it) - matchtrk_ncommonstubs->at(it));
+      }
+      else {
+        h_match_trk_nincorrectstubs->Fill(0);
+      }
+
       
 
       // ----------------------------------------------------------------------------------------------------------------
@@ -786,6 +815,14 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
       h_2d_deta_eta  ->Fill(tp_eta->at(it), fabs(matchtrk_eta->at(it) - tp_eta->at(it)));
       h_2d_dphi_eta  ->Fill(tp_eta->at(it), fabs(matchtrk_phi->at(it) - tp_phi->at(it)));
       h_2d_dptRel_eta->Fill(tp_eta->at(it), fabs((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it)));
+
+      if ( doLooseMatch ) {
+        int nIncorrectStubs = matchtrk_nstub->at(it) - matchtrk_ncommonstubs->at(it);
+        if ( nIncorrectStubs < nStubsRANGE ) {
+          h_absResVsIncorrectStubs_pt[nIncorrectStubs]->Fill( fabs( matchtrk_pt->at(it) - tp_pt->at(it) )/tp_pt->at(it) );
+          h_absResVsIncorrectStubs_eta[nIncorrectStubs]->Fill( fabs( matchtrk_eta->at(it) - tp_eta->at(it) ) );
+        }        
+      }
      
     } // end of matched track loop
   
@@ -820,7 +857,10 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   k = (float) n10_match_eta1p0 + n10_match_eta1p75 + n10_match_eta2p5;
   if (fabs(N)>0) cout << "combined efficiency for |eta| < 2.5, pt>10 GeV = " << k/N*100.0 << " +- " << 1.0/N*sqrt(k*(1.0 - k/N))*100.0 << endl << endl;
 
-
+  if ( doLooseMatch ) {
+    std::cout << "Number of tracks : " << nTracks << std::endl;
+    std::cout << "Number with incorrect stubs : " << nTracksWithIncorrectStubs << " " << float(nTracksWithIncorrectStubs) / float(nTracks) * 100 << std::endl;
+  }
 
   // ----------------------------------------------------------------------------------------------------------------
   // 2D plots  
@@ -1022,6 +1062,14 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   TH1F* h3_resVsEta_ptRel_L = new TH1F("resVsEta_ptRel_L_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", 25,0,2.5);
   TH1F* h3_resVsEta_ptRel_M = new TH1F("resVsEta_ptRel_M_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", 25,0,2.5);
   TH1F* h3_resVsEta_ptRel_H = new TH1F("resVsEta_ptRel_H_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", 25,0,2.5);
+
+  TH1F* h2_resVsNIncorrectStubs_pt_68   = new TH1F("resVsnIncorrectStubs_pt_68",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,0,nStubsRANGE);
+  TH1F* h2_resVsNIncorrectStubs_pt_90   = new TH1F("resVsnIncorrectStubs_pt_90",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,0,nStubsRANGE);
+  TH1F* h2_resVsNIncorrectStubs_pt_99   = new TH1F("resVsnIncorrectStubs_pt_99",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,0,nStubsRANGE);
+
+  TH1F* h2_resVsNIncorrectStubs_eta_68   = new TH1F("resVsnIncorrectStubs_eta_68",   ";N Incorrect Stubs; #eta resolution", nStubsRANGE,0,nStubsRANGE);
+  TH1F* h2_resVsNIncorrectStubs_eta_90   = new TH1F("resVsnIncorrectStubs_eta_90",   ";N Incorrect Stubs; #eta resolution", nStubsRANGE,0,nStubsRANGE);
+  TH1F* h2_resVsNIncorrectStubs_eta_99   = new TH1F("resVsnIncorrectStubs_eta_99",   ";N Incorrect Stubs; #eta resolution", nStubsRANGE,0,nStubsRANGE);
 
   TString fitdir = "FitResults/";
 
@@ -1333,6 +1381,19 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
     }//end doGausFit
 
   }
+  
+  if ( doLooseMatch ) {
+    for (int i=0; i<nStubsRANGE; i++) {
+      h2_resVsNIncorrectStubs_pt_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsIncorrectStubs_pt[i], 0.68 ));
+      h2_resVsNIncorrectStubs_pt_90->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsIncorrectStubs_pt[i], 0.90 ));
+      h2_resVsNIncorrectStubs_pt_99->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsIncorrectStubs_pt[i], 0.99 ));
+
+      h2_resVsNIncorrectStubs_eta_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsIncorrectStubs_eta[i], 0.68 ));
+      h2_resVsNIncorrectStubs_eta_90->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsIncorrectStubs_eta[i], 0.90 ));
+      h2_resVsNIncorrectStubs_eta_99->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsIncorrectStubs_eta[i], 0.99 ));
+
+    }    
+  }
 
 
   // set minimum to zero
@@ -1447,6 +1508,9 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   makeResidualIntervalPlot( type, DIR, "resVsPt_phi", makeCanvas, h2_resVsPt_phi_68, h2_resVsPt_phi_90, h2_resVsPt_phi_99, 0, 0.1 );
   makeResidualIntervalPlot( type, DIR, "resVsPt_eta", makeCanvas, h2_resVsPt_eta_68, h2_resVsPt_eta_90, h2_resVsPt_eta_99, 0, 0.03 );
   makeResidualIntervalPlot( type, DIR, "resVsPt_d0", makeCanvas, h2_resVsPt_d0_68, h2_resVsPt_d0_90, h2_resVsPt_d0_99, 0, 0.02 );
+
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_pt", makeCanvas, h2_resVsNIncorrectStubs_pt_68, h2_resVsNIncorrectStubs_pt_90, h2_resVsNIncorrectStubs_pt_99, 0, 1.0 );
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_eta", makeCanvas, h2_resVsNIncorrectStubs_eta_68, h2_resVsNIncorrectStubs_eta_90, h2_resVsNIncorrectStubs_eta_99, 0, 0.1 );
 
   if (doDetailedPlots) {
     h2_resVsPt_ptRel_C->Draw();
@@ -1790,6 +1854,11 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
     mySmallText(0.22,0.82,1,ctxt);
     c.SaveAs(DIR+type+"_match_trk_nstub_F.png");
     c.SaveAs(DIR+type+"_match_trk_nstub_F.eps");
+    if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
+
+    h_match_trk_nincorrectstubs->Draw();
+    c.SaveAs(DIR+type+"_match_trk_nincorrectstubs.png");
+    c.SaveAs(DIR+type+"_match_trk_nincorrectstubs.eps");
     if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
   }
     
