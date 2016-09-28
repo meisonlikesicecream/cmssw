@@ -50,7 +50,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   // TP_maxEta:         only look at TPs with |eta| < X
  
   gROOT->SetBatch();
-  gErrorIgnoreLevel = kWarning;
+  gErrorIgnoreLevel = kError;
 
   SetPlotStyle();
 
