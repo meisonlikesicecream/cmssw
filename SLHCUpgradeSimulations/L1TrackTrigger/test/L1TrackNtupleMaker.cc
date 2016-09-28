@@ -184,6 +184,7 @@ private:
   std::vector<float>* m_loosematchtrk_chi2; 
   std::vector<float>* m_loosematchtrk_consistency; 
   std::vector<int>*   m_loosematchtrk_nstub;
+  std::vector<int>*   m_loosematchtrk_ncommonstubs;   //number of stubs in common with TP
 
   // ALL stubs
   std::vector<float>* m_allstub_x;
@@ -194,6 +195,8 @@ private:
   std::vector<int>*   m_allstub_isBarrel;
   std::vector<int>*   m_allstub_layer;
   std::vector<int>*   m_allstub_isPS;
+
+  unsigned int getNCommonStubs( std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > tpStubs, edm::Ptr< TTTrack< Ref_PixelDigi_ > > L1track );
 
 };
 
@@ -309,6 +312,7 @@ void L1TrackNtupleMaker::beginJob()
   m_loosematchtrk_chi2  = new std::vector<float>;
   m_loosematchtrk_nstub = new std::vector<int>;
   m_loosematchtrk_consistency = new std::vector<float>;
+  m_loosematchtrk_ncommonstubs = new std::vector<int>;
 
   m_allstub_x = new std::vector<float>;
   m_allstub_y = new std::vector<float>;
@@ -378,6 +382,7 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("loosematchtrk_chi2",    &m_loosematchtrk_chi2);
   eventTree->Branch("loosematchtrk_nstub",   &m_loosematchtrk_nstub);
   eventTree->Branch("loosematchtrk_consistency", &m_loosematchtrk_consistency);
+  eventTree->Branch("loosematchtrk_ncommonstubs",  &m_loosematchtrk_ncommonstubs);
 
   if (SaveStubs) {
     eventTree->Branch("allstub_x", &m_allstub_x);
@@ -392,6 +397,21 @@ void L1TrackNtupleMaker::beginJob()
 
 }
 
+unsigned int L1TrackNtupleMaker::getNCommonStubs( std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > tpStubs,  edm::Ptr< TTTrack< Ref_PixelDigi_ > > L1track ) {
+
+  // Track stubs
+  std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > trackStubs = L1track->getStubRefs();
+
+  // Loop over stubs in track, and count number of stubs in common with tracking particle
+  unsigned int numberOfCommonStubs = 0;
+  for ( unsigned int stubIndex = 0; stubIndex < trackStubs.size(); stubIndex++ ) {
+          if ( find( tpStubs.begin(), tpStubs.end(), trackStubs[stubIndex] ) != tpStubs.end() ) {
+                  ++numberOfCommonStubs;
+          }
+  }
+  
+  return numberOfCommonStubs;
+}
 
 //////////
 // ANALYZE
@@ -465,6 +485,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_loosematchtrk_chi2->clear();
   m_loosematchtrk_consistency->clear();
   m_loosematchtrk_nstub->clear();
+  m_loosematchtrk_ncommonstubs->clear();
 
   if (SaveStubs) {
     m_allstub_x->clear();
@@ -962,6 +983,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     float tmp_loosematchtrk_chi2 = -999;
     float tmp_loosematchtrk_consistency = -999;
     int tmp_loosematchtrk_nstub  = -999;
+    unsigned int tmp_loosematchtrk_ncommonstubs  = 0;
 
 
     if (nMatch > 1 && DebugMode) cout << "WARNING *** 2 or more matches to genuine L1 tracks ***" << endl;
@@ -1000,6 +1022,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       tmp_loosematchtrk_chi2 = matchedTracks.at(i_loosetrack)->getChi2(L1Tk_nPar);
       tmp_loosematchtrk_consistency = matchedTracks.at(i_loosetrack)->getStubPtConsistency(L1Tk_nPar);
       tmp_loosematchtrk_nstub  = (int) matchedTracks.at(i_loosetrack)->getStubRefs().size();
+      tmp_loosematchtrk_ncommonstubs = getNCommonStubs( theStubRefs, matchedTracks.at(i_loosetrack));
     }
 
 
@@ -1036,6 +1059,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_loosematchtrk_chi2 ->push_back(tmp_loosematchtrk_chi2);
     m_loosematchtrk_consistency->push_back(tmp_loosematchtrk_consistency);
     m_loosematchtrk_nstub->push_back(tmp_loosematchtrk_nstub);
+    m_loosematchtrk_ncommonstubs->push_back(tmp_loosematchtrk_ncommonstubs);
 
   } //end loop tracking particles
   
