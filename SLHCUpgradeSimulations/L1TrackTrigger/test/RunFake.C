@@ -27,16 +27,28 @@ void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 
 // ----------------------------------------------------------------------------------------------------------------
 // Main script
-void RunFake(TString type) {
+
+  // TString type = inputFile + fitter;
+  // // TString type = "test";
+  // TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
+  // tree->Add(inputFile+".root");
+
+// void RunFake(TString type) {
+void RunFake(TString inputFile, TString fitter) {
 
   SetPlotStyle();
+  gROOT->SetBatch();
 
 
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
-  TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  tree->Add(type+".root");
+  // TChain* tree = new TChain("L1TrackNtuple/eventTree");
+  // tree->Add(type+".root");
   
+  TString type = inputFile + fitter;
+  // TString type = "test";
+  TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
+  tree->Add(inputFile+".root");
 
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;
@@ -558,6 +570,7 @@ void RunFake(TString type) {
   h_rate_pt->Scale(1.0/nevt);
   h_rate_pt->Write();
   h_rate_pt->GetYaxis()->SetTitle("Tracks / event");
+<<<<<<< HEAD
   float max = h_tp_pt->GetMaximum();
   if (h_rate_pt->GetMaximum() > max) max = h_rate_pt->GetMaximum();
   h_tp_pt->SetAxisRange(0,max*1.05,"Y");  
@@ -685,6 +698,22 @@ void RunFake(TString type) {
   ctot.SaveAs("FakePlots/tot_vspt3_overlay_"+type+".png");
   ctot.SaveAs("FakePlots/tot_vspt3_overlay_"+type+".eps");
 
+  h_rate_pt->Draw();
+  std::cout << "Total rate of tracks : " << h_rate_pt->Integral() << std::endl;
+  ctot.SaveAs("FakePlots/tot_vspt_"+type+".png");
+  ctot.SaveAs("FakePlots/tot_vspt_"+type+".eps");
+
+  // total rate vs eta
+  // TCanvas ctot;
+  TH1F* h_rate_eta = (TH1F*) h_trk_eta_pt2->Clone();
+  h_rate_eta->SetName("rate_eta");
+  h_rate_eta->Scale(1.0/nevt);
+  h_rate_eta->Write();
+  h_rate_eta->GetYaxis()->SetTitle("Tracks / event");
+  h_rate_eta->Draw();
+  std::cout << "Total rate of tracks : " << h_rate_eta->Integral() << std::endl;
+  ctot.SaveAs("FakePlots/tot_vseta_"+type+".png");
+  ctot.SaveAs("FakePlots/tot_vseta_"+type+".eps");
 
 
   // actual fakes
