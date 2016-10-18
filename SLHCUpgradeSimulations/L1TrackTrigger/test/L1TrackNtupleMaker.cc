@@ -213,6 +213,9 @@ private:
   std::vector<int>*   m_matchtrk_injet;
   std::vector<int>*   m_matchtrk_injet_highpt;
 
+  std::vector<int>*   m_matchtrk_nPSstubs;
+  std::vector<int>*   m_matchtrk_n2Sstubs;
+
   // *L1 track* properties if m_tp_nloosematch > 0
   std::vector<float>* m_loosematchtrk_pt;
   std::vector<float>* m_loosematchtrk_eta;
@@ -225,6 +228,9 @@ private:
   std::vector<int>*   m_loosematchtrk_injet;
   std::vector<int>*   m_loosematchtrk_injet_highpt;
   std::vector<int>*   m_loosematchtrk_ncommonstubs;   //number of stubs in common with TP
+  std::vector<int>*   m_loosematchtrk_incorrectStubType;
+  std::vector<int>*   m_loosematchtrk_nPSstubs;
+  std::vector<int>*   m_loosematchtrk_n2Sstubs;
 
   // ALL stubs
   std::vector<float>* m_allstub_x;
@@ -253,7 +259,8 @@ private:
   std::vector<float>* m_jet_trk_sumpt;
   
   unsigned int getNCommonStubs( std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > tpStubs, edm::Ptr< TTTrack< Ref_PixelDigi_ > > L1track );
-
+  unsigned int getNPSStubs( edm::Ptr< TTTrack< Ref_PixelDigi_ > > L1track, const StackedTrackerGeometry* theStackedGeometry );
+  unsigned int getIncorrectStubType( std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > tpStubs,  edm::Ptr< TTTrack< Ref_PixelDigi_ > > L1track, const StackedTrackerGeometry* theStackedGeometry );
 };
 
 
@@ -388,7 +395,9 @@ void L1TrackNtupleMaker::beginJob()
   m_matchtrk_consistency = new std::vector<float>;
   m_matchtrk_injet = new std::vector<int>;
   m_matchtrk_injet_highpt = new std::vector<int>;
-  
+  m_matchtrk_nPSstubs = new std::vector<int>;
+  m_matchtrk_n2Sstubs = new std::vector<int>;
+
   m_loosematchtrk_pt    = new std::vector<float>;
   m_loosematchtrk_eta   = new std::vector<float>;
   m_loosematchtrk_phi   = new std::vector<float>;
@@ -402,6 +411,9 @@ void L1TrackNtupleMaker::beginJob()
   m_loosematchtrk_injet_highpt = new std::vector<int>;
 
   m_loosematchtrk_ncommonstubs = new std::vector<int>;
+  m_loosematchtrk_nPSstubs = new std::vector<int>;
+  m_loosematchtrk_n2Sstubs = new std::vector<int>;
+  m_loosematchtrk_incorrectStubType = new std::vector<int>;
 
   m_allstub_x = new std::vector<float>;
   m_allstub_y = new std::vector<float>;
@@ -489,6 +501,7 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("matchtrk_chi2",    &m_matchtrk_chi2);
   eventTree->Branch("matchtrk_nstub",   &m_matchtrk_nstub);
   if (!Slim) eventTree->Branch("matchtrk_consistency", &m_matchtrk_consistency);
+
   if (TrackingInJets) {
     eventTree->Branch("matchtrk_injet",    &m_matchtrk_injet);
     eventTree->Branch("matchtrk_injet_highpt",    &m_matchtrk_injet_highpt);
@@ -507,7 +520,14 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("loosematchtrk_injet_highpt",   &m_loosematchtrk_injet_highpt);
   }
 
+  eventTree->Branch("matchtrk_nPSstubs",   &m_matchtrk_nPSstubs);
+  eventTree->Branch("matchtrk_n2Sstubs",   &m_matchtrk_n2Sstubs);
+
+
   eventTree->Branch("loosematchtrk_ncommonstubs",  &m_loosematchtrk_ncommonstubs);
+  eventTree->Branch("loosematchtrk_nPSstubs",   &m_loosematchtrk_nPSstubs);
+  eventTree->Branch("loosematchtrk_n2Sstubs",   &m_loosematchtrk_n2Sstubs);
+  eventTree->Branch("loosematchtrk_incorrectStubType",   &m_loosematchtrk_incorrectStubType);
 
   if (SaveStubs) {
     eventTree->Branch("allstub_x", &m_allstub_x);
@@ -555,6 +575,40 @@ unsigned int L1TrackNtupleMaker::getNCommonStubs( std::vector< edm::Ref< edmNew:
   }
   
   return numberOfCommonStubs;
+}
+
+unsigned int L1TrackNtupleMaker::getNPSStubs( edm::Ptr< TTTrack< Ref_PixelDigi_ > > L1track, const StackedTrackerGeometry* theStackedGeometry ) {
+  // Track stubs
+  std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > trackStubs = L1track->getStubRefs();
+
+  // Count number of PS stubs
+  unsigned int numberOfPSStubs = 0;
+  for (unsigned int is=0; is<trackStubs.size(); is++) {
+    StackedTrackerDetId thisDetId( trackStubs.at(is)->getDetId() );
+    bool isPS = theStackedGeometry->isPSModule(thisDetId);
+    if ( isPS ) ++numberOfPSStubs;
+  }
+
+  return numberOfPSStubs;
+}
+
+unsigned int L1TrackNtupleMaker::getIncorrectStubType( std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > tpStubs,  edm::Ptr< TTTrack< Ref_PixelDigi_ > > L1track, const StackedTrackerGeometry* theStackedGeometry ) {
+  // Track stubs
+  std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > trackStubs = L1track->getStubRefs();
+
+  // Loop over stubs in track, and find incorrect stub wrt tracking particle
+  unsigned int incorrectStubType = 0;
+  for ( unsigned int stubIndex = 0; stubIndex < trackStubs.size(); stubIndex++ ) {
+          if ( find( tpStubs.begin(), tpStubs.end(), trackStubs[stubIndex] ) == tpStubs.end() ) {
+            // This is the incorrect stub
+            StackedTrackerDetId thisDetId( trackStubs.at(stubIndex)->getDetId() );
+            bool isPS = theStackedGeometry->isPSModule(thisDetId);
+            if ( isPS ) incorrectStubType = 1;
+            else incorrectStubType = 2;
+          }
+  }
+  
+  return incorrectStubType;
 }
 
 //////////
@@ -670,6 +724,9 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_allstub_isBarrel->clear();
   m_allstub_layer->clear();
   m_allstub_isPS->clear();
+  m_loosematchtrk_nPSstubs->clear();
+  m_loosematchtrk_n2Sstubs->clear();
+  m_loosematchtrk_incorrectStubType ->clear();
 
   m_reliso->clear();
   m_absiso->clear();
@@ -826,10 +883,10 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   // geomtry 
   edm::ESHandle< StackedTrackerGeometry >         StackedGeometryHandle;
   const StackedTrackerGeometry*                   theStackedGeometry = 0;
-  if (SaveStubs) {  
+  // if (SaveStubs) {  
     iSetup.get< StackedTrackerGeometryRecord >().get(StackedGeometryHandle);
     theStackedGeometry = StackedGeometryHandle.product();
-  }
+  // }
 
   // magnetic field
   edm::ESHandle< MagneticField > magneticFieldHandle;
@@ -1319,7 +1376,9 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     float tmp_matchtrk_d0   = -999;
     float tmp_matchtrk_chi2 = -999;
     float tmp_matchtrk_consistency = -999;
-    int tmp_matchtrk_nstub  = -999;
+    unsigned int tmp_matchtrk_nstub  = -999;
+    unsigned int tmp_matchtrk_nPSStubs  = 0;
+    unsigned int tmp_matchtrk_n2SStubs  = 0;
 
     float tmp_loosematchtrk_pt   = -999;
     float tmp_loosematchtrk_eta  = -999;
@@ -1330,6 +1389,9 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     float tmp_loosematchtrk_consistency = -999;
     int tmp_loosematchtrk_nstub  = -999;
     unsigned int tmp_loosematchtrk_ncommonstubs  = 0;
+    unsigned int tmp_loosematchtrk_nPSStubs  = 0;
+    unsigned int tmp_loosematchtrk_n2SStubs  = 0;
+    unsigned int tmp_loosematchtrk_incorrectStubType  = 0;
 
 
     if (nMatch > 1 && DebugMode) cout << "WARNING *** 2 or more matches to genuine L1 tracks ***" << endl;
@@ -1351,6 +1413,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       tmp_matchtrk_chi2 = matchedTracks.at(i_track)->getChi2(L1Tk_nPar);
       tmp_matchtrk_consistency = matchedTracks.at(i_track)->getStubPtConsistency(L1Tk_nPar);
       tmp_matchtrk_nstub  = (int) matchedTracks.at(i_track)->getStubRefs().size();
+      tmp_matchtrk_nPSStubs = getNPSStubs( matchedTracks.at(i_track), theStackedGeometry );
+      tmp_matchtrk_n2SStubs = tmp_matchtrk_nstub - tmp_matchtrk_nPSStubs;
     }
 
     if (nLooseMatch > 0) {
@@ -1369,6 +1433,10 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       tmp_loosematchtrk_consistency = matchedTracks.at(i_loosetrack)->getStubPtConsistency(L1Tk_nPar);
       tmp_loosematchtrk_nstub  = (int) matchedTracks.at(i_loosetrack)->getStubRefs().size();
       tmp_loosematchtrk_ncommonstubs = getNCommonStubs( theStubRefs, matchedTracks.at(i_loosetrack));
+      tmp_loosematchtrk_nPSStubs = getNPSStubs( matchedTracks.at(i_loosetrack), theStackedGeometry );
+      tmp_loosematchtrk_n2SStubs = tmp_loosematchtrk_nstub - tmp_loosematchtrk_nPSStubs;
+      tmp_loosematchtrk_incorrectStubType = getIncorrectStubType( theStubRefs, matchedTracks.at(i_loosetrack), theStackedGeometry );
+
     }
 
 
@@ -1397,6 +1465,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_matchtrk_chi2 ->push_back(tmp_matchtrk_chi2);
     m_matchtrk_consistency->push_back(tmp_matchtrk_consistency);
     m_matchtrk_nstub->push_back(tmp_matchtrk_nstub);
+    m_matchtrk_nPSstubs->push_back(tmp_matchtrk_nPSStubs);
+    m_matchtrk_n2Sstubs->push_back(tmp_matchtrk_n2SStubs);
 
     m_loosematchtrk_pt ->push_back(tmp_loosematchtrk_pt);
     m_loosematchtrk_eta->push_back(tmp_loosematchtrk_eta);
@@ -1407,6 +1477,9 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_loosematchtrk_consistency->push_back(tmp_loosematchtrk_consistency);
     m_loosematchtrk_nstub->push_back(tmp_loosematchtrk_nstub);
     m_loosematchtrk_ncommonstubs->push_back(tmp_loosematchtrk_ncommonstubs);
+    m_loosematchtrk_nPSstubs->push_back(tmp_loosematchtrk_nPSStubs);
+    m_loosematchtrk_n2Sstubs->push_back(tmp_loosematchtrk_n2SStubs);
+    m_loosematchtrk_incorrectStubType->push_back(tmp_loosematchtrk_incorrectStubType);
 
 
     // ----------------------------------------------------------------------------------------------
