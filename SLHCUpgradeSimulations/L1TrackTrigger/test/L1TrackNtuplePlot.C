@@ -321,6 +321,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   TH1F* h_tp_pt_H  = new TH1F("tp_pt_H", ";Tracking particle p_{T} [GeV]; Tracking particles / 1.0 GeV",  92,  8.0, 100.0);
   TH1F* h_tp_eta   = new TH1F("tp_eta",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
   TH1F* h_tp_eta_L = new TH1F("tp_eta_L",";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
+  TH1F* h_tp_eta_incorrectStub   = new TH1F("tp_eta_incorrectStub",  ";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
   TH1F* h_tp_eta_H = new TH1F("tp_eta_H",";Tracking particle #eta; Tracking particles / 0.1",             50, -2.5,   2.5);
 
   TH1F* h_match_tp_pt    = new TH1F("match_tp_pt",   ";Tracking particle p_{T} [GeV]; Tracking particles / 1.0 GeV", 100,  0,   100.0);
@@ -651,15 +652,15 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   TH1F* h_ntrk_pt10 = new TH1F("ntrk_pt10", ";# tracks (p_{T} > 10 GeV) / event; Events", 100, 0, 100.0);
 
   // resolution vs. n incorrect stubs histograms
-  const int nStubsRANGE = 4;
-  TString stubsRange[nStubsRANGE] = {"0", "1", "2", "3" };
+  const int nStubsRANGE = 2;
+  TString stubsRange[nStubsRANGE] = {"0", "1" };
   TH1F* h_absResVsIncorrectStubs_pt[nStubsRANGE];
   TH1F* h_absResVsIncorrectStubs_eta[nStubsRANGE];
   TH1F* h_absResVsIncorrectStubs_z0[nStubsRANGE];
   for (int i=0; i<nStubsRANGE; i++) {
     h_absResVsIncorrectStubs_pt[i]   = new TH1F("absResVsNIncorrectStubs_pt_"+stubsRange[i],   ";p_{T} residual (L1 - sim); L1 tracks / 0.0002", nBinsPtRelRes, 0, maxPtRelRes);
     h_absResVsIncorrectStubs_eta[i]   = new TH1F("absResVsNIncorrectStubs_eta_"+stubsRange[i],   ";#eta residual (L1 - sim); L1 tracks / 0.0002", nBinsEtaRes, 0, maxEtaRes);
-    h_absResVsIncorrectStubs_z0[i]   = new TH1F("absResVsNIncorrectStubs_z0_"+stubsRange[i],   ";#z_{0} residual (L1 - sim); L1 tracks / 0.0002", nBinsZ0Res, 0, maxZ0Res);
+    h_absResVsIncorrectStubs_z0[i]   = new TH1F("absResVsNIncorrectStubs_z0_"+stubsRange[i],   ";#z_{0} residual (L1 - sim); L1 tracks / 0.0002", nBinsZ0Res, 0, 10);
   }
   
   // ----------------------------------------------------------------------------------------------------------------
@@ -1085,7 +1086,14 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
 
       if ( doLooseMatch ) {
         int nIncorrectStubs = matchtrk_nstub->at(it) - matchtrk_ncommonstubs->at(it);
-        if ( nIncorrectStubs < nStubsRANGE ) {
+        if ( nIncorrectStubs == 1 ) {
+          h_tp_eta_incorrectStub->Fill( tp_eta->at(it) );
+        //   std::cout << "Track with an incorrect stub" << std::endl;
+        //   std::cout << "Track pt, eta, phi, z0 : " << matchtrk_pt->at(it) << " " << matchtrk_eta->at(it) << " " << matchtrk_phi->at(it) << " " << matchtrk_z0->at(it) << std::endl;
+        //   std::cout << "TP pt, eta, phi, z0 : " << tp_pt->at(it) << " " << tp_eta->at(it) << " " << tp_phi->at(it) << " " << tp_z0->at(it) << std::endl;
+        //   std::cout << std::endl;
+        }
+        if ( nIncorrectStubs < nStubsRANGE && fabs( tp_eta->at(it) ) < 1 ) {
           h_absResVsIncorrectStubs_pt[nIncorrectStubs]->Fill( fabs( matchtrk_pt->at(it) - tp_pt->at(it) )/tp_pt->at(it) );
           h_absResVsIncorrectStubs_eta[nIncorrectStubs]->Fill( fabs( matchtrk_eta->at(it) - tp_eta->at(it) ) );
           h_absResVsIncorrectStubs_z0[nIncorrectStubs]->Fill( fabs( matchtrk_z0->at(it) - tp_z0->at(it) ) );
@@ -1379,9 +1387,9 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   TH1F* h3_resVsEta_ptRel_L = new TH1F("resVsEta_ptRel_L_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", 24,0,2.4);
   TH1F* h3_resVsEta_ptRel_H = new TH1F("resVsEta_ptRel_H_gaus", ";|#eta|; #sigma(p_{T}) / p_{T}", 24,0,2.4);
 
-  TH1F* h2_resVsNIncorrectStubs_pt_68   = new TH1F("resVsnIncorrectStubs_pt_68",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,0,nStubsRANGE);
-  TH1F* h2_resVsNIncorrectStubs_pt_90   = new TH1F("resVsnIncorrectStubs_pt_90",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,0,nStubsRANGE);
-  TH1F* h2_resVsNIncorrectStubs_pt_99   = new TH1F("resVsnIncorrectStubs_pt_99",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,0,nStubsRANGE);
+  TH1F* h2_resVsNIncorrectStubs_pt_68   = new TH1F("resVsnIncorrectStubs_pt_68",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,-0.5,nStubsRANGE-0.5);
+  TH1F* h2_resVsNIncorrectStubs_pt_90   = new TH1F("resVsnIncorrectStubs_pt_90",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,-0.5,nStubsRANGE-0.5);
+  TH1F* h2_resVsNIncorrectStubs_pt_99   = new TH1F("resVsnIncorrectStubs_pt_99",   ";N Incorrect Stubs; p_{T} resolution / p_{T} [GeV]", nStubsRANGE,-0.5,nStubsRANGE-0.5);
 
   TH1F* h2_resVsNIncorrectStubs_eta_68   = new TH1F("resVsnIncorrectStubs_eta_68",   ";N Incorrect Stubs; #eta resolution", nStubsRANGE,0,nStubsRANGE);
   TH1F* h2_resVsNIncorrectStubs_eta_90   = new TH1F("resVsnIncorrectStubs_eta_90",   ";N Incorrect Stubs; #eta resolution", nStubsRANGE,0,nStubsRANGE);
@@ -1797,9 +1805,9 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   c.SaveAs(DIR+type+"_resVsPt_pt_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_pt_90.png");
 
-  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_pt", makeCanvas, h2_resVsNIncorrectStubs_pt_68, h2_resVsNIncorrectStubs_pt_90, h2_resVsNIncorrectStubs_pt_99, 0, 1.0 );
-  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_eta", makeCanvas, h2_resVsNIncorrectStubs_eta_68, h2_resVsNIncorrectStubs_eta_90, h2_resVsNIncorrectStubs_eta_99, 0, 0.1 );
-  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_z0", makeCanvas, h2_resVsNIncorrectStubs_z0_68, h2_resVsNIncorrectStubs_z0_90, h2_resVsNIncorrectStubs_z0_99, 0, 2. );
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_pt", makeCanvas, h2_resVsNIncorrectStubs_pt_68, h2_resVsNIncorrectStubs_pt_90, h2_resVsNIncorrectStubs_pt_99, 0, 0.15);
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_eta", makeCanvas, h2_resVsNIncorrectStubs_eta_68, h2_resVsNIncorrectStubs_eta_90, h2_resVsNIncorrectStubs_eta_99, 0, 0.05 );
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_z0", makeCanvas, h2_resVsNIncorrectStubs_z0_68, h2_resVsNIncorrectStubs_z0_90, h2_resVsNIncorrectStubs_z0_99, 0, 5. );
 
   h2_resVsPt_ptRel_90->SetMinimum(0);
   h2_resVsPt_ptRel_90->SetMarkerStyle(20);
@@ -1905,6 +1913,11 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   h2_resVsEta_d0_90->Draw();
   c.SaveAs(DIR+type+"_resVsEta_d0_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_d0_90.png");
+  makeResidualIntervalPlot( type, DIR, "resVsEta_eta", makeCanvas, h2_resVsEta_eta_68, h2_resVsEta_eta_90, h2_resVsEta_eta_99, 0, 0.03 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_z0", makeCanvas, h2_resVsEta_z0_68, h2_resVsEta_z0_90, h2_resVsEta_z0_99, 0, 1.0 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_phi", makeCanvas, h2_resVsEta_phi_68, h2_resVsEta_phi_90, h2_resVsEta_phi_99, 0, 0.01 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_ptRel", makeCanvas, h2_resVsEta_ptRel_68, h2_resVsEta_ptRel_90, h2_resVsEta_ptRel_99, 0, 0.2 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_d0", makeCanvas, h2_resVsEta_d0_68, h2_resVsEta_d0_90, h2_resVsEta_d0_99, 0, 0.02 );
 
   h2_resVsEta_d0_L_90->Draw();
   sprintf(ctxt,"p_{T} < 8 GeV");
@@ -2014,6 +2027,13 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
       std::cout << std::endl;      
     }
 
+    if ( doLooseMatch ) {
+
+      h_tp_eta_incorrectStub->Draw();
+      c.SaveAs(DIR+type+"_tp_eta_nincorrectstubs.png");
+      c.SaveAs(DIR+type+"_tp_eta_nincorrectstubs.eps");
+      if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
+    }
   }
 
   h_match_trk_chi2->Draw();
@@ -2079,6 +2099,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
 
   h_match_tp_eta->Sumw2();
   h_tp_eta->Sumw2();
+  h_tp_eta->Write();
   TH1F* h_eff_eta = (TH1F*) h_match_tp_eta->Clone();
   h_eff_eta->SetName("eff_eta");
   h_eff_eta->GetYaxis()->SetTitle("Efficiency");
@@ -2745,19 +2766,21 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
   h_68->Write();
   h_90->Draw("P same");
   h_90->Write();
-  // h_99->Draw("P same");
+  h_99->Draw("P same");
   h_99->Write();
 
   TLegend* l = new TLegend(0.65,0.65,0.85,0.85);
-  if ( variable=="resVsNIncorrectStubs_z0" ) {
+  // if ( variable=="resVsNIncorrectStubs_z0" ) {
+    l->SetX1(0.45);
+    l->SetX2(0.65);
     l->SetY1(0.25);
     l->SetY2(0.45);
-  }
+  // }
 
   l->SetFillStyle(0);
   l->SetBorderSize(0);
   l->SetTextSize(0.04);
-  // l->AddEntry(h_99,"99%","p");
+  l->AddEntry(h_99,"99%","p");
   l->AddEntry(h_90,"90%","p");
   l->AddEntry(h_68,"68%","p");
   l->SetTextFont(42);
