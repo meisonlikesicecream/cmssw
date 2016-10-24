@@ -1077,12 +1077,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
 	 
        }
       }
-      
-      // fill 2D histograms
-      h_2d_dz0_eta   ->Fill(tp_eta->at(it), fabs(matchtrk_z0->at(it)  - tp_z0->at(it)));
-      h_2d_deta_eta  ->Fill(tp_eta->at(it), fabs(matchtrk_eta->at(it) - tp_eta->at(it)));
-      h_2d_dphi_eta  ->Fill(tp_eta->at(it), fabs(matchtrk_phi->at(it) - tp_phi->at(it)));
-      h_2d_dptRel_eta->Fill(tp_eta->at(it), fabs((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it)));
 
       if ( doLooseMatch ) {
         int nIncorrectStubs = matchtrk_nstub->at(it) - matchtrk_ncommonstubs->at(it);
@@ -1734,7 +1728,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   // -------------------------------------------------------------------------------------------
   // output file for histograms
   // -------------------------------------------------------------------------------------------
-  if (useTight) type = type+"_tight";
   if ( doLooseMatch ) type = type+"_loose";
  
   if (TP_select_pdgid != 0) {
@@ -1805,9 +1798,9 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   c.SaveAs(DIR+type+"_resVsPt_pt_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_pt_90.png");
 
-  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_pt", makeCanvas, h2_resVsNIncorrectStubs_pt_68, h2_resVsNIncorrectStubs_pt_90, h2_resVsNIncorrectStubs_pt_99, 0, 0.15);
-  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_eta", makeCanvas, h2_resVsNIncorrectStubs_eta_68, h2_resVsNIncorrectStubs_eta_90, h2_resVsNIncorrectStubs_eta_99, 0, 0.05 );
-  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_z0", makeCanvas, h2_resVsNIncorrectStubs_z0_68, h2_resVsNIncorrectStubs_z0_90, h2_resVsNIncorrectStubs_z0_99, 0, 5. );
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_pt", h2_resVsNIncorrectStubs_pt_68, h2_resVsNIncorrectStubs_pt_90, h2_resVsNIncorrectStubs_pt_99, 0, 0.15);
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_eta", h2_resVsNIncorrectStubs_eta_68, h2_resVsNIncorrectStubs_eta_90, h2_resVsNIncorrectStubs_eta_99, 0, 0.05 );
+  makeResidualIntervalPlot( type, DIR, "resVsNIncorrectStubs_z0", h2_resVsNIncorrectStubs_z0_68, h2_resVsNIncorrectStubs_z0_90, h2_resVsNIncorrectStubs_z0_99, 0, 5. );
 
   h2_resVsPt_ptRel_90->SetMinimum(0);
   h2_resVsPt_ptRel_90->SetMarkerStyle(20);
@@ -1913,11 +1906,11 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
   h2_resVsEta_d0_90->Draw();
   c.SaveAs(DIR+type+"_resVsEta_d0_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_d0_90.png");
-  makeResidualIntervalPlot( type, DIR, "resVsEta_eta", makeCanvas, h2_resVsEta_eta_68, h2_resVsEta_eta_90, h2_resVsEta_eta_99, 0, 0.03 );
-  makeResidualIntervalPlot( type, DIR, "resVsEta_z0", makeCanvas, h2_resVsEta_z0_68, h2_resVsEta_z0_90, h2_resVsEta_z0_99, 0, 1.0 );
-  makeResidualIntervalPlot( type, DIR, "resVsEta_phi", makeCanvas, h2_resVsEta_phi_68, h2_resVsEta_phi_90, h2_resVsEta_phi_99, 0, 0.01 );
-  makeResidualIntervalPlot( type, DIR, "resVsEta_ptRel", makeCanvas, h2_resVsEta_ptRel_68, h2_resVsEta_ptRel_90, h2_resVsEta_ptRel_99, 0, 0.2 );
-  makeResidualIntervalPlot( type, DIR, "resVsEta_d0", makeCanvas, h2_resVsEta_d0_68, h2_resVsEta_d0_90, h2_resVsEta_d0_99, 0, 0.02 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_eta", h2_resVsEta_eta_68, h2_resVsEta_eta_90, h2_resVsEta_eta_99, 0, 0.03 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_z0", h2_resVsEta_z0_68, h2_resVsEta_z0_90, h2_resVsEta_z0_99, 0, 1.0 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_phi", h2_resVsEta_phi_68, h2_resVsEta_phi_90, h2_resVsEta_phi_99, 0, 0.01 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_ptRel", h2_resVsEta_ptRel_68, h2_resVsEta_ptRel_90, h2_resVsEta_ptRel_99, 0, 0.2 );
+  makeResidualIntervalPlot( type, DIR, "resVsEta_d0", h2_resVsEta_d0_68, h2_resVsEta_d0_90, h2_resVsEta_d0_99, 0, 0.02 );
 
   h2_resVsEta_d0_L_90->Draw();
   sprintf(ctxt,"p_{T} < 8 GeV");
@@ -2018,7 +2011,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
     h_match_trk_nstub_F->Write();
 
     h_match_trk_nincorrectstubs->Draw();
-    if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
     if ( doLooseMatch ) {
       std::cout << std::endl;
       for ( int i = 1; i < h_match_trk_nincorrectstubs->GetNbinsX()+1; ++i ) {
@@ -2032,7 +2024,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_pdgid=0,
       h_tp_eta_incorrectStub->Draw();
       c.SaveAs(DIR+type+"_tp_eta_nincorrectstubs.png");
       c.SaveAs(DIR+type+"_tp_eta_nincorrectstubs.eps");
-      if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
     }
   }
 
