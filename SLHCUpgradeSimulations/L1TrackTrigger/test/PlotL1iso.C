@@ -33,7 +33,7 @@ void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void PlotL1iso(TString name) {
+void PlotL1iso(TString inputFile, TString fitter) {
  
   gROOT->SetBatch();
   gErrorIgnoreLevel = kWarning;
@@ -43,8 +43,13 @@ void PlotL1iso(TString name) {
   
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
-  TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  tree->Add(name+".root");
+  TString name = inputFile + fitter;
+  // TString type = "test";
+  TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
+  tree->Add(inputFile+".root");
+
+  // TChain* tree = new TChain("L1TrackNtuple/eventTree");
+  // tree->Add(name+".root");
   
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;

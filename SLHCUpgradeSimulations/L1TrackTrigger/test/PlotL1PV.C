@@ -32,7 +32,7 @@ void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void PlotL1PV(TString name) {
+void PlotL1PV(TString inputFile, TString fitter) {
 
   gROOT->SetBatch();
   gErrorIgnoreLevel = kWarning;
@@ -41,8 +41,13 @@ void PlotL1PV(TString name) {
 
 
   // ----------------------------------------------------------------------------------------------------------------
-  TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  tree->Add(name+".root");
+  TString name = inputFile + fitter;
+  // TString type = "test";
+  TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
+  tree->Add(inputFile+".root");
+
+  // TChain* tree = new TChain("L1TrackNtuple/eventTree");
+  // tree->Add(name+".root");
 
 
   // ----------------------------------------------------------------------------------------------------------------
