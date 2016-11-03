@@ -131,6 +131,8 @@ private:
   edm::InputTag L1TrackInputTag;        // L1 track collection
   edm::InputTag MCTruthTrackInputTag;   // MC truth collection
 
+  edm::InputTag L1PVInputTag;        // L1 PV collection
+  edm::InputTag L1MCPVInputTag;        // L1 PV collection
 
   bool TrackIsolation; // do track isolation?
   float PTmin; 
@@ -138,7 +140,7 @@ private:
   float TrackPTmin;
   float TrackETAmax;
   float TrackChi2max;
-  int TrackNStubmin;
+  unsigned int TrackNStubmin;
 
   float IsoTrackZmax;
   float IsoTrackChi2max;
@@ -289,6 +291,8 @@ L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) :
   TP_maxZ0         = iConfig.getParameter< double >("TP_maxZ0");
   L1TrackInputTag      = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
   MCTruthTrackInputTag = iConfig.getParameter<edm::InputTag>("MCTruthTrackInputTag");
+  L1PVInputTag      = iConfig.getParameter<edm::InputTag>("L1PVInputTag");
+  L1MCPVInputTag      = iConfig.getParameter<edm::InputTag>("L1MCPVInputTag");
   L1Tk_minNStub    = iConfig.getParameter< int >("L1Tk_minNStub");
 
   TrackIsolation = iConfig.getParameter< bool >("TrackIsolation");
@@ -777,11 +781,11 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     if (DebugMode) cout << "getting L1/MC primary vertex" << endl;
     edm::Handle< std::vector<L1TkPrimaryVertex> > L1PVHandle;
-    iEvent.getByLabel("L1TkPrimaryVertex","", L1PVHandle);
+    iEvent.getByLabel(L1PVInputTag, L1PVHandle);
     
     edm::Handle< std::vector<L1TkPrimaryVertex> > MCPVHandle;
-    iEvent.getByLabel("L1TkPrimaryVertexMC","", MCPVHandle);
-    
+    iEvent.getByLabel(L1MCPVInputTag, MCPVHandle);
+
     // by convention, the first vertex in the collection is the one that should be used by default
     
     float zvtx_L1 = -999;
