@@ -65,7 +65,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   float L1Tk_maxChi2 = 999999999.;  
   float L1Tk_maxChi2dof = 999999999.;  
   
-  bool doDetailedPlots = true; //turn on to make full set of plots
+  bool doDetailedPlots = false; //turn on to make full set of plots
   bool doGausFit = false;       //do gaussian fit for resolution vs eta/pt plots
   bool doLooseMatch = false;    //looser MC truth matching
 
@@ -441,6 +441,8 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   TH1F* h_trk_vspt = new TH1F("trk_vspt", ";Track p_{T} [GeV]; ",40,0,20);
   TH1F* h_tp_vspt  = new TH1F("tp_vspt", ";TP p_{T} [GeV]; ",40,0,20);
 
+  TH1F* h_trk_vseta = new TH1F("trk_vseta", ";Track #eta [GeV]; ",20,-2.4,2.4);
+  TH1F* h_tp_vseta  = new TH1F("tp_vseta", ";TP #eta [GeV]; ",20,-2.4,2.4);
 
   TH1F* h_tp_z0    = new TH1F("tp_z0",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
   TH1F* h_tp_z0_L    = new TH1F("tp_z0_L",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
@@ -719,6 +721,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
 	ntrk_pt3++;
 	ntrkevt_pt3++;
 	h_trk_vspt->Fill(trk_pt->at(it));
+  h_trk_vseta->Fill(trk_eta->at(it));
 	//if (trk_nstub->at(it) > 3) ntrk_4stub_pt3++;
 	//if (trk_nstub->at(it) > 3 && trk_chi2->at(it) < 100.) ntrk_4stubchi2_pt3++;
       }
@@ -750,6 +753,8 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
 	if (tp_pt->at(it) > 3.0) {
 	  ntp_pt3++;
 	  h_tp_vspt->Fill(tp_pt->at(it));
+    h_tp_vseta->Fill(tp_eta->at(it));
+
 	}
 	if (tp_pt->at(it) > 10.0) ntp_pt10++;
       }
@@ -1906,12 +1911,14 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   h2_resVsEta_d0_90->Draw();
   c.SaveAs(DIR+type+"_resVsEta_d0_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_d0_90.png");
+
   makeResidualIntervalPlot( type, DIR, "resVsEta_eta", h2_resVsEta_eta_68, h2_resVsEta_eta_90, h2_resVsEta_eta_99, 0, 0.03 );
   makeResidualIntervalPlot( type, DIR, "resVsEta_z0", h2_resVsEta_z0_68, h2_resVsEta_z0_90, h2_resVsEta_z0_99, 0, 1.0 );
   makeResidualIntervalPlot( type, DIR, "resVsEta_phi", h2_resVsEta_phi_68, h2_resVsEta_phi_90, h2_resVsEta_phi_99, 0, 0.01 );
   makeResidualIntervalPlot( type, DIR, "resVsEta_ptRel", h2_resVsEta_ptRel_68, h2_resVsEta_ptRel_90, h2_resVsEta_ptRel_99, 0, 0.2 );
   makeResidualIntervalPlot( type, DIR, "resVsEta_d0", h2_resVsEta_d0_68, h2_resVsEta_d0_90, h2_resVsEta_d0_99, 0, 0.02 );
 
+<<<<<<< HEAD
   h2_resVsEta_d0_L_90->Draw();
   sprintf(ctxt,"p_{T} < 8 GeV");
   mySmallText(0.22,0.82,1,ctxt);
@@ -1981,23 +1988,24 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
     h2_resVsEta_phi->Write();
     h2_resVsEta_phi_L->Write();
     h2_resVsEta_phi_H->Write();
-    
-    h2_resVsEta_ptRel->Write();
-    h2_resVsEta_ptRel_L->Write();
-    h2_resVsEta_ptRel_H->Write();
   }
+    
+  //   h2_resVsEta_ptRel->Write();
+  //   h2_resVsEta_ptRel_L->Write();
+  //   h2_resVsEta_ptRel_H->Write();
+  // }
   
-  if (doGausFit) {
-    h3_resVsEta_eta_L->Write();
-    h3_resVsEta_z0_L->Write();
-    h3_resVsEta_phi_L->Write();
-    h3_resVsEta_ptRel_L->Write();
+  // if (doGausFit) {
+  //   h3_resVsEta_eta_L->Write();
+  //   h3_resVsEta_z0_L->Write();
+  //   h3_resVsEta_phi_L->Write();
+  //   h3_resVsEta_ptRel_L->Write();
     
-    h3_resVsEta_eta_H->Write();
-    h3_resVsEta_z0_H->Write();
-    h3_resVsEta_phi_H->Write();
-    h3_resVsEta_ptRel_H->Write();
-  }
+  //   h3_resVsEta_eta_H->Write();
+  //   h3_resVsEta_z0_H->Write();
+  //   h3_resVsEta_phi_H->Write();
+  //   h3_resVsEta_ptRel_H->Write();
+  // }
 
 
   // ----------------------------------------------------------------------------------------------------------------
@@ -2251,270 +2259,270 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
 
   float rms = 0;
 
-  if (doDetailedPlots) {
+  // if (doDetailedPlots) {
 
-    // draw and save plots
-    h_res_pt->Draw();
-    rms = h_res_pt->GetRMS();
-    sprintf(ctxt,"RMS = %.4f",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_pt.eps");
-    c.SaveAs(DIR+type+"_res_pt.png");
+  //   // draw and save plots
+  //   h_res_pt->Draw();
+  //   rms = h_res_pt->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_pt.eps");
+  //   c.SaveAs(DIR+type+"_res_pt.png");
     
-    h_res_ptRel->Draw();
-    rms = h_res_ptRel->GetRMS();
-    sprintf(ctxt,"RMS = %.4f",rms);	
-    mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_ptRel.eps");
-    c.SaveAs(DIR+type+"_res_ptRel.png");
+  //   h_res_ptRel->Draw();
+  //   rms = h_res_ptRel->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f",rms);	
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_ptRel.eps");
+  //   c.SaveAs(DIR+type+"_res_ptRel.png");
 
-    h_res_eta->Draw();
-    rms = h_res_eta->GetRMS();
-    sprintf(ctxt,"RMS = %.3e",rms);	
-    mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_eta.eps");
-    c.SaveAs(DIR+type+"_res_eta.png");
+  //   h_res_eta->Draw();
+  //   rms = h_res_eta->GetRMS();
+  //   sprintf(ctxt,"RMS = %.3e",rms);	
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_eta.eps");
+  //   c.SaveAs(DIR+type+"_res_eta.png");
     
-    h_res_phi->Draw();
-    rms = h_res_phi->GetRMS();
-    sprintf(ctxt,"RMS = %.3e",rms);	
-    mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_phi.eps");
-    c.SaveAs(DIR+type+"_res_phi.png");
+  //   h_res_phi->Draw();
+  //   rms = h_res_phi->GetRMS();
+  //   sprintf(ctxt,"RMS = %.3e",rms);	
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_phi.eps");
+  //   c.SaveAs(DIR+type+"_res_phi.png");
     
-    h_res_z0->Draw();
-    rms = h_res_z0->GetRMS();
-    sprintf(ctxt,"RMS = %.4f",rms);	
-    mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0.eps");
-    c.SaveAs(DIR+type+"_res_z0.png");
+  //   h_res_z0->Draw();
+  //   rms = h_res_z0->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f",rms);	
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0.eps");
+  //   c.SaveAs(DIR+type+"_res_z0.png");
     
-    h_res_z0_C->Draw();
-    rms = h_res_z0_C->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"|eta| < 0.8");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C.eps");
-    c.SaveAs(DIR+type+"_res_z0_C.png");
+  //   h_res_z0_C->Draw();
+  //   rms = h_res_z0_C->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"|eta| < 0.8");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_C.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_C.png");
     
-    h_res_z0_I->Draw();
-    rms = h_res_z0_I->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"0.8 < |eta| < 1.6");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I.eps");
-    c.SaveAs(DIR+type+"_res_z0_I.png");
+  //   h_res_z0_I->Draw();
+  //   rms = h_res_z0_I->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"0.8 < |eta| < 1.6");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_I.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_I.png");
     
-    h_res_z0_F->Draw();
-    rms = h_res_z0_F->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"|eta| > 1.6");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F.eps");
-    c.SaveAs(DIR+type+"_res_z0_F.png");
+  //   h_res_z0_F->Draw();
+  //   rms = h_res_z0_F->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"|eta| > 1.6");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_F.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_F.png");
 
-    h_res_z0_C_L->Draw();
-    h_res_z0_C_L->Write();
-    rms = h_res_z0_C_L->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"|eta| < 0.8");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C_L.eps");
-    c.SaveAs(DIR+type+"_res_z0_C_L.png");
+  //   h_res_z0_C_L->Draw();
+  //   h_res_z0_C_L->Write();
+  //   rms = h_res_z0_C_L->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"|eta| < 0.8");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_C_L.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_C_L.png");
     
-    h_res_z0_I_L->Draw();
-    h_res_z0_I_L->Write();
-    rms = h_res_z0_I_L->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"0.8 < |eta| < 1.6");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I_L.eps");
-    c.SaveAs(DIR+type+"_res_z0_I_L.png");
+  //   h_res_z0_I_L->Draw();
+  //   h_res_z0_I_L->Write();
+  //   rms = h_res_z0_I_L->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"0.8 < |eta| < 1.6");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_I_L.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_I_L.png");
     
-    h_res_z0_F_L->Draw();
-    h_res_z0_F_L->Write();
-    rms = h_res_z0_F_L->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"|eta| > 1.6");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F_L.eps");
-    c.SaveAs(DIR+type+"_res_z0_F_L.png");
+  //   h_res_z0_F_L->Draw();
+  //   h_res_z0_F_L->Write();
+  //   rms = h_res_z0_F_L->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"|eta| > 1.6");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_F_L.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_F_L.png");
 
-    h_res_z0_C_H->Draw();
-    h_res_z0_C_H->Write();
-    rms = h_res_z0_C_H->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"|eta| < 0.8");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C_H.eps");
-    c.SaveAs(DIR+type+"_res_z0_C_H.png");
+  //   h_res_z0_C_H->Draw();
+  //   h_res_z0_C_H->Write();
+  //   rms = h_res_z0_C_H->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"|eta| < 0.8");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_C_H.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_C_H.png");
     
-    h_res_z0_I_H->Draw();
-    h_res_z0_I_H->Write();
-    rms = h_res_z0_I_H->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"0.8 < |eta| < 1.6");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I_H.eps");
-    c.SaveAs(DIR+type+"_res_z0_I_H.png");
+  //   h_res_z0_I_H->Draw();
+  //   h_res_z0_I_H->Write();
+  //   rms = h_res_z0_I_H->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"0.8 < |eta| < 1.6");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_I_H.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_I_H.png");
     
-    h_res_z0_F_H->Draw();
-    h_res_z0_F_H->Write();
-    rms = h_res_z0_F_H->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"|eta| > 1.6");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F_H.eps");
-    c.SaveAs(DIR+type+"_res_z0_F_H.png");
+  //   h_res_z0_F_H->Draw();
+  //   h_res_z0_F_H->Write();
+  //   rms = h_res_z0_F_H->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"|eta| > 1.6");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_F_H.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_F_H.png");
 
-    h_res_z0_L->Draw();
-    h_res_z0_L->Write();
-    rms = h_res_z0_L->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"p_{T} < 5 GeV");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_L.eps");
-    c.SaveAs(DIR+type+"_res_z0_L.png");
+  //   h_res_z0_L->Draw();
+  //   h_res_z0_L->Write();
+  //   rms = h_res_z0_L->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"p_{T} < 5 GeV");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_L.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_L.png");
     
-    h_res_z0_H->Draw();
-    h_res_z0_H->Write();
-    rms = h_res_z0_H->GetRMS();
-    sprintf(ctxt,"RMS = %.4f;",rms);
-    mySmallText(0.22,0.82,1,ctxt);
-    sprintf(ctxt,"p_{T} > 15 GeV");
-    mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_H.eps");
-    c.SaveAs(DIR+type+"_res_z0_H.png");
+  //   h_res_z0_H->Draw();
+  //   h_res_z0_H->Write();
+  //   rms = h_res_z0_H->GetRMS();
+  //   sprintf(ctxt,"RMS = %.4f;",rms);
+  //   mySmallText(0.22,0.82,1,ctxt);
+  //   sprintf(ctxt,"p_{T} > 15 GeV");
+  //   mySmallText(0.22,0.76,1,ctxt);
+  //   c.SaveAs(DIR+type+"_res_z0_H.eps");
+  //   c.SaveAs(DIR+type+"_res_z0_H.png");
 
-    if (h_res_d0->GetEntries()>0) {
-      h_res_d0->Draw();
-      rms = h_res_d0->GetRMS();
-      sprintf(ctxt,"RMS = %.4f",rms);	
-      mySmallText(0.22,0.82,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0.eps");
-      c.SaveAs(DIR+type+"_res_d0.png");
+  //   if (h_res_d0->GetEntries()>0) {
+  //     h_res_d0->Draw();
+  //     rms = h_res_d0->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f",rms);	
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0.eps");
+  //     c.SaveAs(DIR+type+"_res_d0.png");
 
-      h_res_d0_C->Draw();
-      h_res_d0_C->Write();
-      rms = h_res_d0_C->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"|eta| < 0.8");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C.eps");
-      c.SaveAs(DIR+type+"_res_d0_C.png");
+  //     h_res_d0_C->Draw();
+  //     h_res_d0_C->Write();
+  //     rms = h_res_d0_C->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"|eta| < 0.8");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_C.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_C.png");
     
-      h_res_d0_I->Draw();
-      h_res_d0_I->Write();
-      rms = h_res_d0_I->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"0.8 < |eta| < 1.6");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I.eps");
-      c.SaveAs(DIR+type+"_res_d0_I.png");
+  //     h_res_d0_I->Draw();
+  //     h_res_d0_I->Write();
+  //     rms = h_res_d0_I->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"0.8 < |eta| < 1.6");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_I.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_I.png");
     
-      h_res_d0_F->Draw();
-      h_res_d0_F->Write();
-      rms = h_res_d0_F->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"|eta| > 1.6");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F.eps");
-      c.SaveAs(DIR+type+"_res_d0_F.png");
+  //     h_res_d0_F->Draw();
+  //     h_res_d0_F->Write();
+  //     rms = h_res_d0_F->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"|eta| > 1.6");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_F.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_F.png");
     
-      h_res_d0_C_L->Draw();
-      h_res_d0_C_L->Write();
-      rms = h_res_d0_C_L->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"|eta| < 0.8");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C_L.eps");
-      c.SaveAs(DIR+type+"_res_d0_C_L.png");
+  //     h_res_d0_C_L->Draw();
+  //     h_res_d0_C_L->Write();
+  //     rms = h_res_d0_C_L->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"|eta| < 0.8");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_C_L.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_C_L.png");
     
-      h_res_d0_I_L->Draw();
-      h_res_d0_I_L->Write();
-      rms = h_res_d0_I_L->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"0.8 < |eta| < 1.6");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I_L.eps");
-      c.SaveAs(DIR+type+"_res_d0_I_L.png");
+  //     h_res_d0_I_L->Draw();
+  //     h_res_d0_I_L->Write();
+  //     rms = h_res_d0_I_L->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"0.8 < |eta| < 1.6");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_I_L.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_I_L.png");
     
-      h_res_d0_F_L->Draw();
-      h_res_d0_F_L->Write();
-      rms = h_res_d0_F_L->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"|eta| > 1.6");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F_L.eps");
-      c.SaveAs(DIR+type+"_res_d0_F_L.png");
+  //     h_res_d0_F_L->Draw();
+  //     h_res_d0_F_L->Write();
+  //     rms = h_res_d0_F_L->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"|eta| > 1.6");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_F_L.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_F_L.png");
       
-      h_res_d0_C_H->Draw();
-      h_res_d0_C_H->Write();
-      rms = h_res_d0_C_H->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"|eta| < 0.8");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C_H.eps");
-      c.SaveAs(DIR+type+"_res_d0_C_H.png");
+  //     h_res_d0_C_H->Draw();
+  //     h_res_d0_C_H->Write();
+  //     rms = h_res_d0_C_H->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"|eta| < 0.8");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_C_H.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_C_H.png");
     
-      h_res_d0_I_H->Draw();
-      h_res_d0_I_H->Write();
-      rms = h_res_d0_I_H->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"0.8 < |eta| < 1.6");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I_H.eps");
-      c.SaveAs(DIR+type+"_res_d0_I_H.png");
+  //     h_res_d0_I_H->Draw();
+  //     h_res_d0_I_H->Write();
+  //     rms = h_res_d0_I_H->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"0.8 < |eta| < 1.6");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_I_H.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_I_H.png");
       
-      h_res_d0_F_H->Draw();
-      h_res_d0_F_H->Write();
-      rms = h_res_d0_F_H->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"|eta| > 1.6");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F_H.eps");
-      c.SaveAs(DIR+type+"_res_d0_F_H.png");
+  //     h_res_d0_F_H->Draw();
+  //     h_res_d0_F_H->Write();
+  //     rms = h_res_d0_F_H->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"|eta| > 1.6");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_F_H.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_F_H.png");
       
-      h_res_d0_L->Draw();
-      h_res_d0_L->Write();
-      rms = h_res_d0_L->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"p_{T} < 5 GeV");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_L.eps");
-      c.SaveAs(DIR+type+"_res_d0_L.png");
+  //     h_res_d0_L->Draw();
+  //     h_res_d0_L->Write();
+  //     rms = h_res_d0_L->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"p_{T} < 5 GeV");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_L.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_L.png");
       
-      h_res_d0_H->Draw();
-      h_res_d0_H->Write();
-      rms = h_res_d0_H->GetRMS();
-      sprintf(ctxt,"RMS = %.4f;",rms);
-      mySmallText(0.22,0.82,1,ctxt);
-      sprintf(ctxt,"p_{T} > 15 GeV");
-      mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_H.eps");
-      c.SaveAs(DIR+type+"_res_d0_H.png");
-    }
-  }
+  //     h_res_d0_H->Draw();
+  //     h_res_d0_H->Write();
+  //     rms = h_res_d0_H->GetRMS();
+  //     sprintf(ctxt,"RMS = %.4f;",rms);
+  //     mySmallText(0.22,0.82,1,ctxt);
+  //     sprintf(ctxt,"p_{T} > 15 GeV");
+  //     mySmallText(0.22,0.76,1,ctxt);
+  //     c.SaveAs(DIR+type+"_res_d0_H.eps");
+  //     c.SaveAs(DIR+type+"_res_d0_H.png");
+  //   }
+  // }
   
 
   // ---------------------------------------------------------------------------------------------------------
@@ -2548,7 +2556,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
 
   c.SaveAs(DIR+type+"_trackrate_vspt.png");
   c.SaveAs(DIR+type+"_trackrate_vspt.eps");
-
 
   // ---------------------------------------------------------------------------------------------------------
   // sum track/ TP pt in jets
@@ -2611,6 +2618,37 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   fout->Close();
 
 
+    
+  // ---------------------------------------------------------------------------------------------------------
+  // total track rates vs eta 
+
+  h_trk_vseta->Scale(1.0/nevt);
+  h_tp_vseta->Scale(1.0/nevt);
+
+  h_tp_vseta->GetYaxis()->SetTitle("Tracks / event");
+  h_tp_vseta->GetXaxis()->SetTitle("Track #eta [GeV]");
+  h_tp_vseta->SetLineColor(4);
+  h_tp_vseta->SetLineStyle(2);
+
+  max = h_tp_vseta->GetMaximum();
+  if (h_trk_vseta->GetMaximum() > max) max = h_trk_vseta->GetMaximum();
+  h_tp_vseta->SetAxisRange(0,max*1.05,"Y");  
+
+  h_tp_vseta->Draw();
+  h_trk_vseta->Draw("same");
+  h_tp_vseta->Draw("same");
+
+  sprintf(txt,"average # tracks/event = %.1f",h_trk_vseta->GetSum());
+  mySmallText(0.5,0.85,1,txt);
+  sprintf(txt3,"average # TPs(stubs in #geq 4 layers)/");
+  sprintf(txt2,"event = %.1f",h_tp_vseta->GetSum());
+  mySmallText(0.5,0.79,4,txt3);
+  mySmallText(0.5,0.74,4,txt2);
+
+  c.SaveAs(DIR+type+"_trackrate_vseta.png");
+  c.SaveAs(DIR+type+"_trackrate_vseta.eps");
+
+  fout->Close();
 
   // ---------------------------------------------------------------------------------------------------------
   //some printouts
