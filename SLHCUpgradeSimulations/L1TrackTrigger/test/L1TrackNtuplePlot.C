@@ -97,7 +97,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   // TChain* tree = new TChain("L1TrackNtuple/eventTree");
   // tree->Add(type+".root");
 
-  TString type = inputFile + fitter;
+  TString type = inputFile;
   // TString type = "test";
   TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
   tree->Add(inputFile+".root");
@@ -1744,7 +1744,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   else if (TP_select_injet == 2) type = type+"_injet_highpt";
 
   
-  TFile* fout = new TFile("output_"+type+".root","recreate");
+  TFile* fout = new TFile("output_"+type+"_"+fitter+".root","recreate");
   
   
   // -------------------------------------------------------------------------------------------
