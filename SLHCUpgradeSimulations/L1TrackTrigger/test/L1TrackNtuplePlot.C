@@ -7,8 +7,10 @@
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TFile.h"
+#include "TFileInfo.h"
 #include "TTree.h"
 #include "TChain.h"
+#include "TList.h"
 #include "TBranch.h"
 #include "TLeaf.h"
 #include "TCanvas.h"
@@ -40,7 +42,9 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
+void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, TString inputDir = "", float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
+
+  int maxEvents = 100000;
 
   // type:              this is the input file you want to process (minus ".root" extension)
   // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
@@ -100,7 +104,14 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   TString type = inputFile;
   // TString type = "test";
   TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
-  tree->Add(inputFile+".root");
+
+  if ( inputDir == "" ) {
+    tree->Add(inputFile+".root");
+  }
+  else {
+    tree->Add(inputDir + "/Hist*.root");
+  }
+
   
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;
@@ -671,12 +682,15 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   
   int nevt = tree->GetEntries();
   cout << "number of events = " << nevt << endl;
-
+  if ( maxEvents > 0 && nevt > maxEvents ){
+    cout << "Will only process : " << maxEvents << endl;
+  }
 
   // ----------------------------------------------------------------------------------------------------------------
   // event loop
   for (int i=0; i<nevt; i++) {
 
+    if (maxEvents> 0 && i > maxEvents ) break;
     tree->GetEntry(i,0);
   
 
