@@ -27,13 +27,15 @@ using namespace std;
 void SetPlotStyle();
 void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 
-
 // ----------------------------------------------------------------------------------------------------------------
 // Main script
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void PlotL1iso(TString inputFile, TString fitter) {
+void PlotL1iso(TString inputFile, TString fitter, TString inputDir = "") {
+
+  int maxEvents = 10000;
+
  
   gROOT->SetBatch();
   gErrorIgnoreLevel = kWarning;
@@ -46,7 +48,14 @@ void PlotL1iso(TString inputFile, TString fitter) {
   TString name = inputFile + fitter;
   // TString type = "test";
   TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
-  tree->Add(inputFile+".root");
+  // tree->Add(inputFile+".root");
+
+  if ( inputDir == "" ) {
+    tree->Add(inputFile+".root");
+  }
+  else {
+    tree->Add(inputDir + "/Hist*.root");
+  }
 
   // TChain* tree = new TChain("L1TrackNtuple/eventTree");
   // tree->Add(name+".root");
@@ -166,11 +175,15 @@ void PlotL1iso(TString inputFile, TString fitter) {
   
   int nevt = tree->GetEntries();
   cout << "number of events = " << nevt << endl;
-
+  if ( maxEvents > 0 && nevt > maxEvents ){
+    cout << "Will only process blah : " << maxEvents << endl;
+  }
 
   // ----------------------------------------------------------------------------------------------------------------
   // event loop
   for (int i=0; i<nevt; i++) {
+
+    if (maxEvents> 0 && i > maxEvents ) break;
 
     tree->GetEntry(i,0);
     
@@ -260,7 +273,7 @@ void PlotL1iso(TString inputFile, TString fitter) {
   TFile* fout = new TFile("output_L1Iso_"+name+".root","recreate");
 
   TGraph* g_eff = new TGraph(100,passIso_nonprompt,passIso_prompt);
-  TH2F* h_dummy = new TH2F("dummy", "; efficiency (non-prompt #mu); efficiency (prompt #mu)",90,0.1,1.0,10,0.9,1.0);
+  TH2F* h_dummy = new TH2F("dummy", "; efficiency (non-prompt #mu); efficiency (prompt #mu)",90,0.1,1.0,10,0.85,1.0);
   g_eff->SetMarkerStyle(8);
   TGraph* g_eff2 = new TGraph(3,eff_nonprompt,eff_prompt);
   g_eff2->SetMarkerStyle(22);
@@ -286,7 +299,6 @@ void PlotL1iso(TString inputFile, TString fitter) {
   cc.SaveAs("isoeff_promptVSnonprompt.eps");
 
   fout->Close();
-
 
   // ----------------------------------------------------------------------------------------------------------------
   // efficiency plots  

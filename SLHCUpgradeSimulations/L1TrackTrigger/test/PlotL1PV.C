@@ -26,13 +26,15 @@ using namespace std;
 void SetPlotStyle();
 void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 
+int maxEvents = 10000;
+
 
 // ----------------------------------------------------------------------------------------------------------------
 // Main script
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void PlotL1PV(TString inputFile, TString fitter) {
+void PlotL1PV(TString inputFile, TString fitter, TString inputDir = "") {
 
   gROOT->SetBatch();
   gErrorIgnoreLevel = kWarning;
@@ -44,7 +46,14 @@ void PlotL1PV(TString inputFile, TString fitter) {
   TString name = inputFile + fitter;
   // TString type = "test";
   TChain* tree = new TChain("analyzer" + fitter + "/eventTree");
-  tree->Add(inputFile+".root");
+  // tree->Add(inputFile+".root");
+
+  if ( inputDir == "" ) {
+    tree->Add(inputFile+".root");
+  }
+  else {
+    tree->Add(inputDir + "/Hist*.root");
+  }
 
   // TChain* tree = new TChain("L1TrackNtuple/eventTree");
   // tree->Add(name+".root");
@@ -98,11 +107,15 @@ void PlotL1PV(TString inputFile, TString fitter) {
   int nevt = tree->GetEntries();
   
   cout << "number of events = " << nevt << endl;
-  
+  if ( maxEvents > 0 && nevt > maxEvents ){
+    cout << "Will only process : " << maxEvents << endl;
+  }
 
   // ----------------------------------------------------------------------------------------------------------------
   // event loop
   for (int i=0; i<nevt; i++) {      
+
+    if (maxEvents> 0 && i > maxEvents ) break;
 
     tree->GetEntry(i,0);
 
