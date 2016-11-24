@@ -44,7 +44,7 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
 
 void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, TString inputDir = "", float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
 
-  int maxEvents = 100000;
+  int maxEvents = 50000;
 
   // type:              this is the input file you want to process (minus ".root" extension)
   // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
@@ -1031,6 +1031,16 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
 	  
 	}
       }
+
+  for (int im=6; im<nRANGE_L+6; im++) {
+    if ( (tp_pt->at(it) > (float)im*0.5 ) && (tp_pt->at(it) <= (float)im*0.5+0.5) ) {
+            h_absResVsPt_pt_L[im-6]   ->Fill( fabs( matchtrk_pt->at(it)  - tp_pt->at(it) ));
+            h_absResVsPt_ptRel_L[im-6]->Fill( fabs( (matchtrk_pt->at(it) - tp_pt->at(it)) )/tp_pt->at(it) );
+            h_absResVsPt_z0_L[im-6]   ->Fill( fabs( matchtrk_z0->at(it)  - tp_z0->at(it) ) );
+            h_absResVsPt_phi_L[im-6]  ->Fill( fabs( matchtrk_phi->at(it) - tp_phi->at(it) ) );
+            h_absResVsPt_eta_L[im-6]  ->Fill( fabs( matchtrk_eta->at(it) - tp_eta->at(it) ) );
+    }
+  }
       
   for (int im=6; im<nRANGE_L+6; im++) {
     if ( (tp_pt->at(it) > (float)im*0.5 ) && (tp_pt->at(it) <= (float)im*0.5+0.5) ) {
@@ -1479,6 +1489,11 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
     h2_resVsEta_d0_90->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_d0[i], 0.90 ));
     h2_resVsEta_d0_99->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_d0[i], 0.99 ));
 
+    h2_resVsEta_eta_L_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_eta_L[i], 0.68 ));
+    h2_resVsEta_z0_L_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_z0_L[i], 0.68 ));
+    h2_resVsEta_phi_L_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_phi_L[i], 0.68 ));
+    h2_resVsEta_ptRel_L_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_ptRel_L[i], 0.68 ));
+    h2_resVsEta_d0_L_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_d0_L[i], 0.68 ));
 
     h2_resVsEta_eta_L_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_eta_L[i], 0.68 ));
     h2_resVsEta_z0_L_68->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_z0_L[i], 0.68 ));
@@ -1515,7 +1530,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
     h2_resVsEta_phi_H_99->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_phi_H[i], 0.99 ));
     h2_resVsEta_ptRel_H_99->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_ptRel_H[i], 0.99 ));
     h2_resVsEta_d0_H_99->SetBinContent(i+1, getIntervalContainingFractionOfEntries( h_absResVsEta_d0_H[i], 0.99 ));
-
 
 
     // ---------------------------------------------------------------------------------------------------
@@ -1886,6 +1900,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   // resolution vs eta
   // ----------------------------------------------------------------------------------------------------------
 
+<<<<<<< HEAD
   h2_resVsEta_eta_90->SetMinimum(0);
   h2_resVsEta_eta_90->SetMarkerStyle(20);
   h2_resVsEta_eta_90->Draw("p");
@@ -1932,7 +1947,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   makeResidualIntervalPlot( type, DIR, "resVsEta_ptRel", h2_resVsEta_ptRel_68, h2_resVsEta_ptRel_90, h2_resVsEta_ptRel_99, 0, 0.2 );
   makeResidualIntervalPlot( type, DIR, "resVsEta_d0", h2_resVsEta_d0_68, h2_resVsEta_d0_90, h2_resVsEta_d0_99, 0, 0.02 );
 
-<<<<<<< HEAD
   h2_resVsEta_d0_L_90->Draw();
   sprintf(ctxt,"p_{T} < 8 GeV");
   mySmallText(0.22,0.82,1,ctxt);
