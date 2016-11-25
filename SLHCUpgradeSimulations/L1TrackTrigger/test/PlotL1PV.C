@@ -26,7 +26,7 @@ using namespace std;
 void SetPlotStyle();
 void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 
-int maxEvents = 10000;
+int maxEvents = 300000;
 
 
 // ----------------------------------------------------------------------------------------------------------------

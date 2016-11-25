@@ -3,7 +3,7 @@ import os
 import os.path
 
 # Use this for user specific label at the end of the filename
-userLabel = ""
+userLabel = "_KF4ParamsComb"
 
 # Labels for input files
 PUtypes = ["0","140","200"]
@@ -217,6 +217,7 @@ def comparePV(what):
   if not os.path.isdir('OverlayPlots'):
     os.mkdir('OverlayPlots')
   outputFileName = "OverlayPlots/PV_{what}.pdf".format( what=what )
+
   canvas.Print(outputFileName);
 
 if __name__ == '__main__':
