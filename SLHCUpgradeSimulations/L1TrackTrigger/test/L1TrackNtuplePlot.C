@@ -44,7 +44,7 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
 
 void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, TString inputDir = "", float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
 
-  int maxEvents = 50000;
+  int maxEvents = -1;
 
   // type:              this is the input file you want to process (minus ".root" extension)
   // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
@@ -112,12 +112,12 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
     tree->Add(inputDir + "/Hist*.root");
   }
 
+  tree->SetBranchStatus("*", 0); 
   
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;
     return;
   }
-  
 
   // ----------------------------------------------------------------------------------------------------------------
   // define leafs & branches
@@ -777,7 +777,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
       if (TP_select_pdgid != 0) {
 	if (abs(tp_pdgid->at(it)) != abs(TP_select_pdgid)) continue;
       }
-      
+
       // cut on event ID (eventid=0 means the TP is from the primary interaction, so *not* selecting only eventid=0 means including stuff from pileup)
       if (TP_select_eventid == 0 && tp_eventid->at(it) != 0) continue;
 
@@ -813,7 +813,7 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
 	
       }
       
-      
+
       // ----------------------------------------------------------------------------------------------------------------
       // was the tracking particle matched to a L1 track?
       if (tp_nmatch->at(it) < 1) continue;
@@ -1900,7 +1900,6 @@ void L1TrackNtuplePlot(TString inputFile, TString fitter, int TP_select_injet=0,
   // resolution vs eta
   // ----------------------------------------------------------------------------------------------------------
 
-<<<<<<< HEAD
   h2_resVsEta_eta_90->SetMinimum(0);
   h2_resVsEta_eta_90->SetMarkerStyle(20);
   h2_resVsEta_eta_90->Draw("p");
