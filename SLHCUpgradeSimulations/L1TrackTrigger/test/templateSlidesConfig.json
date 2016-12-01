@@ -251,6 +251,17 @@
         },
 
         {
+            "title": "Baseline Metrics: Rate vs nPU",
+            "toptext": "Ntracks output per BX.  Single muon pt 2-8 GeV, single muon pt 8-100 GeV, ttbar",
+            "plots": [
+                ["../OverlayPlots/Muon_L_ntrk_pt3.pdf",     ""],
+                ["../OverlayPlots/Muon_H_ntrk_pt3.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_ntrk_pt3.pdf",   ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
             "title": "Wide BS",
             "toptext": "Efficiency vs z0: pT 2-8 GeV, pT 8-100 GeV",
             "plots": [
