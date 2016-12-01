@@ -4,7 +4,7 @@ import os.path
 
 # Use this for user specific label at the end of the filename
 # userLabel = "_globalLinearRegression2"
-userLabel = ""
+userLabel = "_KF4ParamsComb"
 
 # Labels for input files
 PUtypes = ["0","140","200"]
@@ -88,7 +88,7 @@ def mySmallText(x, y, color, text):
   l.SetTextColor(color);
   l.DrawLatex(x,y,text);
 
-def getAllHistogramsFromFile( what, sample, ptRange, pdgid ):
+def getAllHistogramsFromFile( what, sample, ptRange, pdgid, maxY=-1 ):
 
   # Make list of input trees
   inputFileNames = [];
@@ -122,16 +122,24 @@ def getAllHistogramsFromFile( what, sample, ptRange, pdgid ):
   'PU200_wot' : getHistogramFromFile(inputFiles[5], what, 68),
   }
 
-  histograms99 = {
-  'PU0_wt' : getHistogramFromFile(inputFiles[0], what, 99),
-  'PU140_wt' : getHistogramFromFile(inputFiles[1], what, 99),
-  'PU200_wt' : getHistogramFromFile(inputFiles[2], what, 99),
-  'PU0_wot' : getHistogramFromFile(inputFiles[3], what, 99),
-  'PU140_wot' : getHistogramFromFile(inputFiles[4], what, 99),
-  'PU200_wot' : getHistogramFromFile(inputFiles[5], what, 99),
+  histograms90 = {
+  'PU0_wt' : getHistogramFromFile(inputFiles[0], what, 90),
+  'PU140_wt' : getHistogramFromFile(inputFiles[1], what, 90),
+  'PU200_wt' : getHistogramFromFile(inputFiles[2], what, 90),
+  'PU0_wot' : getHistogramFromFile(inputFiles[3], what, 90),
+  'PU140_wot' : getHistogramFromFile(inputFiles[4], what, 90),
+  'PU200_wot' : getHistogramFromFile(inputFiles[5], what, 90),
   }
 
-  return histograms68, histograms99
+  if maxY > 0:
+    for n,h in histograms68.iteritems():
+      if h != None:
+        h.SetMaximum(maxY)
+    for n,h in histograms90.iteritems():
+      if h != None:
+        h.SetMaximum(maxY)
+
+  return histograms68, histograms90
 
 def getHistogramFromFile(file, histogramName, interval):
   fullHistogramName = histogramName + '_' + str(interval)
@@ -153,9 +161,12 @@ def drawHistogramWithOption(h,drawOption):
     drawOption +=', same'
   return drawOption
 
-def setupLegend(sample, histograms68, histograms99, PULabels):
-  legx = 0.25;
-  legy = 0.3;
+def setupLegend(sample, histograms68, histograms90, PULabels,legPosition=''):
+  legx = 0.2;
+  legy = 0.5;
+  if legPosition == 'bottomright':
+    legx= 0.5
+    legy=0.2
   r.gPad.cd()
   l = r.TLegend(legx,legy,legx+0.3,legy+0.18)
   l.SetFillColor(0)
@@ -180,18 +191,18 @@ def setupLegend(sample, histograms68, histograms99, PULabels):
     l.AddEntry(h,PULabels[2],"lp")
   l.SetTextFont(42)
 
-  l1 = r.TLegend(0.65,0.65,0.85,0.85)
+  l1 = r.TLegend(legx+0.3,legy,legx+0.5,legy+0.1)
   l1.SetFillStyle(0)
   l1.SetBorderSize(0)
   l1.SetTextSize(0.04)
   if ( histograms68['PU0_wt'] != None ):
-    l1.AddEntry(histograms99['PU0_wt'],"99%","p")
+    l1.AddEntry(histograms90['PU0_wt'],"90%","p")
     l1.AddEntry(histograms68['PU0_wt'],"68%","p")
   elif ( histograms68['PU140_wt'] != None ):
-    l1.AddEntry(histograms99['PU140_wt'],"99%","p")
+    l1.AddEntry(histograms90['PU140_wt'],"90%","p")
     l1.AddEntry(histograms68['PU140_wt'],"68%","p")
   elif ( histograms68['PU200_wt'] != None ):
-    l1.AddEntry(histograms99['PU200_wt'],"99%","p")
+    l1.AddEntry(histograms90['PU200_wt'],"90%","p")
     l1.AddEntry(histograms68['PU200_wt'],"68%","p")
   l1.SetTextFont(42)
 
@@ -204,7 +215,7 @@ def removeFirstBin( histograms ):
 
 # ----------------------------------------------------------------------------------------------------------------
 # Main script
-def compareResolution(what, sample, ptRange=0, pdgid=0):
+def compareResolution(what, sample, ptRange=0, pdgid=0,maxY=-1,legPosition=''):
   
   SetPlotStyle()
   # Labels for the plots
@@ -215,7 +226,7 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
     what += '_L'
 
   # Get histograms
-  histograms68, histograms99 = getAllHistogramsFromFile( what, sample, ptRange, pdgid )
+  histograms68, histograms90 = getAllHistogramsFromFile( what, sample, ptRange, pdgid, maxY )
 
   # Need to remove first (empty bin)
   if 'resVsPt2' in what and ptRange == 'H':
@@ -227,20 +238,20 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
   drawOption='p'
   if histograms68['PU0_wt'] != None:
     drawOption = drawHistogramWithOption( histograms68['PU0_wt'], drawOption )
-    setMarkerAndLineAttributes( histograms99['PU0_wt'], 1, 24)
-    drawOption = drawHistogramWithOption( histograms99['PU0_wt'], drawOption )
+    setMarkerAndLineAttributes( histograms90['PU0_wt'], 1, 24)
+    drawOption = drawHistogramWithOption( histograms90['PU0_wt'], drawOption )
 
   if histograms68['PU140_wt'] != None :
     setMarkerAndLineAttributes( histograms68['PU140_wt'], 2, 22)
     drawOption = drawHistogramWithOption( histograms68['PU140_wt'], drawOption )
-    setMarkerAndLineAttributes( histograms99['PU140_wt'], 2, 26)
-    drawOption = drawHistogramWithOption( histograms99['PU140_wt'], drawOption )
+    setMarkerAndLineAttributes( histograms90['PU140_wt'], 2, 26)
+    drawOption = drawHistogramWithOption( histograms90['PU140_wt'], drawOption )
 
   if histograms68['PU200_wt'] != None:
     setMarkerAndLineAttributes( histograms68['PU200_wt'], 9, 21)
     drawOption = drawHistogramWithOption (histograms68['PU200_wt'], drawOption)
-    setMarkerAndLineAttributes( histograms99['PU200_wt'], 9, 25)
-    drawOption = drawHistogramWithOption (histograms99['PU200_wt'], drawOption)
+    setMarkerAndLineAttributes( histograms90['PU200_wt'], 9, 25)
+    drawOption = drawHistogramWithOption (histograms90['PU200_wt'], drawOption)
 
   if 'same' in drawOption:
     drawOption = 'hist,l,same'
@@ -250,23 +261,23 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
   # Draw histograms without truncation, as lines
   if histograms68['PU0_wot'] != None:
     drawOption = drawHistogramWithOption (histograms68['PU0_wot'], drawOption )
-    setMarkerAndLineAttributes( histograms99['PU0_wot'], 1, 24, 2)
-    drawOption = drawHistogramWithOption( histograms99['PU0_wot'], drawOption )
+    setMarkerAndLineAttributes( histograms90['PU0_wot'], 1, 24, 2)
+    drawOption = drawHistogramWithOption( histograms90['PU0_wot'], drawOption )
    
   if histograms68['PU140_wot'] != None:
     setMarkerAndLineAttributes( histograms68['PU140_wot'], 2, 4)
     drawOption = drawHistogramWithOption (histograms68['PU140_wot'], drawOption )
-    setMarkerAndLineAttributes( histograms99['PU140_wot'], 2, 4, 2)
-    drawOption = drawHistogramWithOption (histograms99['PU140_wot'], drawOption )
+    setMarkerAndLineAttributes( histograms90['PU140_wot'], 2, 4, 2)
+    drawOption = drawHistogramWithOption (histograms90['PU140_wot'], drawOption )
 
   if histograms68['PU200_wot'] != None:
     setMarkerAndLineAttributes( histograms68['PU200_wot'], 9, 33)
     drawOption = drawHistogramWithOption (histograms68['PU200_wot'], drawOption )
-    setMarkerAndLineAttributes( histograms99['PU200_wot'], 9, 33, 2)
-    drawOption = drawHistogramWithOption (histograms99['PU200_wot'], drawOption )
+    setMarkerAndLineAttributes( histograms90['PU200_wot'], 9, 33, 2)
+    drawOption = drawHistogramWithOption (histograms90['PU200_wot'], drawOption )
 
   # Make the legend
-  l, l1 = setupLegend(sample,histograms68,histograms99,PULabels)
+  l, l1 = setupLegend(sample,histograms68,histograms90,PULabels,legPosition=legPosition)
   l.Draw()
   l1.Draw()
   # Save canvas
@@ -291,24 +302,24 @@ if __name__ == '__main__':
 
     if pdg == 13:
       for ptRange in ['L','H']:
-        compareResolution("resVsEta_phi_"+ptRange,"TTbar",ptRange,pdg)
-        compareResolution("resVsEta_z0_"+ptRange,"TTbar",ptRange,pdg)
-        compareResolution("resVsEta_ptRel_"+ptRange,"TTbar",ptRange,pdg)
-        compareResolution("resVsEta_eta_"+ptRange,"TTbar",ptRange,pdg)
+        compareResolution("resVsEta_phi_"+ptRange,"TTbar",ptRange,pdg,maxY=0.03)
+        compareResolution("resVsEta_z0_"+ptRange,"TTbar",ptRange,pdg,maxY=1)
+        compareResolution("resVsEta_ptRel_"+ptRange,"TTbar",ptRange,pdg,maxY=0.5)
+        compareResolution("resVsEta_eta_"+ptRange,"TTbar",ptRange,pdg,maxY=0.015)
 
-        compareResolution("resVsPt2_phi","TTbar",ptRange,pdg)
-        compareResolution("resVsPt2_z0","TTbar",ptRange,pdg)
-        compareResolution("resVsPt2_ptRel","TTbar",ptRange,pdg)
-        compareResolution("resVsPt2_eta","TTbar",ptRange,pdg)
+        compareResolution("resVsPt2_phi","TTbar",ptRange,pdg,maxY=0.03)
+        compareResolution("resVsPt2_z0","TTbar",ptRange,pdg,maxY=1)
+        compareResolution("resVsPt2_ptRel","TTbar",ptRange,pdg,maxY=0.5)
+        compareResolution("resVsPt2_eta","TTbar",ptRange,pdg,maxY=0.015)
     else:
-      compareResolution("resVsEta_phi","TTbar",0,pdg)
-      compareResolution("resVsEta_z0","TTbar",0,pdg)
-      compareResolution("resVsEta_ptRel","TTbar",0,pdg)
-      compareResolution("resVsEta_eta","TTbar",0,pdg)
-      compareResolution("resVsPt2_phi","TTbar",0,pdg)
-      compareResolution("resVsPt2_z0","TTbar",0,pdg)
-      compareResolution("resVsPt2_ptRel","TTbar",0,pdg)
-      compareResolution("resVsPt2_eta","TTbar",0,pdg)
+      compareResolution("resVsEta_phi","TTbar",0,pdg,maxY=0.03)
+      compareResolution("resVsEta_z0","TTbar",0,pdg,maxY=1)
+      compareResolution("resVsEta_ptRel","TTbar",0,pdg,maxY=0.5)
+      compareResolution("resVsEta_eta","TTbar",0,pdg,maxY=0.015)
+      compareResolution("resVsPt2_phi","TTbar",0,pdg,maxY=0.03)
+      compareResolution("resVsPt2_z0","TTbar",0,pdg,maxY=1)
+      compareResolution("resVsPt2_ptRel","TTbar",0,pdg,maxY=0.5)
+      compareResolution("resVsPt2_eta","TTbar",0,pdg,maxY=0.015)
 
   samplePdg = {
     'Muon' : 13,
@@ -317,13 +328,19 @@ if __name__ == '__main__':
   }
   for sample, pdg in samplePdg.iteritems():
     for ptRange in ['L','H']:
-      compareResolution("resVsEta_phi_"+ptRange,sample,ptRange,pdg)
-      compareResolution("resVsEta_z0_"+ptRange,sample,ptRange,pdg)
-      compareResolution("resVsEta_ptRel_"+ptRange,sample,ptRange,pdg)
-      compareResolution("resVsEta_eta_"+ptRange,sample,ptRange,pdg)
+      compareResolution("resVsEta_phi_"+ptRange,sample,ptRange,pdg,maxY=0.03)
+      compareResolution("resVsEta_z0_"+ptRange,sample,ptRange,pdg,maxY=1)
+      if ptRange == 'H':
+        compareResolution("resVsEta_ptRel_"+ptRange,sample,ptRange,pdg,maxY=0.5,legPosition='bottomright')
+      else:
+        compareResolution("resVsEta_ptRel_"+ptRange,sample,ptRange,pdg,maxY=0.5)
+      compareResolution("resVsEta_eta_"+ptRange,sample,ptRange,pdg,maxY=0.015)
 
-      compareResolution("resVsPt2_phi",sample,ptRange,pdg)
-      compareResolution("resVsPt2_z0",sample,ptRange,pdg)
-      compareResolution("resVsPt2_ptRel",sample,ptRange,pdg)
-      compareResolution("resVsPt2_eta",sample,ptRange,pdg)
+      compareResolution("resVsPt2_phi",sample,ptRange,pdg,maxY=0.03)
+      compareResolution("resVsPt2_z0",sample,ptRange,pdg,maxY=1)
+      if ptRange == 'H':
+        compareResolution("resVsPt2_ptRel",sample,ptRange,pdg,legPosition='bottomright')
+      else:
+        compareResolution("resVsPt2_ptRel",sample,ptRange,pdg)
+      compareResolution("resVsPt2_eta",sample,ptRange,pdg,maxY=0.015)
 
