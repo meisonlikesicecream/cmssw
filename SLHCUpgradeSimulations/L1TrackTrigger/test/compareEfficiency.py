@@ -87,7 +87,7 @@ def mySmallText(x, y, color, text):
   l.SetTextColor(color);
   l.DrawLatex(x,y,text);
 
-def getAllHistogramsFromFile( what, sample, ptRange, pdgid ):
+def getAllHistogramsFromFile( what, sample, ptRange, pdgid, rebin, normToOne=False ):
 
   # Make list of input trees
   inputFileNames = [];
@@ -118,6 +118,16 @@ def getAllHistogramsFromFile( what, sample, ptRange, pdgid ):
   'PU200_wot' : getHistogramFromFile(inputFiles[5], what),
   }
 
+  if rebin > 1:
+    for n, h in histograms.iteritems():
+      if h != None:
+        h.Rebin(rebin)
+
+  if normToOne:
+    for n, h in histograms.iteritems():
+      if h != None:
+        h.Scale( 1 / h.Integral() )
+
   return histograms
 
 def getHistogramFromFile(file, histogramName):
@@ -140,7 +150,7 @@ def drawHistogramWithOption(h,drawOption):
   return drawOption
 
 def setupLegend(sample, histograms, PULabels):
-  legx = 0.25;
+  legx = 0.65;
   legy = 0.22;
   r.gPad.cd()
   l = r.TLegend(legx,legy,legx+0.3,legy+0.18)
@@ -170,7 +180,7 @@ def setupLegend(sample, histograms, PULabels):
 
 # ----------------------------------------------------------------------------------------------------------------
 # Main script
-def compareEfficiency(what, sample, ptRange=0, pdgid=0):
+def compareEfficiency(what, sample, ptRange=0, pdgid=0,rebin=0, normToOne=False):
   
   SetPlotStyle()
   # Labels for the plots
@@ -178,7 +188,7 @@ def compareEfficiency(what, sample, ptRange=0, pdgid=0):
   ptRangeLabels = ["2 < P_{T} < 8 GeV","P_{T} > 8 GeV"]
 
   # Get histograms
-  histograms = getAllHistogramsFromFile( what, sample, ptRange, pdgid )
+  histograms = getAllHistogramsFromFile( what, sample, ptRange, pdgid, rebin, normToOne )
 
   canvas = r.TCanvas()
 
@@ -209,7 +219,8 @@ def compareEfficiency(what, sample, ptRange=0, pdgid=0):
   if histograms['PU200_wot'] != None:
     setMarkerAndLineAttributes( histograms['PU200_wot'], 9, 33, 2)
     drawOption = drawHistogramWithOption (histograms['PU200_wot'], drawOption )
-  r.gPad.SetGridy();
+  if 'eff' in what:
+    r.gPad.SetGridy();
 
   # Make the legend
   l = setupLegend(sample,histograms,PULabels)
@@ -220,6 +231,7 @@ def compareEfficiency(what, sample, ptRange=0, pdgid=0):
   if not os.path.isdir(outputDir):
     os.mkdir(outputDir)
   outputFileName = "{outputDir}/{sample}_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
+
   if sample == 'TTbar':
     if pdgid == 13:
       outputFileName = "{outputDir}/{sample}_muons_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
@@ -227,6 +239,10 @@ def compareEfficiency(what, sample, ptRange=0, pdgid=0):
       outputFileName = "{outputDir}/{sample}_injet_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
     elif pdgid == 2:
       outputFileName = "{outputDir}/{sample}_injet_highpt_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
+
+  if 'ntrk_pt3' in what and sample != 'TTbar':
+    outputFileName = "{outputDir}/{sample}_{ptRange}_{what}.pdf".format( outputDir=outputDir, ptRange=ptRange, sample = sample, what=what )
+
   canvas.Print(outputFileName);
 
 if __name__ == '__main__':
@@ -240,10 +256,13 @@ if __name__ == '__main__':
     compareEfficiency("eff_pt","TTbar",0,pdg)
     compareEfficiency("eff_eta","TTbar",0,pdg)
 
+    compareEfficiency("ntrk_pt3","TTbar",0,pdg,rebin=4, normToOne=True)
+
+
   samplePdg = {
   'Muon' : 13,
-  'Electron' : 11,
-  'Pion' : 211
+  'Electron11' : 11,
+  'Pion' : 2
   }
   for sample, pdg in samplePdg.iteritems():
     for ptRange in ['L','H']:
@@ -252,4 +271,7 @@ if __name__ == '__main__':
 
   compareEfficiency("eff_z0_L",'MuonFLATBS','L',13)
   compareEfficiency("eff_z0_H",'MuonFLATBS','H',13)
+
+  compareEfficiency("ntrk_pt3","Muon",'L',13,rebin=4, normToOne=True)
+  compareEfficiency("ntrk_pt3","Muon",'H',13,rebin=4, normToOne=True)
 
