@@ -34,7 +34,7 @@ void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 
 void PlotL1iso(TString inputFile, TString fitter, TString inputDir = "") {
 
-  int maxEvents = 10000;
+  int maxEvents = -1;
 
  
   gROOT->SetBatch();
@@ -65,6 +65,7 @@ void PlotL1iso(TString inputFile, TString fitter, TString inputDir = "") {
     return;
   }
   
+  tree->SetBranchStatus("*", 0); 
 
   // ----------------------------------------------------------------------------------------------------------------
   // define leafs & branches

@@ -26,7 +26,6 @@ using namespace std;
 void SetPlotStyle();
 void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 
-int maxEvents = 300000;
 
 
 // ----------------------------------------------------------------------------------------------------------------
@@ -35,6 +34,8 @@ int maxEvents = 300000;
 
 
 void PlotL1PV(TString inputFile, TString fitter, TString inputDir = "") {
+
+  int maxEvents = -1;
 
   gROOT->SetBatch();
   gErrorIgnoreLevel = kWarning;
@@ -57,6 +58,7 @@ void PlotL1PV(TString inputFile, TString fitter, TString inputDir = "") {
 
   // TChain* tree = new TChain("L1TrackNtuple/eventTree");
   // tree->Add(name+".root");
+  tree->SetBranchStatus("*", 0); 
 
 
   // ----------------------------------------------------------------------------------------------------------------

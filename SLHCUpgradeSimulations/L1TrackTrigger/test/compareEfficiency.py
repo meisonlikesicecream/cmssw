@@ -261,8 +261,8 @@ if __name__ == '__main__':
 
   samplePdg = {
   'Muon' : 13,
-  'Electron11' : 11,
-  'Pion' : 2
+  'Electron' : 11,
+  'Pion' : 211
   }
   for sample, pdg in samplePdg.iteritems():
     for ptRange in ['L','H']:
