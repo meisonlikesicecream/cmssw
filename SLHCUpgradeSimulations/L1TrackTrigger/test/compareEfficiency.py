@@ -227,7 +227,7 @@ def compareEfficiency(what, sample, ptRange=0, pdgid=0,rebin=0, normToOne=False)
   l.Draw()
 
   # Save canvas
-  outputDir = 'OverlayPlots{userLabel}'.format(userLabel=userLabel)
+  outputDir = 'OverlayPlots'
   if not os.path.isdir(outputDir):
     os.mkdir(outputDir)
   outputFileName = "{outputDir}/{sample}_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )

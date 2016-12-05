@@ -281,7 +281,7 @@ def compareResolution(what, sample, ptRange=0, pdgid=0,maxY=-1,legPosition=''):
   l.Draw()
   l1.Draw()
   # Save canvas
-  outputDir = 'OverlayPlots{userLabel}'.format(userLabel=userLabel)
+  outputDir = 'OverlayPlots'
   if not os.path.isdir(outputDir):
     os.mkdir(outputDir)
   outputFileName = "{outputDir}/{sample}_{what}.pdf".format( outputDir = outputDir, sample = sample, what=what )
