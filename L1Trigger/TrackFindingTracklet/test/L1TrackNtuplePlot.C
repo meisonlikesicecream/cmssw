@@ -40,7 +40,7 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=2.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
+void L1TrackNtuplePlot(TString file, TString type, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
 
   // type:              this is the input file you want to process (minus ".root" extension)
   // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
@@ -93,8 +93,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
-  TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  tree->Add(type+".root");
+  TChain* tree = new TChain("L1TrackNtuple_"+type+"/eventTree");
+  tree->Add(file+".root");
   
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;
@@ -1743,7 +1743,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   char ctxt[500];
   TCanvas c;
 
-  TString DIR = "TrkPlots/";
+  TString DIR = "TrkPlots/"+type+"_";
 
   // plots overlaying 68, 90, 99% confidence levels]
   // if (doDetailedPlots) {
@@ -1796,42 +1796,42 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h2_resVsPt_pt_90->SetMarkerStyle(20);
   h2_resVsPt_pt_90->Draw("p");
   h2_resVsPt_pt_90->Write();
-  c.SaveAs(DIR+type+"_resVsPt_pt_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_pt_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_pt_90.png");
 
   h2_resVsPt_ptRel_90->SetMinimum(0);
   h2_resVsPt_ptRel_90->SetMarkerStyle(20);
   h2_resVsPt_ptRel_90->Draw("p");
   h2_resVsPt_ptRel_90->Write();
-  c.SaveAs(DIR+type+"_resVsPt_ptRel_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_ptRel_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_ptRel_90.png");
 
   h2_resVsPt_z0_90->SetMinimum(0);
   h2_resVsPt_z0_90->SetMarkerStyle(20);
   h2_resVsPt_z0_90->Draw("p");
   h2_resVsPt_z0_90->Write();
-  c.SaveAs(DIR+type+"_resVsPt_z0_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_z0_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_z0_90.png");
 
   h2_resVsPt_phi_90->SetMinimum(0);
   h2_resVsPt_phi_90->SetMarkerStyle(20);
   h2_resVsPt_phi_90->Draw("p");
   h2_resVsPt_phi_90->Write();
-  c.SaveAs(DIR+type+"_resVsPt_phi_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_phi_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_phi_90.png");
 
   h2_resVsPt_eta_90->SetMinimum(0);
   h2_resVsPt_eta_90->SetMarkerStyle(20);
   h2_resVsPt_eta_90->Draw("p");
   h2_resVsPt_eta_90->Write();
-  c.SaveAs(DIR+type+"_resVsPt_eta_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_eta_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_eta_90.png");
 
   /*
   h2_resVsPt_phi_90->SetMinimum(0);
   h2_resVsPt_d0_90->SetMarkerStyle(20);
   h2_resVsPt_d0_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsPt_d0_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_d0_90.pdf");
   c.SaveAs(DIR+type+"_resVsPt_d0_90.png");
   */
 
@@ -1873,98 +1873,98 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h2_resVsEta_eta_90->SetMinimum(0);
   h2_resVsEta_eta_90->SetMarkerStyle(20);
   h2_resVsEta_eta_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_eta_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_eta_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_eta_90.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_eta_L_90->Draw("p");
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_eta_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_eta_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_eta_L_90.png");
     
     h2_resVsEta_eta_H_90->Draw("p");
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_eta_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_eta_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_eta_H_90.png");
   }
 
   h2_resVsEta_z0_90->SetMinimum(0);
   h2_resVsEta_z0_90->SetMarkerStyle(20);
   h2_resVsEta_z0_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_z0_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_z0_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_z0_90.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_z0_L_90->Draw();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_z0_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_z0_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_z0_L_90.png");
     
     h2_resVsEta_z0_H_90->Draw();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_z0_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_z0_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_z0_H_90.png");
   }
 
   /*
   h2_resVsEta_d0_90->Draw();
-  c.SaveAs(DIR+type+"_resVsEta_d0_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_d0_90.png");
 
   h2_resVsEta_d0_L_90->Draw();
   sprintf(ctxt,"p_{T} < 8 GeV");
   mySmallText(0.22,0.82,1,ctxt);
-  c.SaveAs(DIR+type+"_resVsEta_d0_L_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_L_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_d0_L_90.png");
 
   h2_resVsEta_d0_H_90->Draw();
   sprintf(ctxt,"p_{T} > 8 GeV");
   mySmallText(0.22,0.82,1,ctxt);
-  c.SaveAs(DIR+type+"_resVsEta_d0_H_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_H_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_d0_H_90.png");
   */
 
   h2_resVsEta_phi_90->SetMinimum(0);
   h2_resVsEta_phi_90->SetMarkerStyle(20);
   h2_resVsEta_phi_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_phi_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_phi_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_phi_90.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_phi_L_90->Draw();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_phi_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_phi_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_phi_L_90.png");
     
     h2_resVsEta_phi_H_90->Draw();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_phi_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_phi_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_phi_H_90.png");
   }
 
   h2_resVsEta_ptRel_90->SetMinimum(0);
   h2_resVsEta_ptRel_90->SetMarkerStyle(20);
   h2_resVsEta_ptRel_90->Draw("p");
-  c.SaveAs(DIR+type+"_resVsEta_ptRel_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_90.pdf");
   c.SaveAs(DIR+type+"_resVsEta_ptRel_90.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_ptRel_L_90->Draw();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.png");
     
     h2_resVsEta_ptRel_H_90->Draw();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.eps");
+    c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.pdf");
     c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.png");
 
     h2_resVsEta_eta->Write();
@@ -2009,13 +2009,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     h2_resVsPhi_pt_90->SetMinimum(0);
     h2_resVsPhi_pt_90->SetMarkerStyle(20);
     h2_resVsPhi_pt_90->Draw("p");
-    c.SaveAs(DIR+type+"_resVsPhi_pt_90.eps");
+    c.SaveAs(DIR+type+"_resVsPhi_pt_90.pdf");
     c.SaveAs(DIR+type+"_resVsPhi_pt_90.png");
     
     h2_resVsPhi_ptRel_90->SetMinimum(0);
     h2_resVsPhi_ptRel_90->SetMarkerStyle(20);
     h2_resVsPhi_ptRel_90->Draw("p");
-    c.SaveAs(DIR+type+"_resVsPhi_ptRel_90.eps");
+    c.SaveAs(DIR+type+"_resVsPhi_ptRel_90.pdf");
     c.SaveAs(DIR+type+"_resVsPhi_ptRel_90.png");
   }
 
@@ -2036,14 +2036,14 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   sprintf(ctxt,"|eta| < 2.4");
   mySmallText(0.52,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_match_trk_chi2.png");
-  c.SaveAs(DIR+type+"_match_trk_chi2.eps");
+  c.SaveAs(DIR+type+"_match_trk_chi2.pdf");
     
   h_match_trk_chi2_dof->Draw();
   h_match_trk_chi2_dof->Write();
   sprintf(ctxt,"|eta| < 2.4");
   mySmallText(0.52,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_match_trk_chi2_dof.png");
-  c.SaveAs(DIR+type+"_match_trk_chi2_dof.eps");
+  c.SaveAs(DIR+type+"_match_trk_chi2_dof.pdf");
 
   if (doDetailedPlots) {
     h_match_trk_chi2_C_L->Write();
@@ -2180,12 +2180,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // draw and save plots
   h_eff_pt->Draw();
   h_eff_pt->Write();
-  c.SaveAs(DIR+type+"_eff_pt.eps");
+  c.SaveAs(DIR+type+"_eff_pt.pdf");
   c.SaveAs(DIR+type+"_eff_pt.png");
 
   if (type.Contains("Mu")) {
     h_eff_pt->GetYaxis()->SetRangeUser(0.8,1.01); // zoomed-in plot
-    c.SaveAs(DIR+type+"_eff_pt_zoom.eps");
+    c.SaveAs(DIR+type+"_eff_pt_zoom.pdf");
     c.SaveAs(DIR+type+"_eff_pt_zoom.png");
   }
 
@@ -2194,12 +2194,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     h_eff_pt_L->Write();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_pt_L.eps");
+    c.SaveAs(DIR+type+"_eff_pt_L.pdf");
     c.SaveAs(DIR+type+"_eff_pt_L.png");
 
     if (type.Contains("Mu")) {
       h_eff_pt_L->GetYaxis()->SetRangeUser(0.8,1.01); // zoomed-in plot
-      c.SaveAs(DIR+type+"_eff_pt_L_zoom.eps");
+      c.SaveAs(DIR+type+"_eff_pt_L_zoom.pdf");
       c.SaveAs(DIR+type+"_eff_pt_L_zoom.png");
     }
     
@@ -2207,25 +2207,25 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     h_eff_pt_LC->Write();
     sprintf(ctxt,"p_{T} < 8 GeV, |#eta|<1.0");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_pt_LC.eps");
+    c.SaveAs(DIR+type+"_eff_pt_LC.pdf");
     c.SaveAs(DIR+type+"_eff_pt_LC.png");
     
     h_eff_pt_H->Draw();
     h_eff_pt_H->Write();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_pt_H.eps");
+    c.SaveAs(DIR+type+"_eff_pt_H.pdf");
     c.SaveAs(DIR+type+"_eff_pt_H.png");
     //  }
 
   h_eff_eta->Draw();
   h_eff_eta->Write();
-  c.SaveAs(DIR+type+"_eff_eta.eps");
+  c.SaveAs(DIR+type+"_eff_eta.pdf");
   c.SaveAs(DIR+type+"_eff_eta.png");
   
   if (type.Contains("Mu")) {
     h_eff_eta->GetYaxis()->SetRangeUser(0.8,1.01); // zoomed-in plot
-    c.SaveAs(DIR+type+"_eff_eta_zoom.eps");
+    c.SaveAs(DIR+type+"_eff_eta_zoom.pdf");
     c.SaveAs(DIR+type+"_eff_eta_zoom.png");
   }
 
@@ -2234,19 +2234,19 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     h_eff_eta_L->Write();
     sprintf(ctxt,"p_{T} < 8 GeV");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_eta_L.eps");
+    c.SaveAs(DIR+type+"_eff_eta_L.pdf");
     c.SaveAs(DIR+type+"_eff_eta_L.png");
     
     h_eff_eta_H->Draw();
     h_eff_eta_H->Write();
     sprintf(ctxt,"p_{T} > 8 GeV");
     mySmallText(0.45,0.5,1,ctxt);
-    c.SaveAs(DIR+type+"_eff_eta_H.eps");
+    c.SaveAs(DIR+type+"_eff_eta_H.pdf");
     c.SaveAs(DIR+type+"_eff_eta_H.png");
     
     h_eff_z0->Draw();
     h_eff_z0->Write();
-    c.SaveAs(DIR+type+"_eff_z0.eps");
+    c.SaveAs(DIR+type+"_eff_z0.pdf");
     c.SaveAs(DIR+type+"_eff_z0.png");
 
     h_eff_z0_L->Write();
@@ -2254,18 +2254,18 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
     h_eff_phi->Draw();
     h_eff_phi->Write();
-    c.SaveAs(DIR+type+"_eff_phi.eps");
+    c.SaveAs(DIR+type+"_eff_phi.pdf");
     c.SaveAs(DIR+type+"_eff_phi.png");
     
     if (type.Contains("Mu")) {
       h_eff_phi->GetYaxis()->SetRangeUser(0.8,1.01); // zoomed-in plot
-      c.SaveAs(DIR+type+"_eff_phi_zoom.eps");
+      c.SaveAs(DIR+type+"_eff_phi_zoom.pdf");
       c.SaveAs(DIR+type+"_eff_phi_zoom.png");
     }
     
     h_eff_d0->Draw();
     h_eff_d0->Write();
-    c.SaveAs(DIR+type+"_eff_d0.eps");
+    c.SaveAs(DIR+type+"_eff_d0.pdf");
     c.SaveAs(DIR+type+"_eff_d0.png");
   }
   
@@ -2286,35 +2286,35 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     rms = h_res_pt->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_pt.eps");
+    c.SaveAs(DIR+type+"_res_pt.pdf");
     c.SaveAs(DIR+type+"_res_pt.png");
     
     h_res_ptRel->Draw();
     rms = h_res_ptRel->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_ptRel.eps");
+    c.SaveAs(DIR+type+"_res_ptRel.pdf");
     c.SaveAs(DIR+type+"_res_ptRel.png");
 
     h_res_eta->Draw();
     rms = h_res_eta->GetRMS();
     sprintf(ctxt,"RMS = %.3e",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_eta.eps");
+    c.SaveAs(DIR+type+"_res_eta.pdf");
     c.SaveAs(DIR+type+"_res_eta.png");
     
     h_res_phi->Draw();
     rms = h_res_phi->GetRMS();
     sprintf(ctxt,"RMS = %.3e",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_phi.eps");
+    c.SaveAs(DIR+type+"_res_phi.pdf");
     c.SaveAs(DIR+type+"_res_phi.png");
     
     h_res_z0->Draw();
     rms = h_res_z0->GetRMS();
     sprintf(ctxt,"RMS = %.4f",rms);	
     mySmallText(0.22,0.82,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0.eps");
+    c.SaveAs(DIR+type+"_res_z0.pdf");
     c.SaveAs(DIR+type+"_res_z0.png");
     
     h_res_z0_C->Draw();
@@ -2323,7 +2323,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| < 0.8");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C.eps");
+    c.SaveAs(DIR+type+"_res_z0_C.pdf");
     c.SaveAs(DIR+type+"_res_z0_C.png");
     
     h_res_z0_I->Draw();
@@ -2332,7 +2332,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"0.8 < |eta| < 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I.eps");
+    c.SaveAs(DIR+type+"_res_z0_I.pdf");
     c.SaveAs(DIR+type+"_res_z0_I.png");
     
     h_res_z0_F->Draw();
@@ -2341,7 +2341,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| > 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F.eps");
+    c.SaveAs(DIR+type+"_res_z0_F.pdf");
     c.SaveAs(DIR+type+"_res_z0_F.png");
 
     h_res_z0_C_L->Draw();
@@ -2351,7 +2351,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| < 0.8");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_C_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_C_L.png");
     
     h_res_z0_I_L->Draw();
@@ -2361,7 +2361,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"0.8 < |eta| < 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_I_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_I_L.png");
     
     h_res_z0_F_L->Draw();
@@ -2371,7 +2371,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| > 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_F_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_F_L.png");
 
     h_res_z0_C_H->Draw();
@@ -2381,7 +2381,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| < 0.8");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_C_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_C_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_C_H.png");
     
     h_res_z0_I_H->Draw();
@@ -2391,7 +2391,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"0.8 < |eta| < 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_I_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_I_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_I_H.png");
     
     h_res_z0_F_H->Draw();
@@ -2401,7 +2401,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"|eta| > 1.6");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_F_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_F_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_F_H.png");
 
     h_res_z0_L->Draw();
@@ -2411,7 +2411,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"p_{T} < 5 GeV");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_L.eps");
+    c.SaveAs(DIR+type+"_res_z0_L.pdf");
     c.SaveAs(DIR+type+"_res_z0_L.png");
     
     h_res_z0_H->Draw();
@@ -2421,7 +2421,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     mySmallText(0.22,0.82,1,ctxt);
     sprintf(ctxt,"p_{T} > 15 GeV");
     mySmallText(0.22,0.76,1,ctxt);
-    c.SaveAs(DIR+type+"_res_z0_H.eps");
+    c.SaveAs(DIR+type+"_res_z0_H.pdf");
     c.SaveAs(DIR+type+"_res_z0_H.png");
 
     if (h_res_d0->GetEntries()>0) {
@@ -2429,7 +2429,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       rms = h_res_d0->GetRMS();
       sprintf(ctxt,"RMS = %.4f",rms);	
       mySmallText(0.22,0.82,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0.eps");
+      c.SaveAs(DIR+type+"_res_d0.pdf");
       c.SaveAs(DIR+type+"_res_d0.png");
 
       h_res_d0_C->Draw();
@@ -2439,7 +2439,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| < 0.8");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C.eps");
+      c.SaveAs(DIR+type+"_res_d0_C.pdf");
       c.SaveAs(DIR+type+"_res_d0_C.png");
     
       h_res_d0_I->Draw();
@@ -2449,7 +2449,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"0.8 < |eta| < 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I.eps");
+      c.SaveAs(DIR+type+"_res_d0_I.pdf");
       c.SaveAs(DIR+type+"_res_d0_I.png");
     
       h_res_d0_F->Draw();
@@ -2459,7 +2459,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| > 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F.eps");
+      c.SaveAs(DIR+type+"_res_d0_F.pdf");
       c.SaveAs(DIR+type+"_res_d0_F.png");
     
       h_res_d0_C_L->Draw();
@@ -2469,7 +2469,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| < 0.8");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_C_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_C_L.png");
     
       h_res_d0_I_L->Draw();
@@ -2479,7 +2479,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"0.8 < |eta| < 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_I_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_I_L.png");
     
       h_res_d0_F_L->Draw();
@@ -2489,7 +2489,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| > 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_F_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_F_L.png");
       
       h_res_d0_C_H->Draw();
@@ -2499,7 +2499,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| < 0.8");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_C_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_C_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_C_H.png");
     
       h_res_d0_I_H->Draw();
@@ -2509,7 +2509,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"0.8 < |eta| < 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_I_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_I_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_I_H.png");
       
       h_res_d0_F_H->Draw();
@@ -2519,7 +2519,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"|eta| > 1.6");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_F_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_F_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_F_H.png");
       
       h_res_d0_L->Draw();
@@ -2529,7 +2529,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"p_{T} < 5 GeV");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_L.eps");
+      c.SaveAs(DIR+type+"_res_d0_L.pdf");
       c.SaveAs(DIR+type+"_res_d0_L.png");
       
       h_res_d0_H->Draw();
@@ -2539,7 +2539,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       mySmallText(0.22,0.82,1,ctxt);
       sprintf(ctxt,"p_{T} > 15 GeV");
       mySmallText(0.22,0.76,1,ctxt);
-      c.SaveAs(DIR+type+"_res_d0_H.eps");
+      c.SaveAs(DIR+type+"_res_d0_H.pdf");
       c.SaveAs(DIR+type+"_res_d0_H.png");
     }
   }
@@ -2579,7 +2579,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
   if (doDetailedPlots) {
     c.SaveAs(DIR+type+"_trackrate_vspt.png");
-    c.SaveAs(DIR+type+"_trackrate_vspt.eps");
+    c.SaveAs(DIR+type+"_trackrate_vspt.pdf");
   }
 
   // ---------------------------------------------------------------------------------------------------------
@@ -2611,19 +2611,19 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     
     h_frac_sumpt_vspt->Draw();
     c.SaveAs(DIR+type+"_sumpt_vspt.png"); 
-    c.SaveAs(DIR+type+"_sumpt_vspt.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_vspt.pdf"); 
     
     h_frac_sumpt_vseta->Draw();
     c.SaveAs(DIR+type+"_sumpt_vseta.png"); 
-    c.SaveAs(DIR+type+"_sumpt_vseta.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_vseta.pdf"); 
     
     h_matchfrac_sumpt_vspt->Draw();
     c.SaveAs(DIR+type+"_sumpt_match_vspt.png"); 
-    c.SaveAs(DIR+type+"_sumpt_match_vspt.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_match_vspt.pdf"); 
     
     h_matchfrac_sumpt_vseta->Draw();
     c.SaveAs(DIR+type+"_sumpt_match_vseta.png"); 
-    c.SaveAs(DIR+type+"_sumpt_match_vseta.eps"); 
+    c.SaveAs(DIR+type+"_sumpt_match_vseta.pdf"); 
   }
   */
 
@@ -2634,12 +2634,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     h_ntrk_pt3->Draw();
     h_ntrk_pt3->Write();
     c.SaveAs(DIR+type+"_trackrate_pt3_perevt.png");
-    c.SaveAs(DIR+type+"_trackrate_pt3_perevt.eps");
+    c.SaveAs(DIR+type+"_trackrate_pt3_perevt.pdf");
     
     h_ntrk_pt10->Draw();
     h_ntrk_pt10->Write();
     c.SaveAs(DIR+type+"_trackrate_pt10_perevt.png");
-    c.SaveAs(DIR+type+"_trackrate_pt10_perevt.eps");
+    c.SaveAs(DIR+type+"_trackrate_pt10_perevt.pdf");
   }
 
   fout->Close();
