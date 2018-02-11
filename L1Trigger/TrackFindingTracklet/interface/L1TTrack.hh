@@ -12,6 +12,37 @@ public:
 
   L1TTrack() { };
 
+  // Constructor without performing track fit
+  L1TTrack(const L1TTracklet& seed,
+    double rinv_fit, double phi0_fit,
+    double z0_fit, double t_fit,
+    const vector<L1TStub>& stubs_fit,
+    double chisq_fit
+    ) {
+        // Info on seed
+        seed_=seed;
+        rinv_=seed.rinv();
+        phi0_=seed.phi0();
+        z0_=seed.z0();
+        t_=seed.t();
+
+        // Fitted track info
+        stubs_=seed.getStubs();
+        rinvfit_=rinv_fit;
+        phi0fit_=phi0_fit;
+        z0fit_=z0_fit;
+        tfit_=t_fit;
+        rinvfit4par_=rinv_fit;
+        phi0fit4par_=phi0_fit;
+        z0fit4par_=z0_fit;
+        tfit4par_=t_fit;
+        stubs_=stubs_fit;
+        chisq_=chisq_fit;
+        chisq4par_=chisq_fit;
+
+  }
+
+
   L1TTrack(const L1TTracklet& seed) {
 
     seed_=seed;
