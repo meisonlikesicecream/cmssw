@@ -95,6 +95,12 @@
 //#include "SLHCUpgradeSimulations/L1TrackTrigger/interface/StubPtConsistency.h"
 
 //////////////
+
+//////////////
+// TMTT
+#include "TMTrackTrigger/TMTrackFinder/interface/Settings.h"
+
+
 // STD HEADERS
 #include <memory>
 #include <string>
@@ -115,23 +121,23 @@ using namespace edm;
 /////////////////////////////////////
 // this class is needed to make a map
 // between different types of stubs
-struct L1TStubCompare 
-{
-public:
-  bool operator()(const L1TStub& x, const L1TStub& y) const {
-    if (x.layer() != y.layer()) return (y.layer()>x.layer());
-    else {
-      if (x.ladder() != y.ladder()) return (y.ladder()>x.ladder());
-      else {
-	if (x.module() != y.module()) return (y.module()>x.module());
-	else {
-	  if (x.iz() != y.iz()) return (y.iz()>x.iz());
-	  else return (x.iphi()>y.iphi());
-	}
-      }
-    }
-  }
-};
+// struct L1TStubCompare 
+// {
+// public:
+//   bool operator()(const L1TStub& x, const L1TStub& y) const {
+//     if (x.layer() != y.layer()) return (y.layer()>x.layer());
+//     else {
+//       if (x.ladder() != y.ladder()) return (y.ladder()>x.ladder());
+//       else {
+// 	if (x.module() != y.module()) return (y.module()>x.module());
+// 	else {
+// 	  if (x.iz() != y.iz()) return (y.iz()>x.iz());
+// 	  else return (x.iphi()>y.iphi());
+// 	}
+//       }
+//     }
+//   }
+// };
 
 
 class L1TrackProducer : public edm::EDProducer
@@ -180,6 +186,10 @@ private:
   edm::EDGetTokenT< std::vector< TrackingParticle > > TrackingParticleToken_;
   edm::EDGetTokenT< std::vector< TrackingVertex > > TrackingVertexToken_;
 
+  /// TMTT
+  edm::ParameterSet tmttConfigSettings_;
+  TMTT::Settings *settings_;
+
   /// ///////////////// ///
   /// MANDATORY METHODS ///
   virtual void beginRun( const edm::Run& run, const edm::EventSetup& iSetup );
@@ -210,6 +220,8 @@ L1TrackProducer::L1TrackProducer(edm::ParameterSet const& iConfig) :
   TrackingParticleToken_(consumes< std::vector< TrackingParticle > >(TrackingParticleInputTag)),
   TrackingVertexToken_(consumes< std::vector< TrackingVertex > >(TrackingVertexInputTag))
 
+  tmttConfigSettings_(config.getParameter<edm::ParameterSet>("tmttSettings"))
+
 {
 
   produces< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > >( "Level1TTTracks" ).setBranchAlias("Level1TTTracks");
@@ -224,6 +236,9 @@ L1TrackProducer::L1TrackProducer(edm::ParameterSet const& iConfig) :
   if (asciiEventOutName_!="") {
     asciiEventOut_.open(asciiEventOutName_.c_str());
   }
+
+  settings_ = new TMTT::Settings(tmttConfigSettings_);
+
 
 }
 
@@ -289,6 +304,7 @@ void L1TrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   const MagneticField* theMagneticField = magneticFieldHandle.product();
   double mMagneticFieldStrength = theMagneticField->inTesla(GlobalPoint(0,0,0)).z();
 
+  settings_->setBfield(mMagneticFieldStrength);
 
   ////////////
   // GET BS //

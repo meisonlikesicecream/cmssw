@@ -113,7 +113,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      L[0]->fitTracks();
+      //L[0]->fitTracks();
+      L[0]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(L[0]->allTracks());
@@ -144,7 +145,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      L[1]->fitTracks();
+      //L[1]->fitTracks();
+      L[1]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(L[1]->allTracks());
@@ -175,7 +177,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      L[2]->fitTracks();
+      //L[2]->fitTracks();
+      L[2]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(L[2]->allTracks());
@@ -206,7 +209,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      L[3]->fitTracks();
+      //L[3]->fitTracks();
+      L[3]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(L[3]->allTracks());
@@ -225,7 +229,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      L[4]->fitTracks();
+      //L[4]->fitTracks();
+      L[4]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(L[4]->allTracks());
@@ -249,7 +254,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      F[0]->fitTracks();
+      //F[0]->fitTracks();
+      F[0]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
 
       allTracks.addTracks(F[0]->allTracks());
@@ -273,7 +279,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      F[1]->fitTracks();
+      //F[1]->fitTracks();
+      F[1]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
 
       allTracks.addTracks(F[1]->allTracks());
@@ -297,7 +304,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      F[2]->fitTracks();
+      //F[2]->fitTracks();
+      F[2]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(F[2]->allTracks());
@@ -321,7 +329,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      F[3]->fitTracks();
+      //F[3]->fitTracks();
+      F[3]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(F[3]->allTracks());
@@ -345,7 +354,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      B[0]->fitTracks();
+      //B[0]->fitTracks();
+      B[0]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(B[0]->allTracks());
@@ -369,7 +379,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      B[1]->fitTracks();
+      //B[1]->fitTracks();
+      B[1]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(B[1]->allTracks());
@@ -393,7 +404,8 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      B[2]->fitTracks();
+      //B[2]->fitTracks();
+      B[2]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
       
       allTracks.addTracks(B[2]->allTracks());
@@ -417,12 +429,12 @@
       //matchtimer.stop();
 
       //fittimer.start();
-      B[3]->fitTracks();
+      //B[3]->fitTracks();
+      B[3]->fitTracks( settings_, stubMap, theTrackerGeom, tTopo );
       //fittimer.stop();
 
       allTracks.addTracks(B[3]->allTracks());
     }      
-
 
     // ------------------------------------------------------------------------------------------
     // do duplicate removal
