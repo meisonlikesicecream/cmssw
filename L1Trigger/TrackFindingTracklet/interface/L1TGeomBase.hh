@@ -45,10 +45,10 @@ public:
   // Fit tracks using a method from TMTT
   void fitTracks( TMTT::Settings* settings, stubMapType stubMap, const TrackerGeometry* theTrackerGeom, const TrackerTopology* tTopo ) {
 
-    TMTT::KF4ParamsComb fitter(settings, 4, "KF4ParamsComb" );
-    // To run SimpleLR, uncomment these two lines (and comment out previous line)
-    // TMTT::SimpleLR fitter(settings);
-    // fitter.initRun();
+    TMTT::SimpleLR fitter(settings);
+    fitter.initRun();
+    // To run with the KF fitter, replace the previous two lines with the following
+    // TMTT::KF4ParamsComb fitter(settings, 4, "KF4ParamsComb" );
 
     for(int iSector=0;iSector<NSector_;iSector++){
       for(unsigned int i=0;i<tracklets_[iSector].size();i++){ 
