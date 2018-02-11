@@ -258,7 +258,23 @@ private:
 
 };
 
-
+struct L1TStubCompare 
+{
+public:
+  bool operator()(const L1TStub& x, const L1TStub& y) const {
+    if (x.layer() != y.layer()) return (y.layer()>x.layer());
+    else {
+      if (x.ladder() != y.ladder()) return (y.ladder()>x.ladder());
+      else {
+    if (x.module() != y.module()) return (y.module()>x.module());
+    else {
+      if (x.iz() != y.iz()) return (y.iz()>x.iz());
+      else return (x.iphi()>y.iphi());
+    }
+      }
+    }
+  }
+};
 
 
 #endif
