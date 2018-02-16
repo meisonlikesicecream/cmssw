@@ -95,11 +95,17 @@ public:
             // The KF fitter needs to know which TMTT eta region the track is in
             // As it uses this information to know which layers the stubs are in (4 possibilities)
             // SimpleLR doesn't use this information, other than for debugging and for storing in output L1fittedTrack
+
             unsigned int iEtaReg = 8;
             double trackletEta = fabs(-log(tan(0.5*(0.25*8*atan(1.0)-atan(tracklet.t())))));
-            if ( trackletEta > 1.95 ) iEtaReg = 0;
-            else if ( trackletEta > 1.43 ) iEtaReg = 2;
+            if ( trackletEta > 2.16 ) iEtaReg = 0;
+            else if ( trackletEta > 1.95 ) iEtaReg = 1;
+            else if ( trackletEta > 1.7 ) iEtaReg = 2;
+            else if ( trackletEta > 1.43 ) iEtaReg = 3;
             else if ( trackletEta > 1.16 ) iEtaReg = 4;
+            else if ( trackletEta > 0.89 ) iEtaReg = 5;
+            else if ( trackletEta > 0.61 ) iEtaReg = 6;
+            else if ( trackletEta > 0.31 ) iEtaReg = 7;
             else iEtaReg = 8;
 
             // Create L1track3D object
