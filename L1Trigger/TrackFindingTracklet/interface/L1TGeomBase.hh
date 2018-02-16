@@ -16,7 +16,7 @@ using namespace std;
 #include "TMTrackTrigger/TMTrackFinder/interface/Stub.h"
 #include "TMTrackTrigger/TMTrackFinder/interface/KF4ParamsComb.h"
 #include "TMTrackTrigger/TMTrackFinder/interface/SimpleLR.h"
-
+#include "TMTrackTrigger/TMTrackFinder/interface/Sector.h"
 
 class L1TGeomBase{
 
@@ -45,10 +45,11 @@ public:
   // Fit tracks using a method from TMTT
   void fitTracks( TMTT::Settings* settings, stubMapType stubMap, const TrackerGeometry* theTrackerGeom, const TrackerTopology* tTopo ) {
 
-    TMTT::SimpleLR fitter(settings);
-    fitter.initRun();
-    // To run with the KF fitter, replace the previous two lines with the following
-    // TMTT::KF4ParamsComb fitter(settings, 4, "KF4ParamsComb" );
+
+    TMTT::KF4ParamsComb fitter(settings, 4, "KF4ParamsComb" );
+    // To run with the LR fitter, replace the previous line with the following two lines
+    // TMTT::SimpleLR fitter(settings);
+    // fitter.initRun();
 
     for(int iSector=0;iSector<NSector_;iSector++){
       for(unsigned int i=0;i<tracklets_[iSector].size();i++){ 
@@ -88,28 +89,44 @@ public:
             pair<float, float> helixRphi(1/tracklet.pt(settings->getBfield()),tracklet.phi0());
             pair<float, float> helixRz(tracklet.z0(),tracklet.t());
             // Phi sector.  TMTT uses 8 (or 9), tracklet 24.
-            // Assuming that using 24 phi sectors in a fitter from TMTT is ok
-            unsigned int iPhiSec = iSector;
+            int iPhiSec = -1;//iSector;
             // Eta regions
             // TMTT  uses 18 eta regions
             // The KF fitter needs to know which TMTT eta region the track is in
-            // As it uses this information to know which layers the stubs are in (4 possibilities)
             // SimpleLR doesn't use this information, other than for debugging and for storing in output L1fittedTrack
+            int iEtaReg = -1;
 
-            unsigned int iEtaReg = 8;
-            double trackletEta = fabs(-log(tan(0.5*(0.25*8*atan(1.0)-atan(tracklet.t())))));
-            if ( trackletEta > 2.16 ) iEtaReg = 0;
-            else if ( trackletEta > 1.95 ) iEtaReg = 1;
-            else if ( trackletEta > 1.7 ) iEtaReg = 2;
-            else if ( trackletEta > 1.43 ) iEtaReg = 3;
-            else if ( trackletEta > 1.16 ) iEtaReg = 4;
-            else if ( trackletEta > 0.89 ) iEtaReg = 5;
-            else if ( trackletEta > 0.61 ) iEtaReg = 6;
-            else if ( trackletEta > 0.31 ) iEtaReg = 7;
-            else iEtaReg = 8;
 
-            // Create L1track3D object
+            // Create temporary L1track3D object to work out TMTT eta/phi sectors
+            TMTT::L1track3D tmttTrack_temp( settings, tmttStubs_pointers, cellLocationRphi, helixRphi, cellLocationRz, helixRz, iPhiSec, iEtaReg);
+
+            unsigned int nTMTTEtaSectors = settings->numEtaRegions();
+            unsigned int nTMTTPhiSectors = settings->numPhiSectors();
+
+            unsigned int nSectors = 0;
+            for ( unsigned int iEta = 0; iEta < nTMTTEtaSectors; ++iEta ) {
+              for ( unsigned int iPhi = 0; iPhi < nTMTTPhiSectors; ++iPhi ) {
+                TMTT::Sector sector;
+                sector.init( settings, iPhi, iEta );
+
+                bool insidePhi = (fabs(reco::deltaPhi(tmttTrack_temp.phiAtChosenR(), sector.phiCentre())) < sector.sectorHalfWidth());
+                bool insideEta = (tmttTrack_temp.zAtChosenR() > sector.zAtChosenR_Min() && tmttTrack_temp.zAtChosenR() < sector.zAtChosenR_Max());
+
+                if ( insidePhi && insideEta ) {
+                  iPhiSec = iPhi;
+                  iEtaReg = iEta;
+                  ++nSectors;
+                }
+
+              }
+            }
+
+            // Ignore track if it isn't in a phi or eta sector
+            // Some of tracklets end up with eta > 2.4 after converting to TMTT::L1Track3D
+            if ( iPhiSec < 0 || iEtaReg < 0 ) continue; 
+
             TMTT::L1track3D tmttTrack( settings, tmttStubs_pointers, cellLocationRphi, helixRphi, cellLocationRz, helixRz, iPhiSec, iEtaReg);
+
 
             // Fit track
             TMTT::L1fittedTrack tmttFittedTrack = fitter.fit(tmttTrack, iPhiSec, iEtaReg );
