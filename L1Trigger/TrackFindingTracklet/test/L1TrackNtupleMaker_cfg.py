@@ -69,7 +69,8 @@ elif GEOMETRY == "TkOnly":
     "file:MuMinus_1to50_TkOnly.root",
     "file:MuPlus_1to50_TkOnly.root"
 )
-process.source = cms.Source("PoolSource", fileNames = Source_Files)
+
+process.source = cms.Source("PoolSource", fileNames = Source_Files, skipEvents = cms.untracked.uint32(0))
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_'+GEOMETRY+'_PU200.root'), closeFileFast = cms.untracked.bool(True))
 
@@ -145,6 +146,6 @@ process.ana = cms.Path(process.L1TrackNtuple)
 # use this if cluster/stub associators not available 
 #process.schedule = cms.Schedule(process.TTClusterStubTruth,process.TTTracksWithTruth,process.ana)
 
-# use this to only run tracking + track associator
-process.schedule = cms.Schedule(process.TTTracksWithTruth,process.ana)
+process.schedule = cms.Schedule(process.TTTracks,process.ana)
+# process.schedule = cms.Schedule(process.TTTracksWithTruth,process.ana)
 
