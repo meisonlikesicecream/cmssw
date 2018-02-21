@@ -136,14 +136,14 @@ public:
             vector<L1TStub> l1TStubsOnFittedTrack;
             for (unsigned int j=0; j<tmttFittedTrack.getStubs().size(); ++j ){
               const TMTT::Stub* stub = tmttFittedTrack.getStubs()[j];
-
+              
               if ( trackletToTMTTStubMap.find(stub) == trackletToTMTTStubMap.end() ) {
                 // Some stubs appear to have a match in the map (same r, z coordinate), 
                 // but have been modified (pointer to a different stub object)
                 // Only noticed this happening with KF fitter, not explicitly checked with SimpleLR
                 for (map<const TMTT::Stub*,const L1TStub*>::iterator i=trackletToTMTTStubMap.begin(); i!=trackletToTMTTStubMap.end(); ++i) {
-                  double rDiff = fabs( i->first->r() - stub->r() );
-                  double zDiff = fabs( i->first->z() - stub->z() );
+                  double rDiff = fabs( i->second->r() - stub->r() );
+                  double zDiff = fabs( i->second->z() - stub->z() );
                   if ( rDiff < 0.01 && zDiff < 0.01 ) {
                     l1TStubsOnFittedTrack.push_back( *i->second );
                   }
@@ -152,7 +152,6 @@ public:
               else {
                 l1TStubsOnFittedTrack.push_back( *trackletToTMTTStubMap[stub] );
               }
-
             }
 
             // Create L1TTrack object from L1fittedTrack and stubs
