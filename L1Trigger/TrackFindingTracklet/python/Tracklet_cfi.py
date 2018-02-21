@@ -22,3 +22,7 @@ TMTrackProducer_params.StubDigitize.EnableDigitize  = cms.bool(False)
 TMTrackProducer_params.TrackFitSettings.ResidualCut = cms.double(20.0)
 TMTrackProducer_params.TrackFitSettings.GeneralResidualCut = cms.double(20.0)
 TMTrackProducer_params.TrackFitSettings.KillingResidualCut = cms.double(20.0)
+
+# Tracklet goes down to 2 GeV by default
+TMTrackProducer_params.HTArraySpecRphi.HoughMinPt         = cms.double(2.0)
+
