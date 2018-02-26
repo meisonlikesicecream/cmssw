@@ -62,36 +62,36 @@ public:
 
   void write(ofstream& out){
     
-    out << "Stub: " 
-	<< layer_+1 << "\t" 
-	<< ladder_ << "\t" 
-	<< module_ << "\t"
-	<< strip_<< "\t"
-	<< -1 << "\t"
-	<< pt_ << "\t" 
-	<< x_ << "\t" 
-	<< y_ << "\t" 
-	<< z_ << "\t" 
-	<< bend_ << "\t" 
-	<< isPSmodule_ << "\t" 
-	<< isFlipped_ << "\t" << endl; 
+ //    out << "Stub: " 
+	// << layer_+1 << "\t" 
+	// << ladder_ << "\t" 
+	// << module_ << "\t"
+	// << strip_<< "\t"
+	// << -1 << "\t"
+	// << pt_ << "\t" 
+	// << x_ << "\t" 
+	// << y_ << "\t" 
+	// << z_ << "\t" 
+	// << bend_ << "\t" 
+	// << isPSmodule_ << "\t" 
+	// << isFlipped_ << "\t" << endl; 
 
   }
   void write(ostream& out){
     
-    out << "Stub: " 
-	<< layer_+1 << "\t" 
-	<< ladder_ << "\t" 
-	<< module_ << "\t"
-	<< strip_<< "\t"
-	<< -1 << "\t"
-	<< pt_ << "\t" 
-	<< x_ << "\t" 
-	<< y_ << "\t" 
-	<< z_ << "\t" 
-	<< bend_ << "\t" 
-	<< isPSmodule_ << "\t" 
-	<< isFlipped_ << "\t" << endl; 	
+ //    out << "Stub: " 
+	// << layer_+1 << "\t" 
+	// << ladder_ << "\t" 
+	// << module_ << "\t"
+	// << strip_<< "\t"
+	// << -1 << "\t"
+	// << pt_ << "\t" 
+	// << x_ << "\t" 
+	// << y_ << "\t" 
+	// << z_ << "\t" 
+	// << bend_ << "\t" 
+	// << isPSmodule_ << "\t" 
+	// << isFlipped_ << "\t" << endl; 	
   }
 
   int ptsign() {

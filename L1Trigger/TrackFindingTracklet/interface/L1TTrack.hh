@@ -3,9 +3,13 @@
 
 #include <iostream>
 #include <assert.h>
+#include "TMath.h"
+
+#include "L1Trigger/TrackFindingTracklet/interface/L1TTracklet.hh"
+#include "L1Trigger/TrackFindingTracklet/interface/L1TStub.hh"
 
 using namespace std;
-
+// static double TMath::TwoPi()=8*atan(1.0);
 class L1TTrack{
 
 public:
@@ -248,9 +252,9 @@ public:
         //we are dealing with a barrel stub
 
 	double deltaphi=phi0fit4par_-asin(0.5*ri*rinvfit4par_)-phii;
-	if (deltaphi>0.5*two_pi) deltaphi-=two_pi;
-	if (deltaphi<-0.5*two_pi) deltaphi+=two_pi;
-	assert(fabs(deltaphi)<0.1*two_pi);
+	if (deltaphi>0.5*TMath::TwoPi()) deltaphi-=TMath::TwoPi();
+	if (deltaphi<-0.5*TMath::TwoPi()) deltaphi+=TMath::TwoPi();
+	assert(fabs(deltaphi)<0.1*TMath::TwoPi());
 
 	delta[j++]=ri*deltaphi/sigmax;
 	delta[j++]=(z0fit4par_+(2.0/rinvfit4par_)*tfit4par_*asin(0.5*ri*rinvfit4par_)-zi)/sigmaz;
@@ -338,9 +342,9 @@ public:
         //we are dealing with a barrel stub
 
 	double deltaphi=phi0_-asin(0.5*ri*rinv_)-phii;
-	if (deltaphi>0.5*two_pi) deltaphi-=two_pi;
-	if (deltaphi<-0.5*two_pi) deltaphi+=two_pi;
-	assert(fabs(deltaphi)<0.1*two_pi);
+	if (deltaphi>0.5*TMath::TwoPi()) deltaphi-=TMath::TwoPi();
+	if (deltaphi<-0.5*TMath::TwoPi()) deltaphi+=TMath::TwoPi();
+	assert(fabs(deltaphi)<0.1*TMath::TwoPi());
 
 	delta[j++]=ri*deltaphi/sigmax;
 	delta[j++]=(z0_+(2.0/rinv_)*t_*asin(0.5*ri*rinv_)-zi)/sigmaz;
@@ -361,9 +365,9 @@ public:
 	  if (iii==3) dz0=0.01;
 
 	  double deltaphi=phi0_+dphi0-asin(0.5*ri*(rinv_+drinv))-phii;
-	  if (deltaphi>0.5*two_pi) deltaphi-=two_pi;
-	  if (deltaphi<-0.5*two_pi) deltaphi+=two_pi;
-	  assert(fabs(deltaphi)<0.1*two_pi);
+	  if (deltaphi>0.5*TMath::TwoPi()) deltaphi-=TMath::TwoPi();
+	  if (deltaphi<-0.5*TMath::TwoPi()) deltaphi+=TMath::TwoPi();
+	  assert(fabs(deltaphi)<0.1*TMath::TwoPi());
 
 	  double delphi=ri*deltaphi/sigmax;
 	  double deltaz=(z0_+dz0+(2.0/(rinv_+drinv))*(t_+dt)*asin(0.5*ri*(rinv_+drinv))-zi)/sigmaz;
@@ -601,12 +605,12 @@ public:
   double d0() const { return d0fit_;}
   double phi0seed() const { return phi0_;}
 
-  double eta() const { static double two_pi=8*atan(1.0);
-    return -log(tan(0.5*(0.25*two_pi-atan(tfit_)))); }
-  double eta4par() const { static double two_pi=8*atan(1.0);
-    return -log(tan(0.5*(0.25*two_pi-atan(tfit4par_)))); }
-  double etaseed() const { static double two_pi=8*atan(1.0);
-    return -log(tan(0.5*(0.25*two_pi-atan(t_)))); }
+  double eta() const { 
+    return -log(tan(0.5*(0.25*TMath::TwoPi()-atan(tfit_)))); }
+  double eta4par() const { 
+    return -log(tan(0.5*(0.25*TMath::TwoPi()-atan(tfit4par_)))); }
+  double etaseed() const { 
+    return -log(tan(0.5*(0.25*TMath::TwoPi()-atan(t_)))); }
 
   double z0() const { return z0fit_; }
   double z04par() const { return z0fit4par_; }

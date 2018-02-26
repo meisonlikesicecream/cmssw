@@ -6,6 +6,8 @@
 #include <map>
 #include <assert.h>
 
+#include "L1Trigger/TrackFindingTracklet/interface/L1TStub.hh"
+
 using namespace std;
 
 
