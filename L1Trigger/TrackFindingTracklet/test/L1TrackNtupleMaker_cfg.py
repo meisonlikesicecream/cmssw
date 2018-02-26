@@ -100,7 +100,7 @@ if GEOMETRY == "D10":
 #TTTracksFromTracklet.asciiFileName = cms.untracked.string("evlist.txt")
 
 process.load("L1Trigger.TrackFindingTracklet.L1TrackletTracks_cff")
-process.TTTracks = cms.Path(process.L1TrackletTracks)
+process.TTTracks = cms.Path(process.L1TrackletTracks*process.TrackTriggerAssociatorTracks)
 process.TTTracksWithTruth = cms.Path(process.L1TrackletTracksWithAssociators)
 
 
