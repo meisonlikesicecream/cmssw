@@ -34,39 +34,74 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/range/adaptor/indexed.hpp>
 
-SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& conf)
-    : lorentzAngleName(conf.getParameter<std::string>("LorentzAngle")),
-      theThreshold(conf.getParameter<double>("NoiseSigmaThreshold")),
-      cmnRMStib(conf.getParameter<double>("cmnRMStib")),
-      cmnRMStob(conf.getParameter<double>("cmnRMStob")),
-      cmnRMStid(conf.getParameter<double>("cmnRMStid")),
-      cmnRMStec(conf.getParameter<double>("cmnRMStec")),
-      APVSaturationProbScaling_(conf.getParameter<double>("APVSaturationProbScaling")),
-      makeDigiSimLinks_(conf.getUntrackedParameter<bool>("makeDigiSimLinks", false)),
-      peakMode(conf.getParameter<bool>("APVpeakmode")),
-      noise(conf.getParameter<bool>("Noise")),
-      RealPedestals(conf.getParameter<bool>("RealPedestals")),
-      SingleStripNoise(conf.getParameter<bool>("SingleStripNoise")),
-      CommonModeNoise(conf.getParameter<bool>("CommonModeNoise")),
-      BaselineShift(conf.getParameter<bool>("BaselineShift")),
-      APVSaturationFromHIP(conf.getParameter<bool>("APVSaturationFromHIP")),
-      theFedAlgo(conf.getParameter<int>("FedAlgorithm")),
-      zeroSuppression(conf.getParameter<bool>("ZeroSuppression")),
-      theElectronPerADC(conf.getParameter<double>(peakMode ? "electronPerAdcPeak" : "electronPerAdcDec")),
-      theTOFCutForPeak(conf.getParameter<double>("TOFCutForPeak")),
-      theTOFCutForDeconvolution(conf.getParameter<double>("TOFCutForDeconvolution")),
-      tofCut(peakMode ? theTOFCutForPeak : theTOFCutForDeconvolution),
-      cosmicShift(conf.getUntrackedParameter<double>("CosmicDelayShift")),
-      inefficiency(conf.getParameter<double>("Inefficiency")),
-      pedOffset((unsigned int)conf.getParameter<double>("PedestalsOffset")),
-      PreMixing_(conf.getParameter<bool>("PreMixingMode")),
-      theSiHitDigitizer(new SiHitDigitizer(conf)),
-      theSiPileUpSignals(new SiPileUpSignals()),
-      theSiNoiseAdder(new SiGaussianTailNoiseAdder(theThreshold)),
-      theSiDigitalConverter(new SiTrivialDigitalConverter(theElectronPerADC, PreMixing_)),
-      theSiZeroSuppress(new SiStripFedZeroSuppression(theFedAlgo)),
-      APVProbabilityFile(conf.getParameter<edm::FileInPath>("APVProbabilityFile")) {
+SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& conf):
+  lorentzAngleName(conf.getParameter<std::string>("LorentzAngle")),
+  theThreshold(conf.getParameter<double>("NoiseSigmaThreshold")),
+  cmnRMStib(conf.getParameter<double>("cmnRMStib")),
+  cmnRMStob(conf.getParameter<double>("cmnRMStob")),
+  cmnRMStid(conf.getParameter<double>("cmnRMStid")),
+  cmnRMStec(conf.getParameter<double>("cmnRMStec")),
+  APVSaturationProbScaling_(conf.getParameter<double>("APVSaturationProbScaling")),
+  makeDigiSimLinks_(conf.getUntrackedParameter<bool>("makeDigiSimLinks", false)),
+  peakMode(conf.getParameter<bool>("APVpeakmode")),
+  noise(conf.getParameter<bool>("Noise")),
+  RealPedestals(conf.getParameter<bool>("RealPedestals")), 
+  SingleStripNoise(conf.getParameter<bool>("SingleStripNoise")),
+  CommonModeNoise(conf.getParameter<bool>("CommonModeNoise")),
+  BaselineShift(conf.getParameter<bool>("BaselineShift")),
+  APVSaturationFromHIP(conf.getParameter<bool>("APVSaturationFromHIP")),
+  theFedAlgo(conf.getParameter<int>("FedAlgorithm")),
+  zeroSuppression(conf.getParameter<bool>("ZeroSuppression")),
+  theElectronPerADC(conf.getParameter<double>( peakMode ? "electronPerAdcPeak" : "electronPerAdcDec" )),
+
+  apv_maxResponse(conf.getParameter<double>( "apv_maxResponse" )), // 729
+  apv_rate(conf.getParameter<double>( "apv_rate" )), // 66.2
+  apv_mVPerQ(conf.getParameter<double>( "apv_mVPerQ" )), // 5.5
+  apv_fCPerElectron(conf.getParameter<double>( "apvfCPerElectron" )), // 1.602e-4
+
+  theTOFCutForPeak(conf.getParameter<double>("TOFCutForPeak")),
+  theTOFCutForDeconvolution(conf.getParameter<double>("TOFCutForDeconvolution")),
+  tofCut(peakMode ? theTOFCutForPeak : theTOFCutForDeconvolution),
+  cosmicShift(conf.getUntrackedParameter<double>("CosmicDelayShift")),
+  inefficiency(conf.getParameter<double>("Inefficiency")),
+  pedOffset((unsigned int)conf.getParameter<double>("PedestalsOffset")),
+  PreMixing_(conf.getParameter<bool>("PreMixingMode")),
+  theSiHitDigitizer(new SiHitDigitizer(conf)),
+  theSiPileUpSignals(new SiPileUpSignals()),
+  theSiNoiseAdder(new SiGaussianTailNoiseAdder(theThreshold)),
+  theSiDigitalConverter(new SiTrivialDigitalConverter(theElectronPerADC, PreMixing_)),
+  theSiZeroSuppress(new SiStripFedZeroSuppression(theFedAlgo)),
+  APVProbabilityFile(conf.getParameter<edm::FileInPath>("APVProbabilityFile")),
+  apvBaselines_tib1_( conf.getParameter< std::vector<double> >("apvBaselines_tib1")),
+  apvBaselines_tib2_( conf.getParameter< std::vector<double> >("apvBaselines_tib2")),
+  apvBaselines_tib3_( conf.getParameter< std::vector<double> >("apvBaselines_tib3")),
+  apvBaselines_tib4_( conf.getParameter< std::vector<double> >("apvBaselines_tib4")),
+  apvBaselines_tob1_( conf.getParameter< std::vector<double> >("apvBaselines_tob1")),
+  apvBaselines_tob2_( conf.getParameter< std::vector<double> >("apvBaselines_tob2")),
+  apvBaselines_tob3_( conf.getParameter< std::vector<double> >("apvBaselines_tob3")),
+  apvBaselines_tob4_( conf.getParameter< std::vector<double> >("apvBaselines_tob4")),
+  apvBaselines_tob5_( conf.getParameter< std::vector<double> >("apvBaselines_tob5")),
+  apvBaselines_tob6_( conf.getParameter< std::vector<double> >("apvBaselines_tob6")),
+  apvBaselines_nBinsPerBaseline_( conf.getParameter< unsigned int >("apvBaselines_nBinsPerBaseline") ),
+  apvBaselines_minBaseline_( conf.getParameter< double>("apvBaselines_minBaseline") ),
+  apvBaselines_maxBaseline_( conf.getParameter< double>("apvBaselines_maxBaseline") ),
+  apvBaselines_puBinEdges_( conf.getParameter< std::vector<double> >("apvBaselines_puBinEdges") ),
+  apvBaselines_zBinEdges_( conf.getParameter< std::vector<double> >("apvBaselines_zBinEdges") ),
+  apvBaselineHistograms_tib_( std::vector< std::vector< std::vector<TH1F> > >() ),
+  apvBaselineHistograms_tib1_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tib2_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tib3_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tib4_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tob_( std::vector< std::vector< std::vector<TH1F> > >() ),
+  apvBaselineHistograms_tob1_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tob2_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tob3_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tob4_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tob5_( std::vector< std::vector<TH1F> >() ),
+  apvBaselineHistograms_tob6_( std::vector< std::vector<TH1F> >() )
+   {
   if (peakMode) {
     LogDebug("StripDigiInfo") << "APVs running in peak mode (poor time resolution)";
   } else {
@@ -97,6 +132,53 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
     } else
       throw cms::Exception("MissingInput") << "It seems that the APV probability list is missing\n";
   }
+
+
+
+  fillAPVBaselineHistograms( apvBaselineHistograms_tib1_, apvBaselines_tib1_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tib2_, apvBaselines_tib2_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tib3_, apvBaselines_tib3_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tib4_, apvBaselines_tib4_ );
+
+  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib1_ );
+  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib2_ );
+  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib3_ );
+  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib4_ );
+
+  fillAPVBaselineHistograms( apvBaselineHistograms_tob1_, apvBaselines_tob1_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tob2_, apvBaselines_tob2_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tob3_, apvBaselines_tob3_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tob4_, apvBaselines_tob4_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tob5_, apvBaselines_tob5_ );
+  fillAPVBaselineHistograms( apvBaselineHistograms_tob6_, apvBaselines_tob6_ );
+
+  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob1_ );
+  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob2_ );
+  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob3_ );
+  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob4_ );
+  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob5_ );
+  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob6_ );
+
+}
+
+void SiStripDigitizerAlgorithm::fillAPVBaselineHistograms( std::vector< std::vector<TH1F> > &apvHistograms, std::vector< double > &theAPVBaselines ) {
+
+  unsigned int nZBins = apvBaselines_zBinEdges_.size();
+  unsigned int nPUBins = apvBaselines_puBinEdges_.size();
+  apvHistograms.resize( nZBins );
+  for ( unsigned int iZBin = 0; iZBin < nZBins; ++iZBin ){
+    for ( unsigned int iPUBin = 0; iPUBin < nPUBins; ++iPUBin ){
+      apvHistograms.at( iZBin ).push_back( TH1F( "temp" , "temp" , apvBaselines_nBinsPerBaseline_, apvBaselines_minBaseline_, apvBaselines_maxBaseline_ ) );
+    }
+  }
+
+  for( auto const& apvBaseline : theAPVBaselines | boost::adaptors::indexed(0) ) {
+    unsigned int binInCurrentHistogram = apvBaseline.index() % apvBaselines_nBinsPerBaseline_ + 1;
+    unsigned int binInZ = int(apvBaseline.index()) / ( nPUBins * apvBaselines_nBinsPerBaseline_ );
+    unsigned int binInPU = int( apvBaseline.index() - binInZ * ( nPUBins ) * apvBaselines_nBinsPerBaseline_ ) / apvBaselines_nBinsPerBaseline_;
+    apvHistograms.at( binInZ ).at( binInPU ).SetBinContent( binInCurrentHistogram, apvBaseline.value() );
+  }
+
 }
 
 SiStripDigitizerAlgorithm::~SiStripDigitizerAlgorithm() {}
@@ -137,6 +219,8 @@ void SiStripDigitizerAlgorithm::initializeEvent(const edm::EventSetup& iSetup) {
   SiStripTrackerAffectedAPVMap.clear();
   FirstLumiCalc_ = true;
   FirstDigitize_ = true;
+
+  nTruePU_ = 0;
 
   //get gain noise pedestal lorentzAngle from ES handle
   edm::ESHandle<ParticleDataTable> pdt;
@@ -273,22 +357,53 @@ void SiStripDigitizerAlgorithm::calculateInstlumiScale(PileupMixingContent* puIn
   }
 }
 
-//============================================================================
+//============================================================================                
 
-void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
-                                         edm::DetSet<SiStripRawDigi>& outrawdigi,
-                                         edm::DetSet<StripDigiSimLink>& outLink,
-                                         const StripGeomDetUnit* det,
-                                         edm::ESHandle<SiStripGain>& gainHandle,
-                                         edm::ESHandle<SiStripThreshold>& thresholdHandle,
-                                         edm::ESHandle<SiStripNoises>& noiseHandle,
-                                         edm::ESHandle<SiStripPedestals>& pedestalHandle,
-                                         std::vector<std::pair<int, std::bitset<6>>>& theAffectedAPVvector,
-                                         CLHEP::HepRandomEngine* engine) {
+void
+SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
+                                    edm::DetSet<SiStripRawDigi>& outrawdigi,
+                                    edm::DetSet<SiStripRawDigi>& outStripAmplitudes,
+                                    edm::DetSet<SiStripRawDigi>& outStripAmplitudesPostAPV,
+                                    edm::DetSet<SiStripRawDigi>& outStripAPVBaselines,
+			                              edm::DetSet<StripDigiSimLink>& outLink,
+			                              const StripGeomDetUnit *det,
+			                              edm::ESHandle<SiStripGain> & gainHandle,
+			                              edm::ESHandle<SiStripThreshold> & thresholdHandle,
+			                              edm::ESHandle<SiStripNoises> & noiseHandle,
+			                              edm::ESHandle<SiStripPedestals> & pedestalHandle,
+			                              std::vector<std::pair<int,std::bitset<6>>> & theAffectedAPVvector,
+                                    CLHEP::HepRandomEngine* engine,
+                                    const TrackerTopology *tTopo) {
   unsigned int detID = det->geographicalId().rawId();
   int numStrips = (det->specificTopology()).nstrips();
 
-  const SiPileUpSignals::SignalMapType* theSignal(theSiPileUpSignals->getSignal(detID));
+  DetId  detId(detID);
+  uint32_t SubDet = detId.subdetId();
+
+  // Need z coordinate of detset
+  const StripTopology * topol = dynamic_cast<const StripTopology*>(&(det->specificTopology()));
+  LocalPoint localPos = topol->localPosition(0);
+  GlobalPoint globalPos = det->surface().toGlobal(Local3DPoint(localPos.x(),localPos.y(),localPos.z()));
+  float detSet_z = fabs( globalPos.z() );
+  // Index in apv baseline distributions
+  std::vector< double >::iterator high = std::upper_bound( apvBaselines_zBinEdges_.begin(), apvBaselines_zBinEdges_.end(), detSet_z );
+  unsigned int detSet_zBin = high - apvBaselines_zBinEdges_.begin() - 1;
+  high = std::upper_bound( apvBaselines_puBinEdges_.begin(), apvBaselines_puBinEdges_.end(), nTruePU_ );
+  unsigned int puBin = high - apvBaselines_puBinEdges_.begin() - 1;
+
+  // Get the corresponding APV baseline distribution for this subdetector and layer
+  TH1F* apvBaselineDistribution = 0;
+  int layer = -1;
+  if(SubDet==3) {
+    layer = tTopo->tibLayer(detId);
+    apvBaselineDistribution = &apvBaselineHistograms_tib_[layer-1][detSet_zBin][puBin];
+  }
+  else if(SubDet==5){
+    layer = tTopo->tobLayer(detId);
+    apvBaselineDistribution = &apvBaselineHistograms_tob_[layer-1][detSet_zBin][puBin];
+  } 
+
+  const SiPileUpSignals::SignalMapType* theSignal(theSiPileUpSignals->getSignal(detID));  
 
   std::vector<float> detAmpl(numStrips, 0.);
   if (theSignal) {
@@ -304,6 +419,53 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
       detAmpl[strip] = 0.;
     }
   }
+
+  // Store SCD, before APV sim
+  for(int strip =0; strip < numStrips; ++strip) {
+    outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
+  }
+
+  // Simulate APV response for each strip
+  if ( SubDet == 3 || SubDet == 5 ) {
+    for(int strip =0; strip < numStrips; ++strip) {
+      if (detAmpl[strip] > 0 ) {
+        // Convert charge from electrons to fC
+        double stripCharge = detAmpl[strip]*apv_fCPerElectron;
+
+        // Get APV baseline
+        double baselineV = apvBaselineDistribution->GetRandom();
+        // Store APV baseline for this strip
+        outStripAPVBaselines.push_back(SiStripRawDigi(baselineV));
+
+        // Fitted parameters from G Hall/M Raymond
+        double maxResponse = apv_maxResponse;
+        double rate = apv_rate;
+        double baselineQ = apv_maxResponse;
+
+        // Convert V0 into baseline charge
+        if ( baselineV < baselineQ ) {
+          baselineQ = - 1.0 * rate * log( 2 * maxResponse / ( baselineV + maxResponse ) - 1);
+        }
+
+        // Add charge deposited in this BX
+        double newStripCharge = baselineQ + stripCharge;
+
+        // Apply APV response
+        double signalV = 2 * maxResponse / ( 1 + exp( -1.0 * newStripCharge / rate) ) - maxResponse;
+        double gain = signalV - baselineV;
+
+        // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
+        double outputCharge = gain/apv_mVPerQ;
+        double outputChargeInADC = outputCharge / apv_fCPerElectron;
+
+        // Output charge back to original container
+        detAmpl[strip] = outputChargeInADC;
+      }
+    }    
+  }
+
+  // Store SCD, after APV sim
+  for(int strip =0; strip < numStrips; ++strip) outStripAmplitudesPostAPV.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
 
   if (APVSaturationFromHIP) {
     //Implementation of the proper charge scaling function. Need consider resaturation effect:
@@ -534,6 +696,7 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
     theSiNoiseAdder->addPedestals(detAmpl, vPeds);
 
     //if(!RealPedestals&&!CommonModeNoise&&!noise&&!BaselineShift&&!APVSaturationFromHIP){
+
     //  edm::LogWarning("SiStripDigitizer")<<"You are running the digitizer without Noise generation and without applying Zero Suppression. ARE YOU SURE???";
     //}else{
 
