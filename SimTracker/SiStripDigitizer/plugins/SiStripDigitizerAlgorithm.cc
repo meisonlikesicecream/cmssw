@@ -265,6 +265,7 @@ void
 SiStripDigitizerAlgorithm::digitize(
 			   edm::DetSet<SiStripDigi>& outdigi,
 			   edm::DetSet<SiStripRawDigi>& outrawdigi,
+         edm::DetSet<SiStripRawDigi>& outStripAmplitudes,
 			   edm::DetSet<StripDigiSimLink>& outLink,
 			   const StripGeomDetUnit *det,
 			   edm::ESHandle<SiStripGain> & gainHandle,
@@ -391,6 +392,8 @@ SiStripDigitizerAlgorithm::digitize(
 	}
       }
     }//if noise
+
+  for(int strip =0; strip < numStrips; ++strip) outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
 
     DigitalVecType digis;
     theSiZeroSuppress->suppress(theSiDigitalConverter->convert(detAmpl, gainHandle, detID), digis, detID,noiseHandle,thresholdHandle);
