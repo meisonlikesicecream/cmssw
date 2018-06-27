@@ -33,7 +33,12 @@
 #include "Geometry/CommonDetUnit/interface/GeomDetType.h"
 #include "SimGeneral/HepPDTRecord/interface/ParticleDataTable.h"
 #include "RecoLocalTracker/SiStripZeroSuppression/interface/SiStripFedZeroSuppression.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
+#include "TH1F.h"
+#include "TF1.h"
+#include "TString.h"
+ 
 #include <iostream>
 #include <fstream>
 
@@ -81,6 +86,9 @@ class SiStripDigitizerAlgorithm {
   void digitize(
                 edm::DetSet<SiStripDigi>& outDigis,
                 edm::DetSet<SiStripRawDigi>& outRawDigis,
+                edm::DetSet<SiStripRawDigi>& outStripAmplitudes,
+                edm::DetSet<SiStripRawDigi>& outStripAmplitudesPostAPV,
+                edm::DetSet<SiStripRawDigi>& outStripAPVBaselines,
                 edm::DetSet<StripDigiSimLink>& outLink,
                 const StripGeomDetUnit* stripdet,
                 edm::ESHandle<SiStripGain>&,
@@ -88,7 +96,9 @@ class SiStripDigitizerAlgorithm {
                 edm::ESHandle<SiStripNoises>&,
                 edm::ESHandle<SiStripPedestals>&,
 		std::vector<std::pair<int,std::bitset<6>>> & theAffectedAPVvector,
-                CLHEP::HepRandomEngine*);
+                CLHEP::HepRandomEngine*,
+                const TrackerTopology *tTopo);
+
 
   void calculateInstlumiScale(PileupMixingContent* puInfo);
 
@@ -118,6 +128,14 @@ class SiStripDigitizerAlgorithm {
   const int theFedAlgo;
   const bool zeroSuppression;
   const double theElectronPerADC;
+
+  const double  apv_maxResponse;
+
+  const double  apv_rate;
+  const double  apv_mVPerQ;
+  const double  apv_fCPerElectron;
+
+
   const double theTOFCutForPeak;
   const double theTOFCutForDeconvolution;
   const double tofCut;
@@ -171,6 +189,44 @@ class SiStripDigitizerAlgorithm {
   std::map < int , float> mapOfAPVprobabilities;
   std::map < int , std::bitset<6> > SiStripTrackerAffectedAPVMap;
   int NumberOfBxBetweenHIPandEvent;
+
+  std::vector< double > apvBaselines_tib1_;
+  std::vector< double > apvBaselines_tib2_;
+  std::vector< double > apvBaselines_tib3_;
+  std::vector< double > apvBaselines_tib4_;
+
+  std::vector< double > apvBaselines_tob1_;
+  std::vector< double > apvBaselines_tob2_;
+  std::vector< double > apvBaselines_tob3_;
+  std::vector< double > apvBaselines_tob4_;
+  std::vector< double > apvBaselines_tob5_;
+  std::vector< double > apvBaselines_tob6_;
+
+  unsigned int nTruePU_;
+  unsigned int apvBaselines_nBinsPerBaseline_;
+  double apvBaselines_minBaseline_;
+  double apvBaselines_maxBaseline_;
+  std::vector< double > apvBaselines_puBinEdges_;
+  std::vector< double > apvBaselines_zBinEdges_;
+
+  std::vector< std::vector< std::vector<TH1F> > > apvBaselineHistograms_tib_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib1_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib2_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib3_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib4_;
+
+  std::vector< std::vector< std::vector<TH1F> > > apvBaselineHistograms_tob_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob1_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob2_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob3_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob4_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob5_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob6_;
+
+  // std::vector< std::vector<TH1F> > apvBaselineHistograms_tid_;
+  // std::vector< std::vector<TH1F> > apvBaselineHistograms_tec_;
+
+  void fillAPVBaselineHistograms( std::vector< std::vector<TH1F> > &apvHistograms, std::vector< double > &theAPVBaselines );
 };
 
 #endif
