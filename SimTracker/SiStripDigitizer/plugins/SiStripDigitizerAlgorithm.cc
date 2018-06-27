@@ -54,6 +54,20 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
   theFedAlgo(conf.getParameter<int>("FedAlgorithm")),
   zeroSuppression(conf.getParameter<bool>("ZeroSuppression")),
   theElectronPerADC(conf.getParameter<double>( peakMode ? "electronPerAdcPeak" : "electronPerAdcDec" )),
+
+  apv_minAmplitude(conf.getParameter<double>( "apv_minAmplitude" )), // 10000;
+  apv_decayConstantInMicroS(conf.getParameter<double>( "apv_decayConstantInMicroS" )), // 200;
+  apv_nPreviousInteractionsToSimulate(conf.getParameter<unsigned int>( "apv_nPreviousInteractionsToSimulate" )), //  = 100;
+  apv_nBaselineToGenerate(conf.getParameter<unsigned int>( "apv_nBaselineToGenerate" )), // = 2000;
+  apv_smallChangeThreshold(conf.getParameter<double>( "apv_smallChangeThreshold" )), // 0.001 
+  apv_smallChangeN(conf.getParameter<unsigned int>( "apv_smallChangeN" )), //5
+
+  apv_maxResponse(conf.getParameter<double>( "apv_maxResponse" )), // 729
+
+  apv_rate(conf.getParameter<double>( "apv_rate" )), // 66.2
+  apv_mVPerQ(conf.getParameter<double>( "apv_mVPerQ" )), // 5.5
+  apv_fCPerElectron(conf.getParameter<double>( "apvfCPerElectron" )), // 1.602e-4
+
   theTOFCutForPeak(conf.getParameter<double>("TOFCutForPeak")),
   theTOFCutForDeconvolution(conf.getParameter<double>("TOFCutForDeconvolution")),
   tofCut(peakMode ? theTOFCutForPeak : theTOFCutForDeconvolution),
@@ -93,6 +107,32 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
     }else throw cms::Exception("MissingInput")
          << "It seems that the APV probability list is missing\n";
   }
+
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB1", "TIB1", 100, 0, 729) );
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB2", "TIB2", 100, 0, 729) );
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB3", "TIB3", 100, 0, 729) );
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB4", "TIB4", 100, 0, 729) );
+
+
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB1", "TOB1", 100, 0, 729) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB2", "TOB2", 100, 0, 729) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB3", "TOB3", 100, 0, 729) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB4", "TOB4", 100, 0, 729) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB5", "TOB5", 100, 0, 729) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB6", "TOB6", 100, 0, 729) );
+
+
+  apvBaselineDistributions_tid_.push_back( TH1F("TID1", "TID1", 100, 0, 729) );
+  apvBaselineDistributions_tid_.push_back( TH1F("TID2", "TID2", 100, 0, 729) );
+  apvBaselineDistributions_tid_.push_back( TH1F("TID3", "TID3", 100, 0, 729) );
+
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC1", "TEC1", 100, 0, 729) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC2", "TEC2", 100, 0, 729) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC3", "TEC3", 100, 0, 729) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC4", "TEC4", 100, 0, 729) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC5", "TEC5", 100, 0, 729) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC6", "TEC6", 100, 0, 729) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC7", "TEC7", 100, 0, 729) );
 }
 
 SiStripDigitizerAlgorithm::~SiStripDigitizerAlgorithm(){
@@ -124,6 +164,7 @@ SiStripDigitizerAlgorithm::initializeDetUnit(StripGeomDetUnit const * det, const
   //  std::bitset<6> &bs=SiStripTrackerAffectedAPVMap[detId];
   //  if(bs.any())theAffectedAPVvector.push_back(std::make_pair(detId,bs));
   //}
+
 }
 
 void
@@ -142,6 +183,12 @@ SiStripDigitizerAlgorithm::initializeEvent(const edm::EventSetup& iSetup) {
   iSetup.getData(pdt);
   setParticleDataTable(&*pdt);
   iSetup.get<SiStripLorentzAngleSimRcd>().get(lorentzAngleName,lorentzAngleHandle);
+
+  for ( unsigned int i = 0; i < apvBaselineDistributions_tib_.size(); ++ i ) apvBaselineDistributions_tib_[i].Reset();
+  for ( unsigned int i = 0; i < apvBaselineDistributions_tob_.size(); ++ i ) apvBaselineDistributions_tob_[i].Reset();
+  for ( unsigned int i = 0; i < apvBaselineDistributions_tid_.size(); ++ i ) apvBaselineDistributions_tid_[i].Reset();
+  for ( unsigned int i = 0; i < apvBaselineDistributions_tec_.size(); ++ i ) apvBaselineDistributions_tec_[i].Reset();
+
 }
 
 //  Run the algorithm for a given module
@@ -261,11 +308,180 @@ void SiStripDigitizerAlgorithm::calculateInstlumiScale(PileupMixingContent* puIn
 
 //============================================================================                
 
+void SiStripDigitizerAlgorithm::calcuateAPVBaselines(
+              TrackingGeometry::DetContainer detUnits,
+              const TrackerTopology *tTopo
+              ) {
+
+    std::vector<unsigned int> nStrips_tib = { 0, 0, 0, 0 };
+    std::vector<unsigned int> nStrips_tob = { 0, 0, 0, 0, 0, 0 };
+    std::vector<unsigned int> nStrips_tid = { 0, 0, 0 };
+    std::vector<unsigned int> nStrips_tec = { 0, 0, 0, 0, 0, 0, 0 };
+
+    std::vector<unsigned int> nStripsNonZero_tib = { 0, 0, 0, 0 };
+    std::vector<unsigned int> nStripsNonZero_tob = { 0, 0, 0, 0, 0, 0 };
+    std::vector<unsigned int> nStripsNonZero_tid = { 0, 0, 0 };
+    std::vector<unsigned int> nStripsNonZero_tec = { 0, 0, 0, 0, 0, 0, 0 };
+
+    std::vector<float> occupancy_tib = { 0, 0, 0, 0 };
+    std::vector<float> occupancy_tob = { 0, 0, 0, 0, 0, 0 };
+    std::vector<float> occupancy_tid = { 0, 0, 0 };
+    std::vector<float> occupancy_tec = { 0, 0, 0, 0, 0, 0, 0 };
+
+    TH1F h_charge_tib = TH1F("h_charge_tib", "h_charge_tib", 60, 0, 60000);
+    TH1F h_charge_tob = TH1F("h_charge_tob", "h_charge_tob", 60, 0, 60000);
+    TH1F h_charge_tid = TH1F("h_charge_tid", "h_charge_tid", 60, 0, 60000);
+    TH1F h_charge_tec = TH1F("h_charge_tec", "h_charge_tec", 60, 0, 60000);
+
+    // Loop all strips and store total number of strips in each layer, strips with charge/amplitude > X, and store distribution of charges
+    for(TrackingGeometry::DetContainer::const_iterator iu = detUnits.begin(); iu != detUnits.end(); iu ++){
+
+      auto sgd = dynamic_cast<StripGeomDetUnit const*>((*iu));
+      if (sgd != 0){
+
+        DetId detId( sgd->geographicalId() );
+        uint32_t SubDet = detId.subdetId();
+        int layer = -1;
+
+        if(SubDet==3) {
+          layer = tTopo->tibLayer(detId);
+          nStrips_tib[layer-1] += sgd->specificTopology().nstrips();
+        }
+        else if(SubDet==4){
+          layer = tTopo->tidRing(detId);
+          nStrips_tid[layer-1] += sgd->specificTopology().nstrips();
+        } 
+        else if(SubDet==5){
+          layer = tTopo->tobLayer(detId);
+          nStrips_tob[layer-1] += sgd->specificTopology().nstrips();
+        } 
+        else if(SubDet==6){
+          layer = tTopo->tecRing(detId);
+          nStrips_tec[layer-1] += sgd->specificTopology().nstrips();
+        }
+
+
+        const SiPileUpSignals::SignalMapType* theSignal(theSiPileUpSignals->getSignal(sgd->geographicalId().rawId()));  
+
+        if(theSignal) {
+          for(const auto& amp : *theSignal) {
+            unsigned int minAmplitude = 10000;
+            if ( amp.second > minAmplitude ) {
+              if(SubDet==3) {
+                ++nStripsNonZero_tib[layer-1];
+                h_charge_tib.Fill( amp.second );
+              }
+              else if(SubDet==4){
+                ++nStripsNonZero_tid[layer-1];
+                h_charge_tid.Fill( amp.second );
+              } 
+              else if(SubDet==5){
+                ++nStripsNonZero_tob[layer-1];
+                h_charge_tob.Fill( amp.second );
+              } 
+              else if(SubDet==6){
+                ++nStripsNonZero_tec[layer-1];
+                h_charge_tec.Fill( amp.second );
+              } 
+            }
+          }
+        }
+      }
+    }
+
+
+    // For each layer in each subdetctor, calculate the occupancy
+    // Also generate a distribution of the APV baseline for each layer
+    for ( unsigned int i = 0; i < nStrips_tib.size(); ++i ) {
+      occupancy_tib[i] = float(nStripsNonZero_tib[i]) / float(nStrips_tib[i]);
+      generateAPVBaseline( occupancy_tib[i], h_charge_tib, apvBaselineDistributions_tib_[i] );
+    }
+
+    for ( unsigned int i = 0; i < nStrips_tob.size(); ++i ) {
+      occupancy_tob[i] = float(nStripsNonZero_tob[i]) / float(nStrips_tob[i]);
+      generateAPVBaseline( occupancy_tob[i], h_charge_tob, apvBaselineDistributions_tob_[i] );
+    }
+
+    for ( unsigned int i = 0; i < nStrips_tid.size(); ++i ) {
+      occupancy_tid[i] = float(nStripsNonZero_tid[i]) / float(nStrips_tid[i]);
+      generateAPVBaseline( occupancy_tid[i], h_charge_tid, apvBaselineDistributions_tid_[i] );
+    }
+
+
+    for ( unsigned int i = 0; i < nStrips_tec.size(); ++i ) {
+      occupancy_tec[i] = float(nStripsNonZero_tec[i]) / float(nStrips_tec[i]);
+      generateAPVBaseline( occupancy_tec[i], h_charge_tec, apvBaselineDistributions_tec_[i] );
+    }
+}
+
+//============================================================================                
+
+void SiStripDigitizerAlgorithm::generateAPVBaseline(
+              float occupancy,
+              TH1F chargeDistribution,
+              TH1F& baselineDistribution
+              ) {
+
+
+    // If occupancy is zero, just fill the APV baseline with zero and return
+    if ( occupancy == 0. ) {
+      baselineDistribution.Fill(0);
+      return;
+    }
+
+    // Define PDF for the probability for a charge to be deposited in a previous BX for a given occupancy
+    unsigned int maxBXWithoutInteraction = log(0.01)/log(1-occupancy);  // Consider BX where probablitiy of interaction is > 1% of occupancy
+    TF1 *f_probBX = new TF1("f_probBX","[0]*(1-[0])^x",0,maxBXWithoutInteraction);
+    f_probBX->SetParameter(0,occupancy);
+
+
+    // Build up distribution of APV baselines for this given occupancy and charge distribution i.e. repeat process several times and store result
+    for ( unsigned int n = 0; n < apv_nBaselineToGenerate; ++n ) {
+
+      float baselineQ = 0;
+      float timeSinceInteractionInMicroS = 0;
+      unsigned int totalBX = 0;
+      unsigned int totalInteractions = 0;
+      unsigned int nInteractionsWithSmalChange = 0;
+
+      // Simulate several previous charge deposits in a particular strip
+      // Get BX of the charge deposit (how many BX in the past), and how much charge was deposited
+      // Calculate how much of that charge is still on the strip in the current BX (BX == 0 ), by decaying the charge by an exponential
+      for ( unsigned int i_interaction = 0; i_interaction < apv_nPreviousInteractionsToSimulate; ++i_interaction ) {
+        ++totalInteractions;
+        unsigned int BX = f_probBX->GetRandom();
+        float charge = chargeDistribution.GetRandom();
+
+        totalBX += BX;
+        timeSinceInteractionInMicroS += float(totalBX) * 25 / 1000;
+
+        float extraChargeToBaseline = ( charge * exp( -1.0 * timeSinceInteractionInMicroS / apv_decayConstantInMicroS ) );
+
+        // Note if this additional charge has a negligible effect on the APV baseline (because it was very far in the past, or only a small charge was deposited)
+        // If this happens a few times, then the APV baseline is stable, and there's no point in simulating more charge deposits
+        if ( extraChargeToBaseline / baselineQ < apv_smallChangeThreshold ) ++nInteractionsWithSmalChange;         
+        if ( nInteractionsWithSmalChange > apv_smallChangeN ) break;
+
+        baselineQ += extraChargeToBaseline;
+      }
+
+      // Convert to V, and store (perhaps the APV baseline should be stored as a charge?)
+      float baselineV = baselineQ * apv_mVPerQ * apv_fCPerElectron;
+      if ( baselineV > apv_maxResponse ) baselineV = apv_maxResponse;
+      baselineDistribution.Fill( baselineV );
+    }
+}
+
+//============================================================================                
+
 
 void
 SiStripDigitizerAlgorithm::digitize(
 			   edm::DetSet<SiStripDigi>& outdigi,
 			   edm::DetSet<SiStripRawDigi>& outrawdigi,
+         edm::DetSet<SiStripRawDigi>& outStripAmplitudes,
+         edm::DetSet<SiStripRawDigi>& outStripAmplitudesPostAPV,
+         edm::DetSet<SiStripRawDigi>& outStripAPVBaselines,
 			   edm::DetSet<StripDigiSimLink>& outLink,
 			   const StripGeomDetUnit *det,
 			   edm::ESHandle<SiStripGain> & gainHandle,
@@ -273,9 +489,37 @@ SiStripDigitizerAlgorithm::digitize(
 			   edm::ESHandle<SiStripNoises> & noiseHandle,
 			   edm::ESHandle<SiStripPedestals> & pedestalHandle,
 			   std::vector<std::pair<int,std::bitset<6>>> & theAffectedAPVvector,
-                           CLHEP::HepRandomEngine* engine) {
+                           CLHEP::HepRandomEngine* engine,
+         const TrackerTopology *tTopo
+          ) {
   unsigned int detID = det->geographicalId().rawId();
   int numStrips = (det->specificTopology()).nstrips();  
+
+  // Moved from later (if CommonModeNoise)
+  DetId  detId(detID);
+  uint32_t SubDet = detId.subdetId();
+
+
+  // Get the corresponding APV baseline distribution for this subdetector and layer
+  TH1F* apvBaselineDistribution = 0;
+  int layer = -1;
+  if(SubDet==3) {
+    layer = tTopo->tibLayer(detId);
+    apvBaselineDistribution = &apvBaselineDistributions_tib_[layer-1];
+  }
+  else if(SubDet==4){
+    layer = tTopo->tidRing(detId);
+    apvBaselineDistribution = &apvBaselineDistributions_tid_[layer-1];
+  } 
+  else if(SubDet==5){
+    layer = tTopo->tobLayer(detId);
+    apvBaselineDistribution = &apvBaselineDistributions_tob_[layer-1];
+  } 
+  else if(SubDet==6){
+    layer = tTopo->tecRing(detId);
+    apvBaselineDistribution = &apvBaselineDistributions_tec_[layer-1];
+  } 
+
 
   const SiPileUpSignals::SignalMapType* theSignal(theSiPileUpSignals->getSignal(detID));  
 
@@ -290,7 +534,54 @@ SiStripDigitizerAlgorithm::digitize(
   std::vector<bool>& badChannels = allBadChannels[detID];
   for(int strip =0; strip < numStrips; ++strip) {
     if(badChannels[strip]) {detAmpl[strip] = 0.;}
-  } 
+  }
+
+  // Store SCD, before APV sim
+  for(int strip =0; strip < numStrips; ++strip) {
+    outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
+  }
+
+  // Simulate APV response for each strip
+  for(int strip =0; strip < numStrips; ++strip) {
+    if (detAmpl[strip] > 0 ) {
+      // Convert charge from electrons to fC
+      double stripCharge = detAmpl[strip]*apv_fCPerElectron;
+
+      // Get APV baseline
+      double baselineV = apvBaselineDistribution->GetRandom();
+      // Store APV baseline for this strip
+      outStripAPVBaselines.push_back(SiStripRawDigi(baselineV));
+
+      // Fitted parameters from G Hall/M Raymond
+      double maxResponse = apv_maxResponse;
+      double rate = apv_rate;
+      double baselineQ = apv_maxResponse;
+
+      // Convert V0 into baseline charge
+      if ( baselineV < baselineQ ) {
+        baselineQ = - 1.0 * rate * log( 2 * maxResponse / ( baselineV + maxResponse ) - 1);
+      }
+
+      // Add charge deposited in this BX
+      double newStripCharge = baselineQ + stripCharge;
+
+      // Apply APV response
+      double signalV = 2 * maxResponse / ( 1 + exp( -1.0 * newStripCharge / rate) ) - maxResponse;
+      double gain = signalV - baselineV;
+
+      // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
+      double outputCharge = gain/apv_mVPerQ;
+      double outputChargeInADC = outputCharge / apv_fCPerElectron;
+
+      // Output charge back to original container
+      detAmpl[strip] = outputChargeInADC;
+    }
+  }
+
+  // Store SCD, after APV sim
+  for(int strip =0; strip < numStrips; ++strip) outStripAmplitudesPostAPV.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
+
+
 
   if(APVSaturationFromHIP){
     //Implementation of the proper charge scaling function. Need consider resaturation effect:
@@ -313,13 +604,13 @@ SiStripDigitizerAlgorithm::digitize(
       NumberOfBxBetweenHIPandEvent=1e3;
       bool HasAtleastOneAffectedAPV=false;
       while(!HasAtleastOneAffectedAPV){
-	for(int bx=floor(300.0/25.0);bx>0;bx--){ //Reminder: make these numbers not hard coded!!
-	  float temp=CLHEP::RandFlat::shoot(engine)<0.5?1:0;
-	  if(temp==1 && bx<NumberOfBxBetweenHIPandEvent){
-	    NumberOfBxBetweenHIPandEvent=bx;
-	    HasAtleastOneAffectedAPV=true;
-	  }
-	}
+        for(int bx=floor(300.0/25.0);bx>0;bx--){ //Reminder: make these numbers not hard coded!!
+          float temp=CLHEP::RandFlat::shoot(engine)<0.5?1:0;
+          if(temp==1 && bx<NumberOfBxBetweenHIPandEvent){
+            NumberOfBxBetweenHIPandEvent=bx;
+            HasAtleastOneAffectedAPV=true;
+          }
+        }
       }
 
       FirstDigitize_ = false;
@@ -333,19 +624,19 @@ SiStripDigitizerAlgorithm::digitize(
 
       if(!PreMixing_) {
 
-	// Here below is the scaling function which describes the evolution of the baseline (i.e. how the charge is suppressed).
-	// This must be replaced as soon as we have a proper modeling of the baseline evolution from VR runs
-	float Shift=1-NumberOfBxBetweenHIPandEvent/floor(300.0/25.0); //Reminder: make these numbers not hardcoded!! 
-	float randomX=CLHEP::RandFlat::shoot(engine);
-	float scalingValue=(randomX-Shift)*10.0/7.0-3.0/7.0;
+    // Here below is the scaling function which describes the evolution of the baseline (i.e. how the charge is suppressed).
+    // This must be replaced as soon as we have a proper modeling of the baseline evolution from VR runs
+    float Shift=1-NumberOfBxBetweenHIPandEvent/floor(300.0/25.0); //Reminder: make these numbers not hardcoded!! 
+    float randomX=CLHEP::RandFlat::shoot(engine);
+    float scalingValue=(randomX-Shift)*10.0/7.0-3.0/7.0;
 
-	for(int strip =0; strip < numStrips; ++strip) {
-	  if(!badChannels[strip] &&  bs[strip/128]==1){
-	    detAmpl[strip] *=scalingValue>0?scalingValue:0.0;
-	  }
-	}
+    for(int strip =0; strip < numStrips; ++strip) {
+      if(!badChannels[strip] &&  bs[strip/128]==1){
+        detAmpl[strip] *=scalingValue>0?scalingValue:0.0;
       }
     }
+        }
+      }
   }
 
 
@@ -367,29 +658,29 @@ SiStripDigitizerAlgorithm::digitize(
                          
       if(SingleStripNoise){
 //      std::cout<<"In SSN, detId="<<detID<<std::endl;
-	std::vector<float> noiseRMSv; 
-	noiseRMSv.clear(); 
-	noiseRMSv.insert(noiseRMSv.begin(),numStrips,0.); 
-	for(int strip=0; strip< numStrips; ++strip){ 
-	  if(!badChannels[strip]){
-	    float gainValue = gainHandle->getStripGain(strip, detGainRange); 
-	    noiseRMSv[strip] = (noiseHandle->getNoise(strip,detNoiseRange))* theElectronPerADC/gainValue;
-	    //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: gainValue: "<<gainValue<<"\tnoiseRMSv["<<strip<<"]: "<<noiseRMSv[strip]<<std::endl;
-	  }
-	}
-	theSiNoiseAdder->addNoiseVR(detAmpl, noiseRMSv, engine);
+        std::vector<float> noiseRMSv; 
+        noiseRMSv.clear(); 
+        noiseRMSv.insert(noiseRMSv.begin(),numStrips,0.); 
+        for(int strip=0; strip< numStrips; ++strip){ 
+          if(!badChannels[strip]){
+            float gainValue = gainHandle->getStripGain(strip, detGainRange); 
+            noiseRMSv[strip] = (noiseHandle->getNoise(strip,detNoiseRange))* theElectronPerADC/gainValue;
+            //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: gainValue: "<<gainValue<<"\tnoiseRMSv["<<strip<<"]: "<<noiseRMSv[strip]<<std::endl;
+          }
+        }
+         theSiNoiseAdder->addNoiseVR(detAmpl, noiseRMSv, engine);
       } else {
-	int RefStrip = int(numStrips/2.);
-	while(RefStrip<numStrips&&badChannels[RefStrip]){ //if the refstrip is bad, I move up to when I don't find it 
-	  RefStrip++;
-	} 
-	if(RefStrip<numStrips){
-	  float RefgainValue = gainHandle->getStripGain(RefStrip, detGainRange);
-	  float RefnoiseRMS = noiseHandle->getNoise(RefStrip,detNoiseRange) *theElectronPerADC/RefgainValue; 
-	
-	  theSiNoiseAdder->addNoise(detAmpl,firstChannelWithSignal,lastChannelWithSignal,numStrips,RefnoiseRMS, engine);
-	  //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: RefgainValue: "<<RefgainValue<<"\tRefnoiseRMS: "<<RefnoiseRMS<<std::endl;
-	}
+          int RefStrip = int(numStrips/2.);
+          while(RefStrip<numStrips&&badChannels[RefStrip]){ //if the refstrip is bad, I move up to when I don't find it 
+            RefStrip++;
+          } 
+          if(RefStrip<numStrips){
+            float RefgainValue = gainHandle->getStripGain(RefStrip, detGainRange);
+            float RefnoiseRMS = noiseHandle->getNoise(RefStrip,detNoiseRange) *theElectronPerADC/RefgainValue; 
+          
+            theSiNoiseAdder->addNoise(detAmpl,firstChannelWithSignal,lastChannelWithSignal,numStrips,RefnoiseRMS, engine);
+            //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: RefgainValue: "<<RefgainValue<<"\tRefnoiseRMS: "<<RefnoiseRMS<<std::endl;
+          }
       }
     }//if noise
 
@@ -472,8 +763,6 @@ SiStripDigitizerAlgorithm::digitize(
 		//------------------------------------------------------
         if(CommonModeNoise){
 		  float cmnRMS = 0.;
-		  DetId  detId(detID);
-		  uint32_t SubDet = detId.subdetId();
 		  if(SubDet==3){
 		    cmnRMS = cmnRMStib;
 		  }else if(SubDet==4){
