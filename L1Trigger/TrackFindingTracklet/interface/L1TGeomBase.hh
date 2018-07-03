@@ -84,7 +84,6 @@ public:
             // Gather info needed to create a TMTT::L1track3D
             // Store dummy values for HT cell location
             pair<unsigned int, unsigned int> cellLocationRphi(0,0);
-            pair<unsigned int, unsigned int> cellLocationRz(0,0);
             // Helix parameters of L1track3D from tracklet
             pair<float, float> helixRphi(1/tracklet.pt(settings->getBfield()),tracklet.phi0());
             pair<float, float> helixRz(tracklet.z0(),tracklet.t());
@@ -95,10 +94,12 @@ public:
             // The KF fitter needs to know which TMTT eta region the track is in
             // SimpleLR doesn't use this information, other than for debugging and for storing in output L1fittedTrack
             int iEtaReg = -1;
-
+            // Dummy value for optolink ID, and whether this track came from a merged HT cell
+            unsigned int optoLinkID = 0;
+            bool mergedHTcell = false;
 
             // Create temporary L1track3D object to work out TMTT eta/phi sectors
-            TMTT::L1track3D tmttTrack_temp( settings, tmttStubs_pointers, cellLocationRphi, helixRphi, cellLocationRz, helixRz, iPhiSec, iEtaReg);
+            TMTT::L1track3D tmttTrack_temp( settings, tmttStubs_pointers, cellLocationRphi, helixRphi, helixRz, iPhiSec, iEtaReg, optoLinkID, mergedHTcell);
 
             unsigned int nTMTTEtaSectors = settings->numEtaRegions();
             unsigned int nTMTTPhiSectors = settings->numPhiSectors();
@@ -125,8 +126,7 @@ public:
             // Some of tracklets end up with eta > 2.4 after converting to TMTT::L1Track3D
             if ( iPhiSec < 0 || iEtaReg < 0 ) continue; 
 
-            TMTT::L1track3D tmttTrack( settings, tmttStubs_pointers, cellLocationRphi, helixRphi, cellLocationRz, helixRz, iPhiSec, iEtaReg);
-
+            TMTT::L1track3D tmttTrack( settings, tmttStubs_pointers, cellLocationRphi, helixRphi, helixRz, iPhiSec, iEtaReg, optoLinkID, mergedHTcell );
 
             // Fit track
             TMTT::L1fittedTrack tmttFittedTrack = fitter.fit(tmttTrack, iPhiSec, iEtaReg );

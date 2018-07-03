@@ -218,7 +218,7 @@ L1TrackProducer::L1TrackProducer(edm::ParameterSet const& iConfig) :
   ttClusterMCTruthToken_(consumes< TTClusterAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthClusterInputTag)),
   ttStubMCTruthToken_(consumes< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthStubInputTag)),
   TrackingParticleToken_(consumes< std::vector< TrackingParticle > >(TrackingParticleInputTag)),
-  TrackingVertexToken_(consumes< std::vector< TrackingVertex > >(TrackingVertexInputTag))
+  TrackingVertexToken_(consumes< std::vector< TrackingVertex > >(TrackingVertexInputTag)),
 
   tmttConfigSettings_(config.getParameter<edm::ParameterSet>("tmttSettings"))
 
