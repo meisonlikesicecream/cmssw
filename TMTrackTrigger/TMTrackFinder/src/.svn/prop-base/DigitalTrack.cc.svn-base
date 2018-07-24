@@ -1,0 +1,8 @@
+K 13
+svn:mergeinfo
+V 360
+/software/cmssw/branch/Ian/TMTrackTrigger/TMTrackFinder/src/DigitalTrack.cc:130-142
+/software/cmssw/branch/rel-1.0-kirika/TMTrackTrigger/TMTrackFinder/src/DigitalTrack.cc:121-124
+/software/cmssw/tags/release-1.0/TMTrackTrigger/TMTrackFinder/src/DigitalTrack.cc:119-129
+/software/cmssw/trunkSimpleCode9/TMTrackTrigger/TMTrackFinder/src/DigitalTrack.cc:4993-5024
+END

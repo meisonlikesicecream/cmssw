@@ -1,0 +1,11 @@
+K 13
+svn:mergeinfo
+V 634
+/software/cmssw/branch/Ian/TMTrackTrigger/TMTrackFinder/test/L1TrackNtupleMaker_cfg.py:130-142
+/software/cmssw/branch/Ian_SimpleCode/L1TrackNtupleMaker_cfg.py:249-625
+/software/cmssw/branch/mp801/TMTrackTrigger/TMTrackFinder/test/L1TrackNtupleMaker_cfg.py:3787-3853
+/software/cmssw/branch/raggleto_81X/TMTrackTrigger/TMTrackFinder/test/L1TrackNtupleMaker_cfg.py:4440-4506
+/software/cmssw/branch/rel-1.0-kirika/TMTrackTrigger/TMTrackFinder/test/L1TrackNtupleMaker_cfg.py:121-124
+/software/cmssw/tags/release-1.0/TMTrackTrigger/TMTrackFinder/test/L1TrackNtupleMaker_cfg.py:119-129
+/software/cmssw/trunk/L1TrackNtupleMaker_cfg.py:113-248
+END
