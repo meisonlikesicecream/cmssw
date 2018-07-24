@@ -1,7 +1,0 @@
-K 13
-svn:mergeinfo
-V 283
-/software/cmssw/branch/Ian/TMTrackTrigger/TMTrackFinder/interface/DigitalTrack.h:130-142
-/software/cmssw/branch/rel-1.0-kirika/TMTrackTrigger/TMTrackFinder/interface/DigitalTrack.h:121-124
-/software/cmssw/tags/release-1.0/TMTrackTrigger/TMTrackFinder/interface/DigitalTrack.h:119-129
-END

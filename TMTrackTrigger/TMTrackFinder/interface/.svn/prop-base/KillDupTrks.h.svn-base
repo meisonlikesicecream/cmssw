@@ -1,8 +1,0 @@
-K 13
-svn:mergeinfo
-V 382
-/software/cmssw/branch/Ian/TMTrackTrigger/TMTrackFinder/interface/KillDupTrksT.h:130-142
-/software/cmssw/branch/raggleto_81X/TMTrackTrigger/TMTrackFinder/interface/KillDupTrks.h:4440-4506
-/software/cmssw/branch/rel-1.0-kirika/TMTrackTrigger/TMTrackFinder/interface/KillDupTrksT.h:121-124
-/software/cmssw/tags/release-1.0/TMTrackTrigger/TMTrackFinder/interface/KillDupTrksT.h:119-129
-END
