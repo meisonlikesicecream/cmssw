@@ -1,0 +1,77 @@
+10
+
+dir
+5522
+svn+ssh://ejclemen@svn.cern.ch/reps/UK-TrackTrig/software/cmssw/trunkSimpleCode9/TMTrackTrigger/TMTrackFinder
+svn+ssh://ejclemen@svn.cern.ch/reps/UK-TrackTrig
+
+
+
+2018-07-23T17:43:06.975622Z
+5515
+tomalini
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4525493e-7705-40b1-a816-d608a930855b
+
+test
+dir
+
+interface
+dir
+
+plugins
+dir
+
+python
+dir
+
+src
+dir
+
+BuildFile.xml
+file
+
+
+
+
+2018-07-24T15:18:10.806832Z
+11e98c79eb2f009b4aa92ee9a9a47204
+2017-10-24T10:12:00.916313Z
+5030
+tomalini
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+936
+

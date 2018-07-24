@@ -1,0 +1,9 @@
+K 13
+svn:mergeinfo
+V 459
+/software/cmssw/branch/Ian/TMTrackTrigger/TMTrackFinder/src/L1fittedTrack.cc:130-142
+/software/cmssw/branch/raggleto_81X/TMTrackTrigger/TMTrackFinder/src/L1fittedTrack.cc:4440-4506
+/software/cmssw/branch/rel-1.0-kirika/TMTrackTrigger/TMTrackFinder/src/L1fittedTrack.cc:121-124
+/software/cmssw/tags/release-1.0/TMTrackTrigger/TMTrackFinder/src/L1fittedTrack.cc:119-129
+/software/cmssw/trunkSimpleCode/TMTrackTrigger/TMTrackFinder/src/L1fittedTrack.cc:3862-4592
+END

@@ -1,0 +1,5 @@
+<use name="TMTrackTrigger/TMTrackFinder"/>
+
+<flags CXXFLAGS="-g -Wno-unused-variable -Wno-misleading-indentation"/>
+<flags EDM_PLUGIN="1"/>
+

@@ -1,0 +1,10 @@
+K 13
+svn:mergeinfo
+V 572
+/software/cmssw/branch/Ian/TMTrackTrigger/TMTrackFinder/interface/Settings.h:130-142
+/software/cmssw/branch/raggleto_81X/TMTrackTrigger/TMTrackFinder/interface/Settings.h:4440-4506
+/software/cmssw/branch/rel-1.0-kirika/TMTrackTrigger/TMTrackFinder/interface/Settings.h:121-124
+/software/cmssw/tags/release-1.0/TMTrackTrigger/TMTrackFinder/interface/Settings.h:119-129
+/software/cmssw/trunkSimpleCode/TMTrackTrigger/TMTrackFinder/interface/Settings.h:1668-2057,3862-4592
+/software/cmssw/trunkSimpleCode9/TMTrackTrigger/TMTrackFinder/interface/Settings.h:4993-5024,5248-5269
+END

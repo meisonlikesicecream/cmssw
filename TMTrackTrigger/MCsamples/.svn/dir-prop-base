@@ -1,0 +1,9 @@
+K 13
+svn:mergeinfo
+V 259
+/software/cmssw/branch/Ian/MCsamples:130-142
+/software/cmssw/branch/raggleto_81X/MCsamples:4440-4506
+/software/cmssw/branch/rel-1.0-kirika/MCsamples:121-124
+/software/cmssw/tags/release-1.0/MCsamples:119-129
+/software/cmssw/trunkSimpleCode/MCsamples:3862-4592
+END

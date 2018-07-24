@@ -1,0 +1,46 @@
+10
+
+dir
+5522
+svn+ssh://ejclemen@svn.cern.ch/reps/UK-TrackTrig/software/cmssw/trunkSimpleCode9/MCsamples/937/RelVal
+svn+ssh://ejclemen@svn.cern.ch/reps/UK-TrackTrig
+
+
+
+2018-07-08T21:38:40.767889Z
+5500
+tomalini
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4525493e-7705-40b1-a816-d608a930855b
+
+OnlyPU
+dir
+
+SingleElPt1p5to8
+dir
+
+SingleMuPt1p5to8
+dir
+
+SingleElPt2to100
+dir
+
+TTbar
+dir
+
+SingleMuPt2to100
+dir
+

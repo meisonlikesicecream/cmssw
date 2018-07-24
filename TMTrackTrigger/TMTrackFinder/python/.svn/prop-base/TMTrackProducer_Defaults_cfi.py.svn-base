@@ -1,0 +1,10 @@
+K 13
+svn:mergeinfo
+V 670
+/software/cmssw/branch/Ian/TMTrackTrigger/TMTrackFinder/python/TMTrackProducer_Defaults_cfi.py:130-142
+/software/cmssw/branch/raggleto_81X/TMTrackTrigger/TMTrackFinder/python/TMTrackProducer_Defaults_cfi.py:4440-4506
+/software/cmssw/branch/rel-1.0-kirika/TMTrackTrigger/TMTrackFinder/python/TMTrackProducer_Defaults_cfi.py:121-124
+/software/cmssw/tags/release-1.0/TMTrackTrigger/TMTrackFinder/python/TMTrackProducer_Defaults_cfi.py:119-129
+/software/cmssw/trunkSimpleCode/TMTrackTrigger/TMTrackFinder/python/TMTrackProducer_Defaults_cfi.py:3862-4592
+/software/cmssw/trunkSimpleCode9/TMTrackTrigger/TMTrackFinder/python/TMTrackProducer_Defaults_cfi.py:4972-5017,5248-5269
+END
