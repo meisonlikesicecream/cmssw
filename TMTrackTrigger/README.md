@@ -97,7 +97,7 @@ You may have to resolve conflicts, in the usual git way.
 Alternatively, if you don't want to commit your local changes, you can do ```git stash```, do the rebase, and then ```git stash pop```.
 
 # To run in a newer CMSSW release
-The above repository was setup in CMSSW_9_3_8.  If you want to run our TMTT software in a newer release, e.g. CMSSW_10_2_0, the command above will attempt things like merging all the differences in all packages between CMSSW_9_3_8 and CMSSW_10_2_0.  This can be avoided by manually perofrming a sparse checkout and tell git to only consider the TMTT directory when performing a checkout (which is similar in part is what the above commands do, as you don't need to checkout all of CMSSW).
+The above repository was setup in CMSSW_9_3_8.  If you want to run our TMTT software in a newer release, e.g. CMSSW_10_2_0, the command above will attempt things like merging all the differences in all packages between CMSSW_9_3_8 and CMSSW_10_2_0.  This can be avoided by manually performing a sparse checkout and tell git to only consider the TMTT directory when performing a checkout (which is similar in part is what the above commands do, as you don't need to checkout all of CMSSW).
 
 ```
 cmsrel CMSSW_10_2_0
@@ -113,3 +113,4 @@ echo "/TMTrackTrigger/MCsamples" >> .git/info/sparse-checkout
 
 git checkout -b myChanges TMTT/portTMTT
 ```
+You can then make changes as before, and create a pull request back to the same repository as before.  Here is an example PR following these steps: https://github.com/EmyrClement/cmssw/pull/2
