@@ -113,4 +113,17 @@ echo "/TMTrackTrigger/MCsamples" >> .git/info/sparse-checkout
 
 git checkout -b myChanges TMTT/portTMTT
 ```
-You can then make changes as before, and create a pull request back to the same repository as before.  Here is an example PR following these steps: https://github.com/EmyrClement/cmssw/pull/2
+You can then make changes as before, and create a pull request back to the same repository as before.
+
+# To make a new branch of our software for a new CMSSW release
+If you want to make a new branch of our software for a new CMSSW release e.g. when we move permanently to a new CMSSW release, you can do the following.  This example is moving from CMSSW_9_3_8 (the release the portTMTT branch was created in) to CMSSW_10_2_0
+```
+cmsrel CMSSW_10_2_0
+cd CMSSW_10_2_0/src
+cmsenv
+
+git cms-init
+git cms-rebase-topic -o CMSSW_9_3_8 EmyrClement:portTMTT
+```
+You will end up on a branch called portTMTT, which will have our TMTT software on top of CMSSW_10_2_0.  You can change to a new branch e.g. portTMTT_10_2_0, and push the new branch to the remote repository (if you have permissions).  If this new CMSSW release and branch should become the "master" branch everyone should work from, then you should also update the recipes/documentation.
+
