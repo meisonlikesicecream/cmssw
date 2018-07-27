@@ -9,33 +9,20 @@ cmsenv
 
 git cms-init
 git remote add -t portTMTT TMTT git@github.com:EmyrClement/cmssw.git
-git fetch TMTT
-git cms-merge-topic EmyrClement:portTMTT
+git fetch TMTT portTMTT
+git cms-checkout-topic EmyrClement:portTMTT
 
 scramv1 b -j 8
 
 cd TMTrackTrigger/TMTrackFinder/test/
 cmsRun tmtt_tf_analysis_cfg.py inputMC=../../MCsamples/937/RelVal/TTbar/PU200.txt Events=10
 ```
+
+Note that if you want to checkout other packages e.g. the tracklet software, which contains the ntuple makes, you should replace ```git cms-checkout-topic``` with ```git cms-merge-topic```
+
 # Setup instructions for making modifications
 
-If you plan to make changes, the procedure is very similar, except you do ```git cms-checkout-topic``` instead of ```git cms-merge-topic```:
-
-```
-cmsrel CMSSW_9_3_8
-cd CMSSW_9_3_8/src
-cmsenv
-
-git cms-init
-git remote add -t portTMTT TMTT git@github.com:EmyrClement/cmssw.git
-git fetch TMTT
-git cms-checkout-topic EmyrClement:portTMTT
-scramv1 b -j 8
-
-cd TMTrackTrigger/TMTrackFinder/test/
-cmsRun tmtt_tf_analysis_cfg.py inputMC=../../MCsamples/937/RelVal/TTbar/PU200.txt Events=10
-```
-At this point, you should be on a local branch called portTMTT.  You can make modifications, and commit your changes to this branch.  
+Follow the above instructions.  At this point, you should be on a local branch called portTMTT.
 
 Below is a simple example of making modifications, pushing them to your remote repository, and making a pull request back to the repository you want your changes to end up in.  In this example, we will use the following as the "central" repository (something equivalent of trunkSimpleCode9 in svn) : https://github.com/EmyrClement/cmssw  Follow the link, and fork the repository to your own account.  You then need to add your newly forked repository as a remote repository in your local working area, which we will call ```origin```:
 ```
@@ -99,3 +86,21 @@ Now push these changes to your remote repository.
 git push origin myChanges 
 ```
 You are now ready to make a pull request back to the central repository.  Go the webpage for your remote repository, and you should see a box stating you have just pushed some changes to the myChanges branch, and gives the option to "Compare & pull request".  Make the pull request to merge your changes in the myChanges branch to EmyrClement/cmssw:portTMTT.  You shoulw end up with a pull request that looks like this : https://github.com/EmyrClement/cmssw/pull/1
+
+# To run in a newer CMSSW release
+The above repository was setup in CMSSW_9_3_8.  If you want to run our TMTT software in a newer release, e.g. CMSSW_10_2_0, the command above will attempt things like merging all the differences in all packages between CMSSW_9_3_8 and CMSSW_10_2_0.  This can be avoided by manually perofrming a sparse checkout and tell git to only consider the TMTT directory when performing a checkout (which is similar in part is what the above commands do, as you don't need to checkout all of CMSSW).
+
+```
+cmsrel CMSSW_10_2_0
+cd CMSSW_10_2_0/src
+cmsenv
+
+git cms-init
+git remote add -t portTMTT TMTT git@github.com:EmyrClement/cmssw.git
+git fetch TMTT portTMTT
+
+echo "/TMTrackTrigger/TMTrackFinder" >> .git/info/sparse-checkout
+echo "/TMTrackTrigger/MCsamples" >> .git/info/sparse-checkout
+
+git checkout -b myChanges TMTT/portTMTT
+```
