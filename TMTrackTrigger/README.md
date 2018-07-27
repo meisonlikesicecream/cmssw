@@ -87,6 +87,15 @@ git push origin myChanges
 ```
 You are now ready to make a pull request back to the central repository.  Go the webpage for your remote repository, and you should see a box stating you have just pushed some changes to the myChanges branch, and gives the option to "Compare & pull request".  Make the pull request to merge your changes in the myChanges branch to EmyrClement/cmssw:portTMTT.  You shoulw end up with a pull request that looks like this : https://github.com/EmyrClement/cmssw/pull/1
 
+# Pull changes from the central TMTT repository
+If changes (new commits) have been made to the central repository since you first checked it out, you can rebase your branch.  If you have any local changes, you need to ```git add``` and ```git commit``` them first.  Then do:
+```
+git pull --rebase TMTT portTMTT
+```
+You may have to resolve conflicts, in the usual git way.
+
+Alternatively, if you don't want to commit your local changes, you can do ```git stash```, do the rebase, and then ```git stash pop```.
+
 # To run in a newer CMSSW release
 The above repository was setup in CMSSW_9_3_8.  If you want to run our TMTT software in a newer release, e.g. CMSSW_10_2_0, the command above will attempt things like merging all the differences in all packages between CMSSW_9_3_8 and CMSSW_10_2_0.  This can be avoided by manually perofrming a sparse checkout and tell git to only consider the TMTT directory when performing a checkout (which is similar in part is what the above commands do, as you don't need to checkout all of CMSSW).
 
