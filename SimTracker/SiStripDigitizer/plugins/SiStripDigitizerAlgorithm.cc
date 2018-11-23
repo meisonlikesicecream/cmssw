@@ -266,6 +266,7 @@ SiStripDigitizerAlgorithm::digitize(
 			   edm::DetSet<SiStripDigi>& outdigi,
 			   edm::DetSet<SiStripRawDigi>& outrawdigi,
          edm::DetSet<SiStripRawDigi>& outStripAmplitudes,
+         edm::DetSet<SiStripRawDigi>& outStripAmplitudesPostAPV,
 			   edm::DetSet<StripDigiSimLink>& outLink,
 			   const StripGeomDetUnit *det,
 			   edm::ESHandle<SiStripGain> & gainHandle,
@@ -290,7 +291,49 @@ SiStripDigitizerAlgorithm::digitize(
   std::vector<bool>& badChannels = allBadChannels[detID];
   for(int strip =0; strip < numStrips; ++strip) {
     if(badChannels[strip]) {detAmpl[strip] = 0.;}
-  } 
+  }
+
+  // SCD, before APV sim
+  for(int strip =0; strip < numStrips; ++strip) outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
+
+  // APV simulation here
+  for(int strip =0; strip < numStrips; ++strip) {
+    if (detAmpl[strip] > 0 ) {
+      // Charge from electrons to fC
+      double stripCharge = detAmpl[strip]*1.602e-4;
+
+      // For now, use the same (hardcoded) V0 for each event
+      double baselineV = 0;
+
+      // Fitted parameters from G Hall/M Raymond
+      double maxResponse = 729;
+      double rate = 66.2;
+      double baselineQ = 729;
+
+      // Convert V0 into baseline charge
+      if ( baselineV < baselineQ ) {
+        baselineQ = - 1.0 * rate * log( 2 * maxResponse / ( baselineV + maxResponse ) - 1);
+      }
+
+      // Add charge deposited in this BX
+      double newStripCharge = baselineQ + stripCharge;
+
+      // Apply APV response
+      double signalV = 2 * maxResponse / ( 1 + exp( -1.0 * newStripCharge / rate) ) - maxResponse;
+      double gain = signalV - baselineV;
+
+      // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
+      double outputCharge = gain/5.5;
+      double outputChargeInADC = outputCharge / 1.602e-4;
+
+      detAmpl[strip] = outputChargeInADC;
+    }
+  }
+
+  // SCD, after APV sim
+  for(int strip =0; strip < numStrips; ++strip) outStripAmplitudesPostAPV.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
+
+
 
   if(APVSaturationFromHIP){
     //Implementation of the proper charge scaling function. Need consider resaturation effect:
@@ -302,24 +345,24 @@ SiStripDigitizerAlgorithm::digitize(
     if(FirstDigitize_) {
 
       for(std::map<int,float>::iterator iter = mapOfAPVprobabilities.begin(); iter != mapOfAPVprobabilities.end(); ++iter){
-	std::bitset<6> bs;
-	for(int Napv=0;Napv<6;Napv++){
-	  float cursor=CLHEP::RandFlat::shoot(engine);
-	  bs[Napv]=cursor < iter->second*APVSaturationProb_ ? 1:0;  //APVSaturationProb has been scaled by PU luminosity
-	}
-	SiStripTrackerAffectedAPVMap[iter->first]=bs;
+      	std::bitset<6> bs;
+      	for(int Napv=0;Napv<6;Napv++){
+      	  float cursor=CLHEP::RandFlat::shoot(engine);
+      	  bs[Napv]=cursor < iter->second*APVSaturationProb_ ? 1:0;  //APVSaturationProb has been scaled by PU luminosity
+      	}
+      	SiStripTrackerAffectedAPVMap[iter->first]=bs;
       }
 
       NumberOfBxBetweenHIPandEvent=1e3;
       bool HasAtleastOneAffectedAPV=false;
       while(!HasAtleastOneAffectedAPV){
-	for(int bx=floor(300.0/25.0);bx>0;bx--){ //Reminder: make these numbers not hard coded!!
-	  float temp=CLHEP::RandFlat::shoot(engine)<0.5?1:0;
-	  if(temp==1 && bx<NumberOfBxBetweenHIPandEvent){
-	    NumberOfBxBetweenHIPandEvent=bx;
-	    HasAtleastOneAffectedAPV=true;
-	  }
-	}
+      	for(int bx=floor(300.0/25.0);bx>0;bx--){ //Reminder: make these numbers not hard coded!!
+      	  float temp=CLHEP::RandFlat::shoot(engine)<0.5?1:0;
+      	  if(temp==1 && bx<NumberOfBxBetweenHIPandEvent){
+      	    NumberOfBxBetweenHIPandEvent=bx;
+      	    HasAtleastOneAffectedAPV=true;
+      	  }
+      	}
       }
 
       FirstDigitize_ = false;
@@ -333,19 +376,19 @@ SiStripDigitizerAlgorithm::digitize(
 
       if(!PreMixing_) {
 
-	// Here below is the scaling function which describes the evolution of the baseline (i.e. how the charge is suppressed).
-	// This must be replaced as soon as we have a proper modeling of the baseline evolution from VR runs
-	float Shift=1-NumberOfBxBetweenHIPandEvent/floor(300.0/25.0); //Reminder: make these numbers not hardcoded!! 
-	float randomX=CLHEP::RandFlat::shoot(engine);
-	float scalingValue=(randomX-Shift)*10.0/7.0-3.0/7.0;
+  	// Here below is the scaling function which describes the evolution of the baseline (i.e. how the charge is suppressed).
+  	// This must be replaced as soon as we have a proper modeling of the baseline evolution from VR runs
+  	float Shift=1-NumberOfBxBetweenHIPandEvent/floor(300.0/25.0); //Reminder: make these numbers not hardcoded!! 
+  	float randomX=CLHEP::RandFlat::shoot(engine);
+  	float scalingValue=(randomX-Shift)*10.0/7.0-3.0/7.0;
 
-	for(int strip =0; strip < numStrips; ++strip) {
-	  if(!badChannels[strip] &&  bs[strip/128]==1){
-	    detAmpl[strip] *=scalingValue>0?scalingValue:0.0;
-	  }
-	}
+  	for(int strip =0; strip < numStrips; ++strip) {
+  	  if(!badChannels[strip] &&  bs[strip/128]==1){
+  	    detAmpl[strip] *=scalingValue>0?scalingValue:0.0;
+  	  }
+  	}
+        }
       }
-    }
   }
 
 
@@ -367,33 +410,31 @@ SiStripDigitizerAlgorithm::digitize(
                          
       if(SingleStripNoise){
 //      std::cout<<"In SSN, detId="<<detID<<std::endl;
-	std::vector<float> noiseRMSv; 
-	noiseRMSv.clear(); 
-	noiseRMSv.insert(noiseRMSv.begin(),numStrips,0.); 
-	for(int strip=0; strip< numStrips; ++strip){ 
-	  if(!badChannels[strip]){
-	    float gainValue = gainHandle->getStripGain(strip, detGainRange); 
-	    noiseRMSv[strip] = (noiseHandle->getNoise(strip,detNoiseRange))* theElectronPerADC/gainValue;
-	    //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: gainValue: "<<gainValue<<"\tnoiseRMSv["<<strip<<"]: "<<noiseRMSv[strip]<<std::endl;
-	  }
-	}
-	theSiNoiseAdder->addNoiseVR(detAmpl, noiseRMSv, engine);
+      	std::vector<float> noiseRMSv; 
+      	noiseRMSv.clear(); 
+      	noiseRMSv.insert(noiseRMSv.begin(),numStrips,0.); 
+      	for(int strip=0; strip< numStrips; ++strip){ 
+      	  if(!badChannels[strip]){
+      	    float gainValue = gainHandle->getStripGain(strip, detGainRange); 
+      	    noiseRMSv[strip] = (noiseHandle->getNoise(strip,detNoiseRange))* theElectronPerADC/gainValue;
+      	    //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: gainValue: "<<gainValue<<"\tnoiseRMSv["<<strip<<"]: "<<noiseRMSv[strip]<<std::endl;
+      	  }
+      	}
+	       theSiNoiseAdder->addNoiseVR(detAmpl, noiseRMSv, engine);
       } else {
-	int RefStrip = int(numStrips/2.);
-	while(RefStrip<numStrips&&badChannels[RefStrip]){ //if the refstrip is bad, I move up to when I don't find it 
-	  RefStrip++;
-	} 
-	if(RefStrip<numStrips){
-	  float RefgainValue = gainHandle->getStripGain(RefStrip, detGainRange);
-	  float RefnoiseRMS = noiseHandle->getNoise(RefStrip,detNoiseRange) *theElectronPerADC/RefgainValue; 
-	
-	  theSiNoiseAdder->addNoise(detAmpl,firstChannelWithSignal,lastChannelWithSignal,numStrips,RefnoiseRMS, engine);
-	  //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: RefgainValue: "<<RefgainValue<<"\tRefnoiseRMS: "<<RefnoiseRMS<<std::endl;
-	}
+        	int RefStrip = int(numStrips/2.);
+        	while(RefStrip<numStrips&&badChannels[RefStrip]){ //if the refstrip is bad, I move up to when I don't find it 
+        	  RefStrip++;
+        	} 
+        	if(RefStrip<numStrips){
+        	  float RefgainValue = gainHandle->getStripGain(RefStrip, detGainRange);
+        	  float RefnoiseRMS = noiseHandle->getNoise(RefStrip,detNoiseRange) *theElectronPerADC/RefgainValue; 
+        	
+        	  theSiNoiseAdder->addNoise(detAmpl,firstChannelWithSignal,lastChannelWithSignal,numStrips,RefnoiseRMS, engine);
+        	  //std::cout<<"<SiStripDigitizerAlgorithm::digitize>: RefgainValue: "<<RefgainValue<<"\tRefnoiseRMS: "<<RefnoiseRMS<<std::endl;
+        	}
       }
     }//if noise
-
-  for(int strip =0; strip < numStrips; ++strip) outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
 
     DigitalVecType digis;
     theSiZeroSuppress->suppress(theSiDigitalConverter->convert(detAmpl, gainHandle, detID), digis, detID,noiseHandle,thresholdHandle);

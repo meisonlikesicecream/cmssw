@@ -82,6 +82,7 @@ class SiStripDigitizerAlgorithm {
                 edm::DetSet<SiStripDigi>& outDigis,
                 edm::DetSet<SiStripRawDigi>& outRawDigis,
                 edm::DetSet<SiStripRawDigi>& outStripAmplitudes,
+                edm::DetSet<SiStripRawDigi>& outStripAmplitudesPostAPV,
                 edm::DetSet<StripDigiSimLink>& outLink,
                 const StripGeomDetUnit* stripdet,
                 edm::ESHandle<SiStripGain>&,
