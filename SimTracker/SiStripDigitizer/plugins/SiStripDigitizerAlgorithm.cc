@@ -332,6 +332,7 @@ void SiStripDigitizerAlgorithm::calcuateAPVBaselines(
     TH1F h_charge_tid = TH1F("h_charge_tid", "h_charge_tid", 60, 0, 60000);
     TH1F h_charge_tec = TH1F("h_charge_tec", "h_charge_tec", 60, 0, 60000);
 
+    // Loop all strips and store total number of strips in each layer, strips with charge/amplitude > X, and store distribution of charges
     for(TrackingGeometry::DetUnitContainer::const_iterator iu = detUnits.begin(); iu != detUnits.end(); iu ++){
 
       auto sgd = dynamic_cast<StripGeomDetUnit const*>((*iu));
@@ -388,6 +389,8 @@ void SiStripDigitizerAlgorithm::calcuateAPVBaselines(
     }
 
 
+    // For each layer in each subdetctor, calculate the occupancy
+    // Also generate a distribution of the APV baseline for each layer
     for ( unsigned int i = 0; i < nStrips_tib.size(); ++i ) {
       occupancy_tib[i] = float(nStripsNonZero_tib[i]) / float(nStrips_tib[i]);
       generateAPVBaseline( occupancy_tib[i], h_charge_tib, apvBaselineDistributions_tib_[i] );
@@ -419,15 +422,19 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
               ) {
 
 
+    // If occupancy is zero, just fill the APV baseline with zero and return
     if ( occupancy == 0. ) {
       baselineDistribution.Fill(0);
       return;
     }
 
+    // Define PDF for the probability for a charge to be deposited in a previous BX for a given occupancy
     unsigned int maxBXWithoutInteraction = log(0.01)/log(1-occupancy);  // Consider BX where probablitiy of interaction is > 1% of occupancy
     TF1 *f_probBX = new TF1("f_probBX","[0]*(1-[0])^x",0,maxBXWithoutInteraction);
     f_probBX->SetParameter(0,occupancy);
 
+
+    // Build up distribution of APV baselines for this given occupancy and charge distribution i.e. repeat process several times and store result
     for ( unsigned int n = 0; n < apv_nBaselineToGenerate; ++n ) {
 
       float baselineQ = 0;
@@ -436,6 +443,9 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
       unsigned int totalInteractions = 0;
       unsigned int nInteractionsWithSmalChange = 0;
 
+      // Simulate several previous charge deposits in a particular strip
+      // Get BX of the charge deposit (how many BX in the past), and how much charge was deposited
+      // Calculate how much of that charge is still on the strip in the current BX (BX == 0 ), by decaying the charge by an exponential
       for ( unsigned int i_interaction = 0; i_interaction < apv_nPreviousInteractionsToSimulate; ++i_interaction ) {
         ++totalInteractions;
         unsigned int BX = f_probBX->GetRandom();
@@ -445,13 +455,16 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
         timeSinceInteractionInMicroS += float(totalBX) * 25 / 1000;
 
         float extraChargeToBaseline = ( charge * exp( -1.0 * timeSinceInteractionInMicroS / apv_decayConstantInMicroS ) );
-        if ( extraChargeToBaseline / baselineQ < apv_smallChangeThreshold ) ++nInteractionsWithSmalChange; 
-        
+
+        // Note if this additional charge has a negligible effect on the APV baseline (because it was very far in the past, or only a small charge was deposited)
+        // If this happens a few times, then the APV baseline is stable, and there's no point in simulating more charge deposits
+        if ( extraChargeToBaseline / baselineQ < apv_smallChangeThreshold ) ++nInteractionsWithSmalChange;         
         if ( nInteractionsWithSmalChange > apv_smallChangeN ) break;
 
         baselineQ += extraChargeToBaseline;
       }
 
+      // Convert to V, and store (perhaps the APV baseline should be stored as a charge?)
       float baselineV = baselineQ * apv_mVPerQ * apv_fCPerElectron;
       if ( baselineV > apv_maxResponse ) baselineV = apv_maxResponse;
       baselineDistribution.Fill( baselineV );
@@ -485,6 +498,8 @@ SiStripDigitizerAlgorithm::digitize(
   DetId  detId(detID);
   uint32_t SubDet = detId.subdetId();
 
+
+  // Get the corresponding APV baseline distribution for this subdetector and layer
   TH1F* apvBaselineDistribution = 0;
   int layer = -1;
   if(SubDet==3) {
@@ -520,18 +535,20 @@ SiStripDigitizerAlgorithm::digitize(
     if(badChannels[strip]) {detAmpl[strip] = 0.;}
   }
 
-  // SCD, before APV sim
+  // Store SCD, before APV sim
   for(int strip =0; strip < numStrips; ++strip) {
     outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
   }
 
-  // APV simulation here
+  // Simulate APV response for each strip
   for(int strip =0; strip < numStrips; ++strip) {
     if (detAmpl[strip] > 0 ) {
-      // Charge from electrons to fC
+      // Convert charge from electrons to fC
       double stripCharge = detAmpl[strip]*apv_fCPerElectron;
 
+      // Get APV baseline
       double baselineV = apvBaselineDistribution->GetRandom();
+      // Store APV baseline for this strip
       outStripAPVBaselines.push_back(SiStripRawDigi(baselineV));
 
       // Fitted parameters from G Hall/M Raymond
@@ -555,11 +572,12 @@ SiStripDigitizerAlgorithm::digitize(
       double outputCharge = gain/apv_mVPerQ;
       double outputChargeInADC = outputCharge / apv_fCPerElectron;
 
+      // Output charge back to original container
       detAmpl[strip] = outputChargeInADC;
     }
   }
 
-  // SCD, after APV sim
+  // Store SCD, after APV sim
   for(int strip =0; strip < numStrips; ++strip) outStripAmplitudesPostAPV.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
 
 
