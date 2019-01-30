@@ -132,8 +132,6 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
     iSetup.get<TrackerTopologyRcd>().get(tTopoHand);
     const TrackerTopology *tTopo=tTopoHand.product();
 
-    // std::cout << "Accumulate for normal event" << std::endl;
-
     // Step A: Get Inputs
     for(auto const& trackerContainer : trackerContainers) {
       edm::Handle<std::vector<PSimHit> > simHits;
@@ -142,8 +140,6 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
       if (trackerContainer.find(std::string("HighTof")) != std::string::npos) tofBin = StripDigiSimLink::HighTof;
 
       iEvent.getByLabel(tag, simHits);
-
-      // std::cout << "Accumulate for normal event.  globalSimHitIndex : " << crossingSimHitIndexOffset_[tag.encode()] << std::endl;
 
       accumulateStripHits(simHits,tTopo,crossingSimHitIndexOffset_[tag.encode()], tofBin, randomEngine(iEvent.streamID()));
       // Now that the hits have been processed, I'll add the amount of hits in this crossing on to
@@ -165,8 +161,6 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
     PileupInfo_ = getEventPileupInfo();
     theDigiAlgo->calculateInstlumiScale(PileupInfo_);
 
-    // std::cout << "Accumulate for PU event" << std::endl;
-
     // Step A: Get Inputs
     for(auto const& trackerContainer : trackerContainers) {
       edm::Handle<std::vector<PSimHit> > simHits;
@@ -175,8 +169,6 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
       if (trackerContainer.find(std::string("HighTof")) != std::string::npos) tofBin = StripDigiSimLink::HighTof; 
 
       iEvent.getByLabel(tag, simHits);
-
-      // std::cout << "Accumulate for PU event.  globalSimHitIndex : " << crossingSimHitIndexOffset_[tag.encode()] << std::endl;
 
       accumulateStripHits(simHits,tTopo,crossingSimHitIndexOffset_[tag.encode()], tofBin, randomEngine(streamID));
       // Now that the hits have been processed, I'll add the amount of hits in this crossing on to
@@ -252,37 +244,6 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   theDigiVector.reserve(10000);
   theDigiVector.clear();
 
-  // EJC Plan
-  // Loop StripGeomDetUnit
-  // Get occupancy and charge distribution (from strip amplitudes) for each layer
-  // Calculate baseline for each strip?  Here, or later?  Then only passing one thing down the line (rather than occupancy and charge dsitribution)
-  // // Sample X charges.  Now need to know when they happened
-  // // Sample X "times" i.e. BX in the past.  Should be able to do this from occupancy, rather than trying many BX and seeing if a charge was deposited in it or not
-  // // Calculate baseline?
-  PileupInfo_ = getEventPileupInfo();
-  if (PileupInfo_) {
-
-    const std::vector<int> bunchCrossing = PileupInfo_->getMix_bunchCrossing();
-    const std::vector<float> TrueInteractionList = PileupInfo_->getMix_TrueInteractions();
-
-    int pui = 0, p = 0;
-    std::vector<int>::const_iterator pu;
-    std::vector<int>::const_iterator pu0 = bunchCrossing.end();
-
-    for (pu=bunchCrossing.begin(); pu!=bunchCrossing.end(); ++pu) {
-      if (*pu==0) {
-        pu0 = pu;
-        p = pui;
-      }
-      pui++;
-    }
-    if (pu0!=bunchCrossing.end()) {  // found the in-time interaction
-      double Tintr = TrueInteractionList.at(p);
-      std::cout << "N true interactions : " << Tintr << std::endl;
-    }
-
-  }
-
   theDigiAlgo->calcuateAPVBaselines(pDD->detUnits(), tTopo);
 
   for(TrackingGeometry::DetUnitContainer::const_iterator iu = pDD->detUnits().begin(); iu != pDD->detUnits().end(); iu ++){
@@ -299,12 +260,6 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
       edm::DetSet<SiStripRawDigi> collectorStripAmplitudesPostAPV((*iu)->geographicalId().rawId());
       edm::DetSet<SiStripRawDigi> collectorStripAPVBaselines((*iu)->geographicalId().rawId());
       edm::DetSet<StripDigiSimLink> collectorLink((*iu)->geographicalId().rawId());
-
-
-      unsigned int detID = sgd->geographicalId().rawId();
-      DetId  detId(detID);
-      // uint32_t SubDet = detId.subdetId();
-      // std::cout << "Calling digitize for subdet : " << SubDet << std::endl;
 
       theDigiAlgo->digitize(collectorZS,collectorRaw,collectorStripAmplitudes, collectorStripAmplitudesPostAPV, collectorStripAPVBaselines, collectorLink,sgd,
                             gainHandle,thresholdHandle,noiseHandle,pedestalHandle,theAffectedAPVvector,randomEngine(iEvent.streamID()), tTopo);
