@@ -75,6 +75,7 @@ SiStripDigitizer::SiStripDigitizer(const edm::ParameterSet& conf, edm::stream::E
   mixMod.produces<edm::DetSetVector<SiStripRawDigi> >(VRDigi).setBranchAlias(alias + VRDigi);
   mixMod.produces<edm::DetSetVector<SiStripRawDigi> >("StripAmplitudes").setBranchAlias(alias + "StripAmplitudes");
   mixMod.produces<edm::DetSetVector<SiStripRawDigi> >("StripAmplitudesPostAPV").setBranchAlias(alias + "StripAmplitudesPostAPV");
+  mixMod.produces<edm::DetSetVector<SiStripRawDigi> >("StripAPVBaselines").setBranchAlias(alias + "StripAPVBaselines");
   mixMod.produces<edm::DetSetVector<SiStripRawDigi> >(PRDigi).setBranchAlias(alias + PRDigi);
   mixMod.produces<edm::DetSetVector<StripDigiSimLink> >().setBranchAlias(alias + "siStripDigiSimLink");
   mixMod.produces<std::vector<std::pair<int,std::bitset<6>>>>("AffectedAPVList").setBranchAlias(alias + "AffectedAPV");
@@ -131,6 +132,8 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
     iSetup.get<TrackerTopologyRcd>().get(tTopoHand);
     const TrackerTopology *tTopo=tTopoHand.product();
 
+    // std::cout << "Accumulate for normal event" << std::endl;
+
     // Step A: Get Inputs
     for(auto const& trackerContainer : trackerContainers) {
       edm::Handle<std::vector<PSimHit> > simHits;
@@ -139,6 +142,9 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
       if (trackerContainer.find(std::string("HighTof")) != std::string::npos) tofBin = StripDigiSimLink::HighTof;
 
       iEvent.getByLabel(tag, simHits);
+
+      // std::cout << "Accumulate for normal event.  globalSimHitIndex : " << crossingSimHitIndexOffset_[tag.encode()] << std::endl;
+
       accumulateStripHits(simHits,tTopo,crossingSimHitIndexOffset_[tag.encode()], tofBin, randomEngine(iEvent.streamID()));
       // Now that the hits have been processed, I'll add the amount of hits in this crossing on to
       // the global counter. Next time accumulateStripHits() is called it will count the sim hits
@@ -159,6 +165,8 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
     PileupInfo_ = getEventPileupInfo();
     theDigiAlgo->calculateInstlumiScale(PileupInfo_);
 
+    // std::cout << "Accumulate for PU event" << std::endl;
+
     // Step A: Get Inputs
     for(auto const& trackerContainer : trackerContainers) {
       edm::Handle<std::vector<PSimHit> > simHits;
@@ -167,6 +175,9 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
       if (trackerContainer.find(std::string("HighTof")) != std::string::npos) tofBin = StripDigiSimLink::HighTof; 
 
       iEvent.getByLabel(tag, simHits);
+
+      // std::cout << "Accumulate for PU event.  globalSimHitIndex : " << crossingSimHitIndexOffset_[tag.encode()] << std::endl;
+
       accumulateStripHits(simHits,tTopo,crossingSimHitIndexOffset_[tag.encode()], tofBin, randomEngine(streamID));
       // Now that the hits have been processed, I'll add the amount of hits in this crossing on to
       // the global counter. Next time accumulateStripHits() is called it will count the sim hits
@@ -229,12 +240,50 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   std::vector<edm::DetSet<SiStripRawDigi> > theRawDigiVector;
   std::vector<edm::DetSet<SiStripRawDigi> > theStripAmplitudeVector;
   std::vector<edm::DetSet<SiStripRawDigi> > theStripAmplitudeVectorPostAPV;
+  std::vector<edm::DetSet<SiStripRawDigi> > theStripAPVBaselines;
   std::unique_ptr< edm::DetSetVector<StripDigiSimLink> > pOutputDigiSimLink( new edm::DetSetVector<StripDigiSimLink> );
  
  
+  edm::ESHandle<TrackerTopology> tTopoHand;
+  iSetup.get<TrackerTopologyRcd>().get(tTopoHand);
+  const TrackerTopology *tTopo=tTopoHand.product();
+
   // Step B: LOOP on StripGeomDetUnit
   theDigiVector.reserve(10000);
   theDigiVector.clear();
+
+  // EJC Plan
+  // Loop StripGeomDetUnit
+  // Get occupancy and charge distribution (from strip amplitudes) for each layer
+  // Calculate baseline for each strip?  Here, or later?  Then only passing one thing down the line (rather than occupancy and charge dsitribution)
+  // // Sample X charges.  Now need to know when they happened
+  // // Sample X "times" i.e. BX in the past.  Should be able to do this from occupancy, rather than trying many BX and seeing if a charge was deposited in it or not
+  // // Calculate baseline?
+  PileupInfo_ = getEventPileupInfo();
+  if (PileupInfo_) {
+
+    const std::vector<int> bunchCrossing = PileupInfo_->getMix_bunchCrossing();
+    const std::vector<float> TrueInteractionList = PileupInfo_->getMix_TrueInteractions();
+
+    int pui = 0, p = 0;
+    std::vector<int>::const_iterator pu;
+    std::vector<int>::const_iterator pu0 = bunchCrossing.end();
+
+    for (pu=bunchCrossing.begin(); pu!=bunchCrossing.end(); ++pu) {
+      if (*pu==0) {
+        pu0 = pu;
+        p = pui;
+      }
+      pui++;
+    }
+    if (pu0!=bunchCrossing.end()) {  // found the in-time interaction
+      double Tintr = TrueInteractionList.at(p);
+      std::cout << "N true interactions : " << Tintr << std::endl;
+    }
+
+  }
+
+  theDigiAlgo->calcuateAPVBaselines(pDD->detUnits(), tTopo);
 
   for(TrackingGeometry::DetUnitContainer::const_iterator iu = pDD->detUnits().begin(); iu != pDD->detUnits().end(); iu ++){
     if(useConfFromDB){
@@ -248,11 +297,20 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
       edm::DetSet<SiStripRawDigi> collectorRaw((*iu)->geographicalId().rawId());
       edm::DetSet<SiStripRawDigi> collectorStripAmplitudes((*iu)->geographicalId().rawId());
       edm::DetSet<SiStripRawDigi> collectorStripAmplitudesPostAPV((*iu)->geographicalId().rawId());
+      edm::DetSet<SiStripRawDigi> collectorStripAPVBaselines((*iu)->geographicalId().rawId());
       edm::DetSet<StripDigiSimLink> collectorLink((*iu)->geographicalId().rawId());
-      theDigiAlgo->digitize(collectorZS,collectorRaw,collectorStripAmplitudes, collectorStripAmplitudesPostAPV, collectorLink,sgd,
-                            gainHandle,thresholdHandle,noiseHandle,pedestalHandle,theAffectedAPVvector,randomEngine(iEvent.streamID()));
+
+
+      unsigned int detID = sgd->geographicalId().rawId();
+      DetId  detId(detID);
+      // uint32_t SubDet = detId.subdetId();
+      // std::cout << "Calling digitize for subdet : " << SubDet << std::endl;
+
+      theDigiAlgo->digitize(collectorZS,collectorRaw,collectorStripAmplitudes, collectorStripAmplitudesPostAPV, collectorStripAPVBaselines, collectorLink,sgd,
+                            gainHandle,thresholdHandle,noiseHandle,pedestalHandle,theAffectedAPVvector,randomEngine(iEvent.streamID()), tTopo);
       theStripAmplitudeVector.push_back( collectorStripAmplitudes );
       theStripAmplitudeVectorPostAPV.push_back( collectorStripAmplitudesPostAPV );
+      theStripAPVBaselines.push_back( collectorStripAPVBaselines );
 
       if(zeroSuppression){
         if(collectorZS.data.size()>0){
@@ -272,6 +330,7 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_virginraw(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_stripamplitudes(new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_stripamplitudes_postAPV(new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
+    std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_stripAPVBaselines(new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_scopemode(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_processedraw(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripDigi> > output(new edm::DetSetVector<SiStripDigi>(theDigiVector) );
@@ -282,6 +341,7 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     iEvent.put(std::move(output_virginraw), VRDigi);
     iEvent.put(std::move(output_stripamplitudes), "StripAmplitudes");
     iEvent.put(std::move(output_stripamplitudes_postAPV), "StripAmplitudesPostAPV");
+    iEvent.put(std::move(output_stripAPVBaselines), "StripAPVBaselines");
     iEvent.put(std::move(output_processedraw), PRDigi);
     iEvent.put(std::move(AffectedAPVList),"AffectedAPVList");
     if( makeDigiSimLinks_ ) iEvent.put(std::move(pOutputDigiSimLink)); // The previous EDProducer didn't name this collection so I won't either
@@ -290,6 +350,7 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_virginraw(new edm::DetSetVector<SiStripRawDigi>(theRawDigiVector));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_stripamplitudes(new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_stripamplitudes_postAPV(new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
+    std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_stripAPVBaselines(new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_scopemode(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi> > output_processedraw(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripDigi> > output(new edm::DetSetVector<SiStripDigi>() );
@@ -299,6 +360,7 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     iEvent.put(std::move(output_virginraw), VRDigi);
     iEvent.put(std::move(output_stripamplitudes), "StripAmplitudes");
     iEvent.put(std::move(output_stripamplitudes_postAPV), "StripAmplitudesPostAPV");
+    iEvent.put(std::move(output_stripAPVBaselines), "StripAPVBaselines");
     iEvent.put(std::move(output_processedraw), PRDigi);
     if( makeDigiSimLinks_ ) iEvent.put(std::move(pOutputDigiSimLink)); // The previous EDProducer didn't name this collection so I won't either
   }

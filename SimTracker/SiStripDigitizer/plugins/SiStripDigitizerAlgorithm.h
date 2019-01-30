@@ -33,7 +33,11 @@
 #include "Geometry/CommonDetUnit/interface/GeomDetType.h"
 #include "SimGeneral/HepPDTRecord/interface/ParticleDataTable.h"
 #include "RecoLocalTracker/SiStripZeroSuppression/interface/SiStripFedZeroSuppression.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
+#include "TH1F.h"
+#include "TF1.h"
+ 
 #include <iostream>
 #include <fstream>
 
@@ -83,6 +87,7 @@ class SiStripDigitizerAlgorithm {
                 edm::DetSet<SiStripRawDigi>& outRawDigis,
                 edm::DetSet<SiStripRawDigi>& outStripAmplitudes,
                 edm::DetSet<SiStripRawDigi>& outStripAmplitudesPostAPV,
+                edm::DetSet<SiStripRawDigi>& outStripAPVBaselines,
                 edm::DetSet<StripDigiSimLink>& outLink,
                 const StripGeomDetUnit* stripdet,
                 edm::ESHandle<SiStripGain>&,
@@ -90,7 +95,20 @@ class SiStripDigitizerAlgorithm {
                 edm::ESHandle<SiStripNoises>&,
                 edm::ESHandle<SiStripPedestals>&,
 		std::vector<std::pair<int,std::bitset<6>>> & theAffectedAPVvector,
-                CLHEP::HepRandomEngine*);
+                CLHEP::HepRandomEngine*,
+                const TrackerTopology *tTopo);
+
+  void calcuateAPVBaselines(
+                TrackingGeometry::DetUnitContainer detUnits,
+                const TrackerTopology *tTopo
+                );
+
+  void generateAPVBaseline(
+              float occupancy,
+              TH1F chargeDistribution,
+              TH1F& baselineDistribution
+              );
+
 
   void calculateInstlumiScale(PileupMixingContent* puInfo);
 
@@ -120,6 +138,21 @@ class SiStripDigitizerAlgorithm {
   const int theFedAlgo;
   const bool zeroSuppression;
   const double theElectronPerADC;
+
+  const double  apv_minAmplitude;
+  const double  apv_decayConstantInMicroS;
+  const unsigned int  apv_nPreviousInteractionsToSimulate;
+  const unsigned int  apv_nBaselineToGenerate;
+  const double  apv_smallChangeThreshold;
+  const unsigned int  apv_smallChangeN;
+
+  const double  apv_maxResponse;
+
+  const double  apv_rate;
+  const double  apv_mVPerQ;
+  const double  apv_fCPerElectron;
+
+
   const double theTOFCutForPeak;
   const double theTOFCutForDeconvolution;
   const double tofCut;
@@ -173,6 +206,12 @@ class SiStripDigitizerAlgorithm {
   std::map < int , float> mapOfAPVprobabilities;
   std::map < int , std::bitset<6> > SiStripTrackerAffectedAPVMap;
   int NumberOfBxBetweenHIPandEvent;
+
+  std::vector<TH1F> apvBaselineDistributions_tib_;
+  std::vector<TH1F> apvBaselineDistributions_tob_;
+  std::vector<TH1F> apvBaselineDistributions_tid_;
+  std::vector<TH1F> apvBaselineDistributions_tec_;
+
 };
 
 #endif
