@@ -107,31 +107,31 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
          << "It seems that the APV probability list is missing\n";
   }
 
-  apvBaselineDistributions_tib_.push_back( TH1F("TIB1", "TIB1", 100, 0, 729) );
-  apvBaselineDistributions_tib_.push_back( TH1F("TIB2", "TIB2", 100, 0, 729) );
-  apvBaselineDistributions_tib_.push_back( TH1F("TIB3", "TIB3", 100, 0, 729) );
-  apvBaselineDistributions_tib_.push_back( TH1F("TIB4", "TIB4", 100, 0, 729) );
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB1", "TIB1", 100, 0, 730) );
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB2", "TIB2", 100, 0, 730) );
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB3", "TIB3", 100, 0, 730) );
+  apvBaselineDistributions_tib_.push_back( TH1F("TIB4", "TIB4", 100, 0, 730) );
 
 
-  apvBaselineDistributions_tob_.push_back( TH1F("TOB1", "TOB1", 100, 0, 729) );
-  apvBaselineDistributions_tob_.push_back( TH1F("TOB2", "TOB2", 100, 0, 729) );
-  apvBaselineDistributions_tob_.push_back( TH1F("TOB3", "TOB3", 100, 0, 729) );
-  apvBaselineDistributions_tob_.push_back( TH1F("TOB4", "TOB4", 100, 0, 729) );
-  apvBaselineDistributions_tob_.push_back( TH1F("TOB5", "TOB5", 100, 0, 729) );
-  apvBaselineDistributions_tob_.push_back( TH1F("TOB6", "TOB6", 100, 0, 729) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB1", "TOB1", 100, 0, 730) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB2", "TOB2", 100, 0, 730) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB3", "TOB3", 100, 0, 730) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB4", "TOB4", 100, 0, 730) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB5", "TOB5", 100, 0, 730) );
+  apvBaselineDistributions_tob_.push_back( TH1F("TOB6", "TOB6", 100, 0, 730) );
 
 
-  apvBaselineDistributions_tid_.push_back( TH1F("TID1", "TID1", 100, 0, 729) );
-  apvBaselineDistributions_tid_.push_back( TH1F("TID2", "TID2", 100, 0, 729) );
-  apvBaselineDistributions_tid_.push_back( TH1F("TID3", "TID3", 100, 0, 729) );
+  apvBaselineDistributions_tid_.push_back( TH1F("TID1", "TID1", 100, 0, 730) );
+  apvBaselineDistributions_tid_.push_back( TH1F("TID2", "TID2", 100, 0, 730) );
+  apvBaselineDistributions_tid_.push_back( TH1F("TID3", "TID3", 100, 0, 730) );
 
-  apvBaselineDistributions_tec_.push_back( TH1F("TEC1", "TEC1", 100, 0, 729) );
-  apvBaselineDistributions_tec_.push_back( TH1F("TEC2", "TEC2", 100, 0, 729) );
-  apvBaselineDistributions_tec_.push_back( TH1F("TEC3", "TEC3", 100, 0, 729) );
-  apvBaselineDistributions_tec_.push_back( TH1F("TEC4", "TEC4", 100, 0, 729) );
-  apvBaselineDistributions_tec_.push_back( TH1F("TEC5", "TEC5", 100, 0, 729) );
-  apvBaselineDistributions_tec_.push_back( TH1F("TEC6", "TEC6", 100, 0, 729) );
-  apvBaselineDistributions_tec_.push_back( TH1F("TEC7", "TEC7", 100, 0, 729) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC1", "TEC1", 100, 0, 730) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC2", "TEC2", 100, 0, 730) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC3", "TEC3", 100, 0, 730) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC4", "TEC4", 100, 0, 730) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC5", "TEC5", 100, 0, 730) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC6", "TEC6", 100, 0, 730) );
+  apvBaselineDistributions_tec_.push_back( TH1F("TEC7", "TEC7", 100, 0, 730) );
 }
 
 SiStripDigitizerAlgorithm::~SiStripDigitizerAlgorithm(){
