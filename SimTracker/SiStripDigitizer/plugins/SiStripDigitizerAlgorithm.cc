@@ -433,6 +433,17 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
     TF1 *f_probBX = new TF1("f_probBX","[0]*(1-[0])^x",0,maxBXWithoutInteraction);
     f_probBX->SetParameter(0,occupancy);
 
+    // PDF for amound of charge deposited on a strip
+    TF1 *f_probCharge = new TF1("f_probCharge","[0]*TMath::Landau(x,[1],[2])",apv_minAmplitude,600000);
+    f_probCharge->SetParameter(0,2.3E-3);
+    f_probCharge->SetParameter(1,1.4E4);
+    f_probCharge->SetParameter(2,3.8E3);
+
+    // myFunc = r.TF1('myFunc','[0]*TMath::Landau(x,[1],[2])',1000,h_scd.GetXaxis().GetXmax())
+    // myFunc.SetParameters(2.3E-3, 1.4E4, 3.8E3 )
+
+    // double maxChargePicked = 0;
+
 
     // Build up distribution of APV baselines for this given occupancy and charge distribution i.e. repeat process several times and store result
     for ( unsigned int n = 0; n < apv_nBaselineToGenerate; ++n ) {
@@ -449,7 +460,12 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
       for ( unsigned int i_interaction = 0; i_interaction < apv_nPreviousInteractionsToSimulate; ++i_interaction ) {
         ++totalInteractions;
         unsigned int BX = f_probBX->GetRandom();
-        float charge = chargeDistribution.GetRandom();
+        // float charge = chargeDistribution.GetRandom();
+        float charge = f_probCharge->GetRandom();
+        // if ( charge > 60000 ) {
+        //   std::cout << "Sampled charge : " << charge << std::endl;         
+        // }
+        // if ( charge > maxChargePicked ) maxChargePicked = charge;
 
         totalBX += BX;
         timeSinceInteractionInMicroS += float(totalBX) * 25 / 1000;
