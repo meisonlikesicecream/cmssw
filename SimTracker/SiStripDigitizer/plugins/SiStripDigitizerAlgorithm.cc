@@ -377,6 +377,8 @@ void SiStripDigitizerAlgorithm::calcuateAPVBaselines(
               else if(SubDet==5){
                 ++nStripsNonZero_tob[layer-1];
                 h_charge_tob.Fill( amp.second );
+                // std::cout << "TOB charge : " << amp.second << std::endl;
+                // if ( amp.second > 30000 ) std::cout << "----> BIG CHARGE" << std::endl;
               } 
               else if(SubDet==6){
                 ++nStripsNonZero_tec[layer-1];
@@ -387,6 +389,9 @@ void SiStripDigitizerAlgorithm::calcuateAPVBaselines(
         }
       }
     }
+
+    // std::cout << "TOB charge info" << std::endl;
+    // std::cout << "Entries, mean, max value : " << h_charge_tob.GetEntries() << " " << h_charge_tob.GetMean() << " " << h_charge_tob.GetBinCenter( h_charge_tob.FindLastBinAbove(0) ) << std::endl;
 
 
     // For each layer in each subdetctor, calculate the occupancy
@@ -434,7 +439,7 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
     f_probBX->SetParameter(0,occupancy);
 
     // PDF for amound of charge deposited on a strip
-    TF1 *f_probCharge = new TF1("f_probCharge","[0]*TMath::Landau(x,[1],[2])",apv_minAmplitude,600000);
+    TF1 *f_probCharge = new TF1("f_probCharge","[0]*TMath::Landau(x,[1],[2])",apv_minAmplitude,600000*100);
     f_probCharge->SetParameter(0,2.3E-3);
     f_probCharge->SetParameter(1,1.4E4);
     f_probCharge->SetParameter(2,3.8E3);
@@ -442,7 +447,7 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
     // myFunc = r.TF1('myFunc','[0]*TMath::Landau(x,[1],[2])',1000,h_scd.GetXaxis().GetXmax())
     // myFunc.SetParameters(2.3E-3, 1.4E4, 3.8E3 )
 
-    // double maxChargePicked = 0;
+    double maxChargePicked = 0;
 
 
     // Build up distribution of APV baselines for this given occupancy and charge distribution i.e. repeat process several times and store result
@@ -465,7 +470,7 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
         // if ( charge > 60000 ) {
         //   std::cout << "Sampled charge : " << charge << std::endl;         
         // }
-        // if ( charge > maxChargePicked ) maxChargePicked = charge;
+        if ( charge > maxChargePicked ) maxChargePicked = charge;
 
         totalBX += BX;
         timeSinceInteractionInMicroS += float(totalBX) * 25 / 1000;
@@ -485,6 +490,7 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
       if ( baselineV > apv_maxResponse ) baselineV = apv_maxResponse;
       baselineDistribution.Fill( baselineV );
     }
+    // std::cout << "Maximum charge generated : " << maxChargePicked << std::endl;
 }
 
 //============================================================================                
