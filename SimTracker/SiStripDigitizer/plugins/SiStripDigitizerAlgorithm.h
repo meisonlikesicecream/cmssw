@@ -37,6 +37,7 @@
 
 #include "TH1F.h"
 #include "TF1.h"
+#include "TString.h"
  
 #include <iostream>
 #include <fstream>
@@ -98,15 +99,16 @@ class SiStripDigitizerAlgorithm {
                 CLHEP::HepRandomEngine*,
                 const TrackerTopology *tTopo);
 
-  void calcuateAPVBaselines(
+  void calculateAPVBaselines(
                 TrackingGeometry::DetContainer detUnits,
-                const TrackerTopology *tTopo
+                const TrackerTopology *tTopo,
+                PileupMixingContent* puInfo
                 );
 
   void generateAPVBaseline(
               float occupancy,
-              TH1F chargeDistribution,
-              TH1F& baselineDistribution
+              std::vector< std::vector<float> > chargeDistributionParameters,
+               std::vector< TH1F >& baselineDistribution
               );
 
 
@@ -207,11 +209,14 @@ class SiStripDigitizerAlgorithm {
   std::map < int , std::bitset<6> > SiStripTrackerAffectedAPVMap;
   int NumberOfBxBetweenHIPandEvent;
 
-  std::vector<TH1F> apvBaselineDistributions_tib_;
-  std::vector<TH1F> apvBaselineDistributions_tob_;
-  std::vector<TH1F> apvBaselineDistributions_tid_;
-  std::vector<TH1F> apvBaselineDistributions_tec_;
+  std::vector< std::vector<TH1F> > apvBaselineDistributions_tib_;
+  std::vector< std::vector<TH1F> > apvBaselineDistributions_tob_;
+  std::vector< std::vector<TH1F> > apvBaselineDistributions_tid_;
+  std::vector< std::vector<TH1F> > apvBaselineDistributions_tec_;
 
+  std::vector< std::vector< std::vector< std::vector<float> > > > chargeDistributionParameters_;
+  std::vector< unsigned int > chargeDistributionParameters_puBinEdges_;
+  std::vector< float > chargeDistributionParameters_zBinEdges_;
 };
 
 #endif

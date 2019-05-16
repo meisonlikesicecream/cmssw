@@ -247,7 +247,7 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   theDigiVector.reserve(10000);
   theDigiVector.clear();
 
-  theDigiAlgo->calcuateAPVBaselines(pDD->detUnits(), tTopo);
+  theDigiAlgo->calculateAPVBaselines(pDD->detUnits(), tTopo, PileupInfo_.get());
 
   for( const auto& iu : pDD->detUnits()) {
     if(useConfFromDB){
