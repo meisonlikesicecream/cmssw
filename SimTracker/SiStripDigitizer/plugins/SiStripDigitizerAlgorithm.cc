@@ -256,8 +256,35 @@ chargeDistributionParameters_ = {
   },
 };
 
+occupancy_ = {
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00988993621679, 0.0097400483631, 0.00901957667151,    },    std::vector< float > {0.0225056742462, 0.0208329324456, 0.0214193752506,    },  std::vector< float > {0.0350604218561, 0.0318203880673, 0.0339170943859,    },    std::vector< float > {0.0497993800951, 0.0474108741397, 0.0473400973534,    },    std::vector< float > {0.063546069847, 0.0589343843006, 0.0598509165052,     },    std::vector< float > {0.0744393021588, 0.0671037946429, 0.0679221929506,    },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00685440806414, 0.00635421187789, 0.00616566051136,     },    std::vector< float > {0.0150039753648, 0.014794516533, 0.0146455802638,     },  std::vector< float > {0.0239820158883, 0.0224456787109, 0.0232680812027,    },    std::vector< float > {0.0331119151598, 0.0323904531973, 0.0344308564157,    },    std::vector< float > {0.0431291939763, 0.0416187427662, 0.0438182607323,    },    std::vector< float > {0.0525935598081, 0.048095703125, 0.0485691879735,     },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00581970214844, 0.00527072482639, 0.00512336282169,     },    std::vector< float > {0.0132728914909, 0.0130878083094, 0.0118544387044,    },  std::vector< float > {0.0195339747838, 0.0186008029514, 0.0166240018957,    },    std::vector< float > {0.0282641819545, 0.0274922688802, 0.0261401008157,    },    std::vector< float > {0.037545921689, 0.0351106770833, 0.0338608685662,     },    std::vector< float > {0.0417611258371, 0.0415690104167, 0.0395005170037,    },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00431290811567, 0.00404007523148, 0.00390446360518,     },    std::vector< float > {0.00974200254117, 0.00943480354007, 0.00807532590412,     },  std::vector< float > {0.0149180853545, 0.0136594419126, 0.0127995188643,    },    std::vector< float > {0.0219603581215, 0.0197663483796, 0.0189305747428,    },    std::vector< float > {0.0281483208955, 0.0263093171296, 0.0233049098069,    },    std::vector< float > {0.0323759619869, 0.0307481553819, 0.0287430926067,    },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00989815848214, 0.00916515531994, 0.00946626209077, 0.0101422991071,    },    std::vector< float > {0.0208036676416, 0.0212969599882, 0.022551538126, 0.0233575228987,    },    std::vector< float > {0.0324220203218, 0.032590230306, 0.0348227364676, 0.0340830485026,    },    std::vector< float > {0.0469040643601, 0.0470769973028, 0.0474729992094, 0.0492368425642,     },    std::vector< float > {0.062000093006, 0.0622709728423, 0.0642407614087, 0.0652018229167,    },    std::vector< float > {0.0680803571429, 0.0693126860119, 0.0716203962054, 0.0748683384487,     },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.007373046875, 0.00714772542318, 0.0074208577474, 0.00776875813802,    },    std::vector< float > {0.0161269615436, 0.0160706618737, 0.0165780604571, 0.0170989639458,     },    std::vector< float > {0.025234858195, 0.0246636072795, 0.024974822998, 0.0262851715088,     },    std::vector< float > {0.0361417134603, 0.0354220072428, 0.0358715057373, 0.0383475621541,     },    std::vector< float > {0.0470662434896, 0.0467125786675, 0.0479695638021, 0.049355061849,    },    std::vector< float > {0.0513559977214, 0.0522727966309, 0.0545247395833, 0.0564626057943,     },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00523817274306, 0.00476255063657, 0.00523998119213, 0.00543619791667,     },    std::vector< float > {0.0117449413314, 0.0116002654055, 0.0118628023228, 0.0121914411718,     },    std::vector< float > {0.0181443956163, 0.0183354130498, 0.0181670012297, 0.0184608742043,     },    std::vector< float > {0.0243021647135, 0.0253928855613, 0.0255827727141, 0.0276251898872,     },    std::vector< float > {0.0334285783179, 0.0341423128858, 0.0340940875772, 0.0351068190586,     },    std::vector< float > {0.0406268084491, 0.037281177662, 0.0391438802083, 0.0426070601852,    },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00336181640625, 0.00374552408854, 0.00420328776042, 0.00433797200521,     },    std::vector< float > {0.00874416307471, 0.00864145563937, 0.00892544450431, 0.00929109419899,     },    std::vector< float > {0.0128194173177, 0.0131164550781, 0.013389078776, 0.0141581217448,    },    std::vector< float > {0.0183797200521, 0.0185440063477, 0.020160929362, 0.020127360026,     },    std::vector< float > {0.0233637152778, 0.0243234592014, 0.0271929253472, 0.0265755208333,     },    std::vector< float > {0.0292643229167, 0.0281697591146, 0.030126953125, 0.0298116048177,    },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00213561395202, 0.00267962831439, 0.00247395833333, 0.00261131826073,     },    std::vector< float > {0.00558181491641, 0.00567093347266, 0.00588148456548, 0.00621397841562,     },    std::vector< float > {0.00844874526515, 0.00869442718198, 0.00937228732639, 0.00947863646228,     },    std::vector< float > {0.0114955709438, 0.0125106657394, 0.0127520320391, 0.0134308169586,     },    std::vector< float > {0.0156453861532, 0.0164634627525, 0.018138415404, 0.0174923058712,    },    std::vector< float > {0.0171884864268, 0.0176607382418, 0.0179233743687, 0.0189948804451,     },  },
+  std::vector< std::vector< float > >{
+    std::vector< float > {0.00154842342342, 0.00180840019707, 0.0018651463964, 0.00169886683559,    },    std::vector< float > {0.00366931451926, 0.00386013707673, 0.00396449790308, 0.00403700440742,     },    std::vector< float > {0.00582363369229, 0.00624235685881, 0.0062195374085, 0.00635782877604,    },    std::vector< float > {0.0085608679969, 0.0089551221143, 0.00951158678209, 0.00933288024352,     },    std::vector< float > {0.0112501173048, 0.01166918872, 0.0126478040541, 0.0123076201201,     },    std::vector< float > {0.0125611451295, 0.0130285314611, 0.0142767278998, 0.0146539361627,     },  },
+};
+
   chargeDistributionParameters_puBinEdges_ = { 0, 10, 20, 30, 40, 50 };
   chargeDistributionParameters_zBinEdges_ = { 0, 25, 50, 75 };
+
+
+
+
   apvBaselineDistributions_tib_ = {};
   for ( auto zBin:chargeDistributionParameters_zBinEdges_ ) {
     apvBaselineDistributions_tib_[0].push_back( TH1F( TString( "TIB1_" + std::to_string( zBin ) ).Data() , TString( "TIB1_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
@@ -584,21 +611,23 @@ void SiStripDigitizerAlgorithm::calculateAPVBaselines(
     for ( unsigned int i = 0; i < nStrips_tib.size(); ++i ) {
       // std::cout << i << std::endl;
       occupancy_tib[i] = float(nStripsNonZero_tib[i]) / float(nStrips_tib[i]);
-
+      std::vector< float > occupanciesVsZ = occupancy_[i][chargeDistributionParameters_puBin];
       // We know which layer we are in
       // Can get the function describing the charge deposited for different bins in z for the number PU in this event
       // std::vector< std::vector< float > > chargeDistributionParameters.at(i); // = something from config file
       // std::vector< std::vector< float > > chargeDistributionParameters_ = chargeDistributionParameters_[i][chargeDistributionParameters_puBin];
       // Pass functions to generateAPVBasline, get back apv baselines in various bins of z for this layer
       // std::cout << "Going into generateAPVBaseline for TIB" << std::endl;
-      generateAPVBaseline( occupancy_tib[i], chargeDistributionParameters_[i][chargeDistributionParameters_puBin], apvBaselineDistributions_tib_[i] );
+      generateAPVBaseline( occupanciesVsZ, chargeDistributionParameters_[i][chargeDistributionParameters_puBin], apvBaselineDistributions_tib_[i] );
       // std::cout << "DONE : Going into generateAPVBaseline" << std::endl;
     }
 
     for ( unsigned int i = 0; i < nStrips_tob.size(); ++i ) {
       occupancy_tob[i] = float(nStripsNonZero_tob[i]) / float(nStrips_tob[i]);
+      std::vector< float > occupanciesVsZ = occupancy_[4+i][chargeDistributionParameters_puBin];
+
       // std::cout << "Going into generateAPVBaseline for TOB" << std::endl;
-      generateAPVBaseline( occupancy_tob[i], chargeDistributionParameters_[4+i][chargeDistributionParameters_puBin], apvBaselineDistributions_tob_[i] );
+      generateAPVBaseline( occupanciesVsZ, chargeDistributionParameters_[4+i][chargeDistributionParameters_puBin], apvBaselineDistributions_tob_[i] );
       // generateAPVBaseline( occupancy_tob[i], h_charge_tob, apvBaselineDistributions_tob_[i] );
       // std::cout << "DONE : Going into generateAPVBaseline" << std::endl;
 
@@ -619,7 +648,7 @@ void SiStripDigitizerAlgorithm::calculateAPVBaselines(
 //============================================================================                
 
 void SiStripDigitizerAlgorithm::generateAPVBaseline(
-              float occupancy,
+              std::vector< float > occupancyVsZ,
               std::vector< std::vector<float> > chargeDistributionParameters,
               std::vector< TH1F >& baselineDistributions
               ) {
@@ -628,8 +657,10 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
     for ( unsigned int i_zBin = 0; i_zBin < chargeDistributionParameters.size(); ++ i_zBin ) {
       TH1F& baselineDistribution = baselineDistributions[ i_zBin ];
       std::vector<float> chargeDistributionParameters_i_zBin = chargeDistributionParameters[ i_zBin ];
+      float occupancy = occupancyVsZ[ i_zBin ];
       // If occupancy is zero, just fill the APV baseline with zero and return
       // std::cout << "Generating baselines for zbin : " << i_zBin << " " << occupancy << std::endl;
+      // std::cout << "Occupancy : " << occupancy << std::endl;
       if ( occupancy == 0. ) {
         baselineDistribution.Fill(0);
         return;

@@ -106,7 +106,7 @@ class SiStripDigitizerAlgorithm {
                 );
 
   void generateAPVBaseline(
-              float occupancy,
+              std::vector< float > occupancy,
               std::vector< std::vector<float> > chargeDistributionParameters,
                std::vector< TH1F >& baselineDistribution
               );
@@ -215,6 +215,7 @@ class SiStripDigitizerAlgorithm {
   std::vector< std::vector<TH1F> > apvBaselineDistributions_tec_;
 
   std::vector< std::vector< std::vector< std::vector<float> > > > chargeDistributionParameters_;
+  std::vector< std::vector< std::vector<float> > > occupancy_;
   std::vector< unsigned int > chargeDistributionParameters_puBinEdges_;
   std::vector< float > chargeDistributionParameters_zBinEdges_;
 };
