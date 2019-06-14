@@ -656,6 +656,7 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
     // std::cout << "N z bins : " << chargeDistributionParameters.size() << std::endl;
     for ( unsigned int i_zBin = 0; i_zBin < chargeDistributionParameters.size(); ++ i_zBin ) {
       TH1F& baselineDistribution = baselineDistributions[ i_zBin ];
+      baselineDistribution.Reset();
       std::vector<float> chargeDistributionParameters_i_zBin = chargeDistributionParameters[ i_zBin ];
       float occupancy = occupancyVsZ[ i_zBin ];
       // If occupancy is zero, just fill the APV baseline with zero and return
