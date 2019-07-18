@@ -692,7 +692,7 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
 
         float baselineQ = 0;
         float timeSinceInteractionInMicroS = 0;
-        unsigned int totalBX = 0;
+        // unsigned int totalBX = 0;
         unsigned int totalInteractions = 0;
         unsigned int nInteractionsWithSmalChange = 0;
 
@@ -709,8 +709,8 @@ void SiStripDigitizerAlgorithm::generateAPVBaseline(
           // }
           if ( charge > maxChargePicked ) maxChargePicked = charge;
 
-          totalBX += BX;
-          timeSinceInteractionInMicroS += float(totalBX) * 25 / 1000;
+          // totalBX += BX;
+          timeSinceInteractionInMicroS += float(BX) * 25 / 1000;
 
           float extraChargeToBaseline = ( charge * exp( -1.0 * timeSinceInteractionInMicroS / apv_decayConstantInMicroS ) );
 
