@@ -99,18 +99,6 @@ class SiStripDigitizerAlgorithm {
                 CLHEP::HepRandomEngine*,
                 const TrackerTopology *tTopo);
 
-  void calculateAPVBaselines(
-                TrackingGeometry::DetContainer detUnits,
-                const TrackerTopology *tTopo,
-                PileupMixingContent* puInfo
-                );
-
-  void generateAPVBaseline(
-              std::vector< float > occupancy,
-              std::vector< std::vector<float> > chargeDistributionParameters,
-               std::vector< TH1F >& baselineDistribution
-              );
-
 
   void calculateInstlumiScale(PileupMixingContent* puInfo);
 
@@ -140,13 +128,6 @@ class SiStripDigitizerAlgorithm {
   const int theFedAlgo;
   const bool zeroSuppression;
   const double theElectronPerADC;
-
-  const double  apv_minAmplitude;
-  const double  apv_decayConstantInMicroS;
-  const unsigned int  apv_nPreviousInteractionsToSimulate;
-  const unsigned int  apv_nBaselineToGenerate;
-  const double  apv_smallChangeThreshold;
-  const unsigned int  apv_smallChangeN;
 
   const double  apv_maxResponse;
 
@@ -209,15 +190,43 @@ class SiStripDigitizerAlgorithm {
   std::map < int , std::bitset<6> > SiStripTrackerAffectedAPVMap;
   int NumberOfBxBetweenHIPandEvent;
 
-  std::vector< std::vector<TH1F> > apvBaselineDistributions_tib_;
-  std::vector< std::vector<TH1F> > apvBaselineDistributions_tob_;
-  std::vector< std::vector<TH1F> > apvBaselineDistributions_tid_;
-  std::vector< std::vector<TH1F> > apvBaselineDistributions_tec_;
+  std::vector< double > apvBaselines_tib1_;
+  std::vector< double > apvBaselines_tib2_;
+  std::vector< double > apvBaselines_tib3_;
+  std::vector< double > apvBaselines_tib4_;
 
-  std::vector< std::vector< std::vector< std::vector<float> > > > chargeDistributionParameters_;
-  std::vector< std::vector< std::vector<float> > > occupancy_;
-  std::vector< unsigned int > chargeDistributionParameters_puBinEdges_;
-  std::vector< float > chargeDistributionParameters_zBinEdges_;
+  std::vector< double > apvBaselines_tob1_;
+  std::vector< double > apvBaselines_tob2_;
+  std::vector< double > apvBaselines_tob3_;
+  std::vector< double > apvBaselines_tob4_;
+  std::vector< double > apvBaselines_tob5_;
+  std::vector< double > apvBaselines_tob6_;
+
+  unsigned int nTruePU_;
+  unsigned int apvBaselines_nBinsPerBaseline_;
+  double apvBaselines_minBaseline_;
+  double apvBaselines_maxBaseline_;
+  std::vector< double > apvBaselines_puBinEdges_;
+  std::vector< double > apvBaselines_zBinEdges_;
+
+  std::vector< std::vector< std::vector<TH1F> > > apvBaselineHistograms_tib_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib1_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib2_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib3_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tib4_;
+
+  std::vector< std::vector< std::vector<TH1F> > > apvBaselineHistograms_tob_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob1_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob2_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob3_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob4_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob5_;
+  std::vector< std::vector<TH1F> > apvBaselineHistograms_tob6_;
+
+  // std::vector< std::vector<TH1F> > apvBaselineHistograms_tid_;
+  // std::vector< std::vector<TH1F> > apvBaselineHistograms_tec_;
+
+  void fillAPVBaselineHistograms( std::vector< std::vector<TH1F> > &apvHistograms, std::vector< double > &theAPVBaselines );
 };
 
 #endif

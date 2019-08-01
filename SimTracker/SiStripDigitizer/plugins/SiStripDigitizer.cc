@@ -247,8 +247,6 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   theDigiVector.reserve(10000);
   theDigiVector.clear();
 
-  theDigiAlgo->calculateAPVBaselines(pDD->detUnits(), tTopo, PileupInfo_.get());
-
   for( const auto& iu : pDD->detUnits()) {
     if(useConfFromDB){
       //apply the cable map _before_ digitization: consider only the detis that are connected 
