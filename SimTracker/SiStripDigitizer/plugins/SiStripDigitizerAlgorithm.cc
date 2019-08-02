@@ -417,11 +417,11 @@ SiStripDigitizerAlgorithm::digitize(
   GlobalPoint globalPos = det->surface().toGlobal(Local3DPoint(localPos.x(),localPos.y(),localPos.z()));
   float detSet_z = fabs( globalPos.z() );
   // Index in apv baseline distributions
-  std::vector< double >::iterator low = std::lower_bound( apvBaselines_zBinEdges_.begin(), apvBaselines_zBinEdges_.end(), detSet_z );
-  unsigned int detSet_zBin = low - apvBaselines_zBinEdges_.begin() - 1;
+  std::vector< double >::iterator high = std::upper_bound( apvBaselines_zBinEdges_.begin(), apvBaselines_zBinEdges_.end(), detSet_z );
+  unsigned int detSet_zBin = high - apvBaselines_zBinEdges_.begin() - 1;
   // std::cout << "detSet_z, bin : " << detSet_z << " " << detSet_zBin << std::endl;
-  low = std::lower_bound( apvBaselines_puBinEdges_.begin(), apvBaselines_puBinEdges_.end(), nTruePU_ );
-  unsigned int puBin = low - apvBaselines_puBinEdges_.begin() - 1;
+  high = std::upper_bound( apvBaselines_puBinEdges_.begin(), apvBaselines_puBinEdges_.end(), nTruePU_ );
+  unsigned int puBin = high - apvBaselines_puBinEdges_.begin() - 1;
   // std::cout << "PU, bin : " << nTruePU_ << " " << puBin << std::endl;
   // Get the corresponding APV baseline distribution for this subdetector and layer
   TH1F* apvBaselineDistribution = 0;
