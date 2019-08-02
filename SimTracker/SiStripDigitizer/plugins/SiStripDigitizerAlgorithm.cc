@@ -155,35 +155,6 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
   apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob5_ );
   apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob6_ );
 
-  // apvBaselineDistributions_tib_ = {};
-  // for ( auto zBin:apvBaselines_zBinEdges ) {
-  //   apvBaselineDistributions_tib_[0].push_back( TH1F( TString( "TIB1_" + std::to_string( zBin ) ).Data() , TString( "TIB1_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-  //   apvBaselineDistributions_tib_[1].push_back( TH1F( TString( "TIB2_" + std::to_string( zBin ) ).Data() , TString( "TIB2_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-  //   apvBaselineDistributions_tib_[2].push_back( TH1F( TString( "TIB3_" + std::to_string( zBin ) ).Data() , TString( "TIB3_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-  //   apvBaselineDistributions_tib_[3].push_back( TH1F( TString( "TIB4_" + std::to_string( zBin ) ).Data() , TString( "TIB4_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-
-
-    // apvBaselineDistributions_tob_[0].push_back( TH1F( TString( "TOB1_" + std::to_string( zBin ) ).Data() , TString( "TOB1_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tob_[1].push_back( TH1F( TString( "TOB2_" + std::to_string( zBin ) ).Data() , TString( "TOB2_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tob_[2].push_back( TH1F( TString( "TOB3_" + std::to_string( zBin ) ).Data() , TString( "TOB3_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tob_[3].push_back( TH1F( TString( "TOB4_" + std::to_string( zBin ) ).Data() , TString( "TOB4_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tob_[4].push_back( TH1F( TString( "TOB5_" + std::to_string( zBin ) ).Data() , TString( "TOB5_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tob_[5].push_back( TH1F( TString( "TOB6_" + std::to_string( zBin ) ).Data() , TString( "TOB6_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-
-
-    // apvBaselineDistributions_tid_[0].push_back( TH1F( TString( "TID1_" + std::to_string( zBin ) ).Data() , TString( "TID1_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tid_[1].push_back( TH1F( TString( "TID2_" + std::to_string( zBin ) ).Data() , TString( "TID2_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tid_[2].push_back( TH1F( TString( "TID3_" + std::to_string( zBin ) ).Data() , TString( "TID3_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-
-    // apvBaselineDistributions_tec_[0].push_back( TH1F( TString( "TEC1_" + std::to_string( zBin ) ).Data() , TString( "TEC1_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tec_[1].push_back( TH1F( TString( "TEC2_" + std::to_string( zBin ) ).Data() , TString( "TEC2_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tec_[2].push_back( TH1F( TString( "TEC3_" + std::to_string( zBin ) ).Data() , TString( "TEC3_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tec_[3].push_back( TH1F( TString( "TEC4_" + std::to_string( zBin ) ).Data() , TString( "TEC4_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tec_[4].push_back( TH1F( TString( "TEC5_" + std::to_string( zBin ) ).Data() , TString( "TEC5_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tec_[5].push_back( TH1F( TString( "TEC6_" + std::to_string( zBin ) ).Data() , TString( "TEC6_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-    // apvBaselineDistributions_tec_[6].push_back( TH1F( TString( "TEC7_" + std::to_string( zBin ) ).Data() , TString( "TEC7_" + std::to_string( zBin ) ).Data() , 100, 0, 730 ) );
-  // }
-
 }
 
 void SiStripDigitizerAlgorithm::fillAPVBaselineHistograms( std::vector< std::vector<TH1F> > &apvHistograms, std::vector< double > &theAPVBaselines ) {
@@ -201,19 +172,8 @@ void SiStripDigitizerAlgorithm::fillAPVBaselineHistograms( std::vector< std::vec
     unsigned int binInCurrentHistogram = apvBaseline.index() % apvBaselines_nBinsPerBaseline_ + 1;
     unsigned int binInZ = int(apvBaseline.index()) / ( nPUBins * apvBaselines_nBinsPerBaseline_ );
     unsigned int binInPU = int( apvBaseline.index() - binInZ * ( nPUBins ) * apvBaselines_nBinsPerBaseline_ ) / apvBaselines_nBinsPerBaseline_;
-    // std::cout << apvBaseline.index() << " " << apvBaseline.value() << " " << binInZ << " " << binInPU << " " << binInCurrentHistogram << std::endl;
-
     apvHistograms.at( binInZ ).at( binInPU ).SetBinContent( binInCurrentHistogram, apvBaseline.value() );
   }
-
-  // for ( unsigned int iZBin = 0; iZBin < nZBins; ++iZBin ){
-  //   for ( unsigned int iPUBin = 0; iPUBin < nPUBins; ++iPUBin ){
-  //     std::cout << "z, pu bin : " << iZBin << " " << iPUBin << std::endl;
-  //     for ( int i = 1; i < apvHistograms.at( iZBin ).at( iPUBin ).GetNbinsX()+1; ++i ) {
-  //       std::cout << i << " " << apvHistograms.at( iZBin ).at( iPUBin ).GetBinContent( i ) << std::endl;
-  //     }
-  //   }
-  // }
 
 }
 
@@ -419,33 +379,20 @@ SiStripDigitizerAlgorithm::digitize(
   // Index in apv baseline distributions
   std::vector< double >::iterator high = std::upper_bound( apvBaselines_zBinEdges_.begin(), apvBaselines_zBinEdges_.end(), detSet_z );
   unsigned int detSet_zBin = high - apvBaselines_zBinEdges_.begin() - 1;
-  // std::cout << "detSet_z, bin : " << detSet_z << " " << detSet_zBin << std::endl;
   high = std::upper_bound( apvBaselines_puBinEdges_.begin(), apvBaselines_puBinEdges_.end(), nTruePU_ );
   unsigned int puBin = high - apvBaselines_puBinEdges_.begin() - 1;
-  // std::cout << "PU, bin : " << nTruePU_ << " " << puBin << std::endl;
+
   // Get the corresponding APV baseline distribution for this subdetector and layer
   TH1F* apvBaselineDistribution = 0;
   int layer = -1;
   if(SubDet==3) {
     layer = tTopo->tibLayer(detId);
-    // std::cout << "Getting TIB apv distribution : " << layer << " " << detSet_z << " " << detSet_zBin << " " << nTruePU_ << " " << puBin << std::endl;
     apvBaselineDistribution = &apvBaselineHistograms_tib_[layer-1][detSet_zBin][puBin];
   }
   else if(SubDet==5){
     layer = tTopo->tobLayer(detId);
-    // std::cout << "Layer : " << layer << std::endl;
-    // std::cout << "Getting TOB apv distribution : " << layer << " " << detSet_z << " " << detSet_zBin << " " << nTruePU_ << " " << puBin << std::endl;
     apvBaselineDistribution = &apvBaselineHistograms_tob_[layer-1][detSet_zBin][puBin];
   } 
-  // else if(SubDet==4){
-  //   layer = tTopo->tidRing(detId);
-  //   apvBaselineDistribution = &apvBaselineDistributions_tid_[layer-1][detSet_zBin];
-  // } 
-  // else if(SubDet==6){
-  //   layer = tTopo->tecRing(detId);
-  //   apvBaselineDistribution = &apvBaselineDistributions_tec_[layer-1][detSet_zBin];
-  // } 
-
 
   const SiPileUpSignals::SignalMapType* theSignal(theSiPileUpSignals->getSignal(detID));  
 
@@ -468,8 +415,6 @@ SiStripDigitizerAlgorithm::digitize(
   }
 
   // Simulate APV response for each strip
-  // std::cout << "Simulating APV response for this detset : " << SubDet << std::endl;
-  // std::cout << "APV baseline info : " << apvBaselineDistribution->GetEntries() << " " << apvBaselineDistribution->GetMean() << std::endl;
   if ( SubDet == 3 || SubDet == 5 ) {
     for(int strip =0; strip < numStrips; ++strip) {
       if (detAmpl[strip] > 0 ) {
@@ -478,7 +423,6 @@ SiStripDigitizerAlgorithm::digitize(
 
         // Get APV baseline
         double baselineV = apvBaselineDistribution->GetRandom();
-        // std::cout << "Sampled V : " << baselineV << std::endl;
         // Store APV baseline for this strip
         outStripAPVBaselines.push_back(SiStripRawDigi(baselineV));
 
@@ -508,7 +452,6 @@ SiStripDigitizerAlgorithm::digitize(
       }
     }    
   }
-  // std::cout << "DONE : Simulating APV response for this detset" << std::endl;
 
 
   // Store SCD, after APV sim
