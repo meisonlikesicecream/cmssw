@@ -74,7 +74,7 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
   theSiDigitalConverter(new SiTrivialDigitalConverter(theElectronPerADC, PreMixing_)),
   theSiZeroSuppress(new SiStripFedZeroSuppression(theFedAlgo)),
   APVProbabilityFile(conf.getParameter<edm::FileInPath>("APVProbabilityFile")),
-  includeAPVSimulation_(conf.getUntrackedParameter<bool>("includeAPVSimulation", false)),
+  includeAPVSimulation_(conf.getParameter<bool>("includeAPVSimulation")),
   apvBaselines_tib1_( conf.getParameter< std::vector<double> >("apvBaselines_tib1")),
   apvBaselines_tib2_( conf.getParameter< std::vector<double> >("apvBaselines_tib2")),
   apvBaselines_tib3_( conf.getParameter< std::vector<double> >("apvBaselines_tib3")),
