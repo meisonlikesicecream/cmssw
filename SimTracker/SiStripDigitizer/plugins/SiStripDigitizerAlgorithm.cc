@@ -74,6 +74,7 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
   theSiDigitalConverter(new SiTrivialDigitalConverter(theElectronPerADC, PreMixing_)),
   theSiZeroSuppress(new SiStripFedZeroSuppression(theFedAlgo)),
   APVProbabilityFile(conf.getParameter<edm::FileInPath>("APVProbabilityFile")),
+  includeAPVSimulation_(conf.getUntrackedParameter<bool>("includeAPVSimulation", false)),
   apvBaselines_tib1_( conf.getParameter< std::vector<double> >("apvBaselines_tib1")),
   apvBaselines_tib2_( conf.getParameter< std::vector<double> >("apvBaselines_tib2")),
   apvBaselines_tib3_( conf.getParameter< std::vector<double> >("apvBaselines_tib3")),
@@ -134,31 +135,31 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
   }
 
 
+  if ( includeAPVSimulation_ ) {
+    fillAPVBaselineHistograms( apvBaselineHistograms_tib1_, apvBaselines_tib1_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tib2_, apvBaselines_tib2_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tib3_, apvBaselines_tib3_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tib4_, apvBaselines_tib4_ );
 
-  fillAPVBaselineHistograms( apvBaselineHistograms_tib1_, apvBaselines_tib1_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tib2_, apvBaselines_tib2_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tib3_, apvBaselines_tib3_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tib4_, apvBaselines_tib4_ );
+    apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib1_ );
+    apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib2_ );
+    apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib3_ );
+    apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib4_ );
 
-  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib1_ );
-  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib2_ );
-  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib3_ );
-  apvBaselineHistograms_tib_.push_back( apvBaselineHistograms_tib4_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tob1_, apvBaselines_tob1_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tob2_, apvBaselines_tob2_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tob3_, apvBaselines_tob3_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tob4_, apvBaselines_tob4_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tob5_, apvBaselines_tob5_ );
+    fillAPVBaselineHistograms( apvBaselineHistograms_tob6_, apvBaselines_tob6_ );
 
-  fillAPVBaselineHistograms( apvBaselineHistograms_tob1_, apvBaselines_tob1_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tob2_, apvBaselines_tob2_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tob3_, apvBaselines_tob3_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tob4_, apvBaselines_tob4_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tob5_, apvBaselines_tob5_ );
-  fillAPVBaselineHistograms( apvBaselineHistograms_tob6_, apvBaselines_tob6_ );
-
-  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob1_ );
-  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob2_ );
-  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob3_ );
-  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob4_ );
-  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob5_ );
-  apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob6_ );
-
+    apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob1_ );
+    apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob2_ );
+    apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob3_ );
+    apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob4_ );
+    apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob5_ );
+    apvBaselineHistograms_tob_.push_back( apvBaselineHistograms_tob6_ );
+  }
 }
 
 void SiStripDigitizerAlgorithm::fillAPVBaselineHistograms( std::vector< std::vector<TH1F> > &apvHistograms, std::vector< double > &theAPVBaselines ) {
@@ -380,29 +381,6 @@ SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
   DetId  detId(detID);
   uint32_t SubDet = detId.subdetId();
 
-  // Need z coordinate of detset
-  const StripTopology * topol = dynamic_cast<const StripTopology*>(&(det->specificTopology()));
-  LocalPoint localPos = topol->localPosition(0);
-  GlobalPoint globalPos = det->surface().toGlobal(Local3DPoint(localPos.x(),localPos.y(),localPos.z()));
-  float detSet_z = fabs( globalPos.z() );
-  // Index in apv baseline distributions
-  std::vector< double >::iterator high = std::upper_bound( apvBaselines_zBinEdges_.begin(), apvBaselines_zBinEdges_.end(), detSet_z );
-  unsigned int detSet_zBin = high - apvBaselines_zBinEdges_.begin() - 1;
-  high = std::upper_bound( apvBaselines_puBinEdges_.begin(), apvBaselines_puBinEdges_.end(), nTruePU_ );
-  unsigned int puBin = high - apvBaselines_puBinEdges_.begin() - 1;
-
-  // Get the corresponding APV baseline distribution for this subdetector and layer
-  TH1F* apvBaselineDistribution = 0;
-  int layer = -1;
-  if(SubDet==3) {
-    layer = tTopo->tibLayer(detId);
-    apvBaselineDistribution = &apvBaselineHistograms_tib_[layer-1][detSet_zBin][puBin];
-  }
-  else if(SubDet==5){
-    layer = tTopo->tobLayer(detId);
-    apvBaselineDistribution = &apvBaselineHistograms_tob_[layer-1][detSet_zBin][puBin];
-  } 
-
   const SiPileUpSignals::SignalMapType* theSignal(theSiPileUpSignals->getSignal(detID));  
 
   std::vector<float> detAmpl(numStrips, 0.);
@@ -420,52 +398,76 @@ SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
     }
   }
 
-  // Store SCD, before APV sim
-  for(int strip =0; strip < numStrips; ++strip) {
-    outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
-  }
+  if ( includeAPVSimulation_ ) {
+    // Get index in apv baseline distributions corresponding to z of detSet and PU
+    const StripTopology * topol = dynamic_cast<const StripTopology*>(&(det->specificTopology()));
+    LocalPoint localPos = topol->localPosition(0);
+    GlobalPoint globalPos = det->surface().toGlobal(Local3DPoint(localPos.x(),localPos.y(),localPos.z()));
+    float detSet_z = fabs( globalPos.z() );
+    std::vector< double >::iterator high = std::upper_bound( apvBaselines_zBinEdges_.begin(), apvBaselines_zBinEdges_.end(), detSet_z );
+    unsigned int detSet_zBin = high - apvBaselines_zBinEdges_.begin() - 1;
+    high = std::upper_bound( apvBaselines_puBinEdges_.begin(), apvBaselines_puBinEdges_.end(), nTruePU_ );
+    unsigned int puBin = high - apvBaselines_puBinEdges_.begin() - 1;    
 
-  // Simulate APV response for each strip
-  if ( SubDet == 3 || SubDet == 5 ) {
+    // Get the corresponding APV baseline distribution for this subdetector and layer
+    TH1F* apvBaselineDistribution = 0;
+    int layer = -1;
+    if(SubDet==3) {
+      layer = tTopo->tibLayer(detId);
+      apvBaselineDistribution = &apvBaselineHistograms_tib_[layer-1][detSet_zBin][puBin];
+    }
+    else if(SubDet==5){
+      layer = tTopo->tobLayer(detId);
+      apvBaselineDistribution = &apvBaselineHistograms_tob_[layer-1][detSet_zBin][puBin];
+    } 
+
+    // Store SCD, before APV sim
     for(int strip =0; strip < numStrips; ++strip) {
-      if (detAmpl[strip] > 0 ) {
-        // Convert charge from electrons to fC
-        double stripCharge = detAmpl[strip]*apv_fCPerElectron;
+      outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
+    }
 
-        // Get APV baseline
-        double baselineV = apvBaselineDistribution->GetRandom();
-        // Store APV baseline for this strip
-        outStripAPVBaselines.push_back(SiStripRawDigi(baselineV));
+    // Simulate APV response for each strip
+    if ( SubDet == 3 || SubDet == 5 ) {
+      for(int strip =0; strip < numStrips; ++strip) {
+        if (detAmpl[strip] > 0 ) {
+          // Convert charge from electrons to fC
+          double stripCharge = detAmpl[strip]*apv_fCPerElectron;
 
-        // Fitted parameters from G Hall/M Raymond
-        double maxResponse = apv_maxResponse;
-        double rate = apv_rate;
-        double baselineQ = apv_maxResponse;
+          // Get APV baseline
+          double baselineV = apvBaselineDistribution->GetRandom();
+          // Store APV baseline for this strip
+          outStripAPVBaselines.push_back(SiStripRawDigi(baselineV));
 
-        // Convert V0 into baseline charge
-        if ( baselineV < baselineQ ) {
-          baselineQ = - 1.0 * rate * log( 2 * maxResponse / ( baselineV + maxResponse ) - 1);
+          // Fitted parameters from G Hall/M Raymond
+          double maxResponse = apv_maxResponse;
+          double rate = apv_rate;
+          double baselineQ = apv_maxResponse;
+
+          // Convert V0 into baseline charge
+          if ( baselineV < baselineQ ) {
+            baselineQ = - 1.0 * rate * log( 2 * maxResponse / ( baselineV + maxResponse ) - 1);
+          }
+
+          // Add charge deposited in this BX
+          double newStripCharge = baselineQ + stripCharge;
+
+          // Apply APV response
+          double signalV = 2 * maxResponse / ( 1 + exp( -1.0 * newStripCharge / rate) ) - maxResponse;
+          double gain = signalV - baselineV;
+
+          // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
+          double outputCharge = gain/apv_mVPerQ;
+          double outputChargeInADC = outputCharge / apv_fCPerElectron;
+
+          // Output charge back to original container
+          detAmpl[strip] = outputChargeInADC;
         }
-
-        // Add charge deposited in this BX
-        double newStripCharge = baselineQ + stripCharge;
-
-        // Apply APV response
-        double signalV = 2 * maxResponse / ( 1 + exp( -1.0 * newStripCharge / rate) ) - maxResponse;
-        double gain = signalV - baselineV;
-
-        // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
-        double outputCharge = gain/apv_mVPerQ;
-        double outputChargeInADC = outputCharge / apv_fCPerElectron;
-
-        // Output charge back to original container
-        detAmpl[strip] = outputChargeInADC;
-      }
-    }    
+      }    
+    }
+    // Store SCD, after APV sim
+    for(int strip =0; strip < numStrips; ++strip) outStripAmplitudesPostAPV.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
   }
 
-  // Store SCD, after APV sim
-  for(int strip =0; strip < numStrips; ++strip) outStripAmplitudesPostAPV.push_back(SiStripRawDigi(detAmpl[strip]/theElectronPerADC));;
 
   if (APVSaturationFromHIP) {
     //Implementation of the proper charge scaling function. Need consider resaturation effect:

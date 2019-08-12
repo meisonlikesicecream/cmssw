@@ -188,6 +188,7 @@ private:
   std::map<int, std::bitset<6>> SiStripTrackerAffectedAPVMap;
   int NumberOfBxBetweenHIPandEvent;
 
+  bool includeAPVSimulation_;
   std::vector< double > apvBaselines_tib1_;
   std::vector< double > apvBaselines_tib2_;
   std::vector< double > apvBaselines_tib3_;

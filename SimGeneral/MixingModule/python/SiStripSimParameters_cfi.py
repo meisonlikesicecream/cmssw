@@ -116,7 +116,28 @@ SiStripSimBlock = cms.PSet(
     #
     TOFCutForDeconvolution     = cms.double(50.0),
     TOFCutForPeak              = cms.double(100.0),
-    Inefficiency               = cms.double(0.0)
+    Inefficiency               = cms.double(0.0),
+    # APV Dynamic Gain Simulation
+    includeAPVSimulation       = cms.bool( False ),
+    apv_maxResponse            = cms.double( 729 ),
+    apv_rate                   = cms.double( 66.2 ),
+    apv_mVPerQ                 = cms.double( 5.5 ),
+    apvfCPerElectron           = cms.double( 1.602e-4 ),
+    apvBaselines_minBaseline   =  cms.double( 0 ),
+    apvBaselines_maxBaseline   =  cms.double( 738 ),
+    apvBaselines_zBinEdges     =  cms.vdouble(),
+    apvBaselines_puBinEdges    =  cms.vdouble(),
+    apvBaselines_nBinsPerBaseline  =  cms.uint32( 82 ),
+    apvBaselines_tib1          = cms.vdouble(),
+    apvBaselines_tib2          = cms.vdouble(),
+    apvBaselines_tib3          = cms.vdouble(),
+    apvBaselines_tib4          = cms.vdouble(),
+    apvBaselines_tob1          = cms.vdouble(),
+    apvBaselines_tob2          = cms.vdouble(),
+    apvBaselines_tob3          = cms.vdouble(),
+    apvBaselines_tob4          = cms.vdouble(),
+    apvBaselines_tob5          = cms.vdouble(),
+    apvBaselines_tob6          = cms.vdouble()
 )
 
 from Configuration.ProcessModifiers.premix_stage1_cff import premix_stage1
