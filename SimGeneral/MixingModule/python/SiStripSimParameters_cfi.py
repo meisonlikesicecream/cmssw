@@ -128,16 +128,16 @@ SiStripSimBlock = cms.PSet(
     apvBaselines_zBinEdges     =  cms.vdouble(),
     apvBaselines_puBinEdges    =  cms.vdouble(),
     apvBaselines_nBinsPerBaseline  =  cms.uint32( 82 ),
-    apvBaselines_tib1          = cms.vdouble(),
-    apvBaselines_tib2          = cms.vdouble(),
-    apvBaselines_tib3          = cms.vdouble(),
-    apvBaselines_tib4          = cms.vdouble(),
-    apvBaselines_tob1          = cms.vdouble(),
-    apvBaselines_tob2          = cms.vdouble(),
-    apvBaselines_tob3          = cms.vdouble(),
-    apvBaselines_tob4          = cms.vdouble(),
-    apvBaselines_tob5          = cms.vdouble(),
-    apvBaselines_tob6          = cms.vdouble()
+    apvBaselinesFile_tib1      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TIB1_2us.txt'),
+    apvBaselinesFile_tib2      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TIB2_2us.txt'),
+    apvBaselinesFile_tib3      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TIB3_2us.txt'),
+    apvBaselinesFile_tib4      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TIB4_2us.txt'),
+    apvBaselinesFile_tob1      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TOB1_2us.txt'),
+    apvBaselinesFile_tob2      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TOB2_2us.txt'),
+    apvBaselinesFile_tob3      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TOB3_2us.txt'),
+    apvBaselinesFile_tob4      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TOB4_2us.txt'),
+    apvBaselinesFile_tob5      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TOB5_2us.txt'),
+    apvBaselinesFile_tob6      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TOB6_2us.txt')
 )
 
 from Configuration.ProcessModifiers.premix_stage1_cff import premix_stage1

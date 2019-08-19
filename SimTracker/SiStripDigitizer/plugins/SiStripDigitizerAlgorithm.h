@@ -189,17 +189,16 @@ private:
   int NumberOfBxBetweenHIPandEvent;
 
   bool includeAPVSimulation_;
-  std::vector< double > apvBaselines_tib1_;
-  std::vector< double > apvBaselines_tib2_;
-  std::vector< double > apvBaselines_tib3_;
-  std::vector< double > apvBaselines_tib4_;
-
-  std::vector< double > apvBaselines_tob1_;
-  std::vector< double > apvBaselines_tob2_;
-  std::vector< double > apvBaselines_tob3_;
-  std::vector< double > apvBaselines_tob4_;
-  std::vector< double > apvBaselines_tob5_;
-  std::vector< double > apvBaselines_tob6_;
+  edm::FileInPath apvBaselinesFile_tib1_;
+  edm::FileInPath apvBaselinesFile_tib2_;
+  edm::FileInPath apvBaselinesFile_tib3_;
+  edm::FileInPath apvBaselinesFile_tib4_;
+  edm::FileInPath apvBaselinesFile_tob1_;
+  edm::FileInPath apvBaselinesFile_tob2_;
+  edm::FileInPath apvBaselinesFile_tob3_;
+  edm::FileInPath apvBaselinesFile_tob4_;
+  edm::FileInPath apvBaselinesFile_tob5_;
+  edm::FileInPath apvBaselinesFile_tob6_;
 
   unsigned int nTruePU_;
   unsigned int apvBaselines_nBinsPerBaseline_;
@@ -225,7 +224,7 @@ private:
   // std::vector< std::vector<TH1F> > apvBaselineHistograms_tid_;
   // std::vector< std::vector<TH1F> > apvBaselineHistograms_tec_;
 
-  void fillAPVBaselineHistograms( std::vector< std::vector<TH1F> > &apvHistograms, std::vector< double > &theAPVBaselines );
+  void fillAPVBaselineHistograms( std::vector< std::vector<TH1F> > &apvHistograms, const std::string& apvBaselinesFileName );
 };
 
 #endif
