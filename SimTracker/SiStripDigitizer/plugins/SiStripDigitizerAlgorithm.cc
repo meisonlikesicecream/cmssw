@@ -136,6 +136,7 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
 
 
   if ( includeAPVSimulation_ ) {
+
     fillAPVBaselineHistograms( apvBaselineHistograms_tib1_, apvBaselines_tib1_ );
     fillAPVBaselineHistograms( apvBaselineHistograms_tib2_, apvBaselines_tib2_ );
     fillAPVBaselineHistograms( apvBaselineHistograms_tib3_, apvBaselines_tib3_ );
@@ -166,6 +167,10 @@ void SiStripDigitizerAlgorithm::fillAPVBaselineHistograms( std::vector< std::vec
 
   unsigned int nZBins = apvBaselines_zBinEdges_.size();
   unsigned int nPUBins = apvBaselines_puBinEdges_.size();
+
+  if ( nPUBins == 0 || nZBins == 0 || apvBaselines_nBinsPerBaseline_ == 0 ) {
+    throw cms::Exception("MissingInput") << "The parameters for the APV simulation are not correctly configured\n";
+  }
   apvHistograms.resize( nZBins );
   for ( unsigned int iZBin = 0; iZBin < nZBins; ++iZBin ){
     for ( unsigned int iPUBin = 0; iPUBin < nPUBins; ++iPUBin ){
@@ -350,8 +355,8 @@ void SiStripDigitizerAlgorithm::calculateInstlumiScale(PileupMixingContent* puIn
       pui++;
     }
     if (pu0 != bunchCrossing.end()) {  // found the in-time interaction
-      double Tintr = TrueInteractionList.at(p);
-      double instLumi = Bunch * Tintr * RevFreq / minBXsec;
+      nTruePU_ = TrueInteractionList.at(p);
+      double instLumi = Bunch * nTruePU_ * RevFreq / minBXsec;
       APVSaturationProb_ = instLumi / 6.0E33;
     }
     FirstLumiCalc_ = false;
