@@ -234,9 +234,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   iSetup.get<SiStripPedestalsRcd>().get(pedestalHandle);
   std::vector<edm::DetSet<SiStripDigi>> theDigiVector;
   std::vector<edm::DetSet<SiStripRawDigi>> theRawDigiVector;
-  std::vector<edm::DetSet<SiStripRawDigi>> theStripAmplitudeVector;
-  std::vector<edm::DetSet<SiStripRawDigi>> theStripAmplitudeVectorPostAPV;
-  std::vector<edm::DetSet<SiStripRawDigi>> theStripAPVBaselines;
+  auto theStripAmplitudeVector = std::make_unique<std::vector<edm::DetSet<SiStripRawDigi>>>();
+  auto theStripAmplitudeVectorPostAPV = std::make_unique<std::vector<edm::DetSet<SiStripRawDigi>>>();
+  auto theStripAPVBaselines = std::make_unique<std::vector<edm::DetSet<SiStripRawDigi>>>();
   std::unique_ptr<edm::DetSetVector<StripDigiSimLink>> pOutputDigiSimLink(new edm::DetSetVector<StripDigiSimLink>);
 
   edm::ESHandle<TrackerTopology> tTopoHand;
@@ -279,9 +279,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
                             theAffectedAPVvector,
                             randomEngine_,
                             tTopo);
-      theStripAmplitudeVector.push_back(collectorStripAmplitudes);
-      theStripAmplitudeVectorPostAPV.push_back(collectorStripAmplitudesPostAPV);
-      theStripAPVBaselines.push_back(collectorStripAPVBaselines);
+      theStripAmplitudeVector->push_back(collectorStripAmplitudes);
+      theStripAmplitudeVectorPostAPV->push_back(collectorStripAmplitudesPostAPV);
+      theStripAPVBaselines->push_back(collectorStripAPVBaselines);
 
       if (zeroSuppression) {
         if (!collectorZS.data.empty()) {
@@ -301,12 +301,12 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   if (zeroSuppression) {
     // Step C: create output collection
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_virginraw(new edm::DetSetVector<SiStripRawDigi>());
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes_postAPV(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripAPVBaselines(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
+    // std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes(
+    //     new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
+    // std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes_postAPV(
+    //     new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
+    // std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripAPVBaselines(
+    //     new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_scopemode(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_processedraw(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripDigi>> output(new edm::DetSetVector<SiStripDigi>(theDigiVector));
@@ -317,9 +317,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     iEvent.put(std::move(output), ZSDigi);
     iEvent.put(std::move(output_scopemode), SCDigi);
     iEvent.put(std::move(output_virginraw), VRDigi);
-    iEvent.put(std::move(output_stripamplitudes), "StripAmplitudes");
-    iEvent.put(std::move(output_stripamplitudes_postAPV), "StripAmplitudesPostAPV");
-    iEvent.put(std::move(output_stripAPVBaselines), "StripAPVBaselines");
+    iEvent.put(std::move(theStripAmplitudeVector), "StripAmplitudes");
+    iEvent.put(std::move(theStripAmplitudeVectorPostAPV), "StripAmplitudesPostAPV");
+    iEvent.put(std::move(theStripAPVBaselines), "StripAPVBaselines");
     iEvent.put(std::move(output_processedraw), PRDigi);
     iEvent.put(std::move(AffectedAPVList), "AffectedAPVList");
     if (makeDigiSimLinks_)
@@ -329,12 +329,12 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     // Step C: create output collection
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_virginraw(
         new edm::DetSetVector<SiStripRawDigi>(theRawDigiVector));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes_postAPV(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripAPVBaselines(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
+    // std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes(
+    //     new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
+    // std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes_postAPV(
+    //     new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
+    // std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripAPVBaselines(
+    //     new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_scopemode(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_processedraw(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripDigi>> output(new edm::DetSetVector<SiStripDigi>());
@@ -343,9 +343,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     iEvent.put(std::move(output), ZSDigi);
     iEvent.put(std::move(output_scopemode), SCDigi);
     iEvent.put(std::move(output_virginraw), VRDigi);
-    iEvent.put(std::move(output_stripamplitudes), "StripAmplitudes");
-    iEvent.put(std::move(output_stripamplitudes_postAPV), "StripAmplitudesPostAPV");
-    iEvent.put(std::move(output_stripAPVBaselines), "StripAPVBaselines");
+    iEvent.put(std::move(theStripAmplitudeVector), "StripAmplitudes");
+    iEvent.put(std::move(theStripAmplitudeVectorPostAPV), "StripAmplitudesPostAPV");
+    iEvent.put(std::move(theStripAPVBaselines), "StripAPVBaselines");
     iEvent.put(std::move(output_processedraw), PRDigi);
     if (makeDigiSimLinks_)
       iEvent.put(
