@@ -154,7 +154,7 @@ void SiStripDigitizerAlgorithm::fillAPVBaselineHistograms(std::vector<std::vecto
   apvHistograms.resize(nZBins);
   for (unsigned int iZBin = 0; iZBin < nZBins; ++iZBin) {
     for (unsigned int iPUBin = 0; iPUBin < nPUBins; ++iPUBin) {
-      apvHistograms.at(iZBin).push_back(
+      apvHistograms[iZBin].emplace_back(
           TH1F("temp", "temp", apvBaselines_nBinsPerBaseline_, apvBaselines_minBaseline_, apvBaselines_maxBaseline_));
     }
   }
@@ -436,9 +436,9 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
     }
 
     // Store SCD, before APV sim
+    outStripAmplitudes.reserve(numStrips);
     for (int strip = 0; strip < numStrips; ++strip) {
-      outStripAmplitudes.push_back(SiStripRawDigi(detAmpl[strip] / theElectronPerADC));
-      ;
+      outStripAmplitudes.emplace_back(SiStripRawDigi(detAmpl[strip] / theElectronPerADC));
     }
 
     // Simulate APV response for each strip
@@ -451,7 +451,7 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
           // Get APV baseline
           double baselineV = apvBaselineDistribution->GetRandom();
           // Store APV baseline for this strip
-          outStripAPVBaselines.push_back(SiStripRawDigi(baselineV));
+          outStripAPVBaselines.emplace_back(SiStripRawDigi(baselineV));
 
           // Fitted parameters from G Hall/M Raymond
           double maxResponse = apv_maxResponse;
@@ -480,9 +480,9 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
       }
     }
     // Store SCD, after APV sim
+    outStripAmplitudesPostAPV.reserve(numStrips);
     for (int strip = 0; strip < numStrips; ++strip)
-      outStripAmplitudesPostAPV.push_back(SiStripRawDigi(detAmpl[strip] / theElectronPerADC));
-    ;
+      outStripAmplitudesPostAPV.emplace_back(SiStripRawDigi(detAmpl[strip] / theElectronPerADC));
   }
 
   if (APVSaturationFromHIP) {
