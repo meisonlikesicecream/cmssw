@@ -75,33 +75,13 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
       theSiZeroSuppress(new SiStripFedZeroSuppression(theFedAlgo)),
       APVProbabilityFile(conf.getParameter<edm::FileInPath>("APVProbabilityFile")),
       includeAPVSimulation_(conf.getParameter<bool>("includeAPVSimulation")),
-      apvBaselinesFile_tib1_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib1")),
-      apvBaselinesFile_tib2_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib2")),
-      apvBaselinesFile_tib3_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib3")),
-      apvBaselinesFile_tib4_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib4")),
-      apvBaselinesFile_tob1_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob1")),
-      apvBaselinesFile_tob2_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob2")),
-      apvBaselinesFile_tob3_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob3")),
-      apvBaselinesFile_tob4_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob4")),
-      apvBaselinesFile_tob5_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob5")),
-      apvBaselinesFile_tob6_(conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob6")),
       apvBaselines_nBinsPerBaseline_(conf.getParameter<unsigned int>("apvBaselines_nBinsPerBaseline")),
       apvBaselines_minBaseline_(conf.getParameter<double>("apvBaselines_minBaseline")),
       apvBaselines_maxBaseline_(conf.getParameter<double>("apvBaselines_maxBaseline")),
       apvBaselines_puBinEdges_(conf.getParameter<std::vector<double>>("apvBaselines_puBinEdges")),
       apvBaselines_zBinEdges_(conf.getParameter<std::vector<double>>("apvBaselines_zBinEdges")),
-      apvBaselineHistograms_tib_(std::vector<std::vector<std::vector<TH1F>>>()),
-      apvBaselineHistograms_tib1_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tib2_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tib3_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tib4_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tob_(std::vector<std::vector<std::vector<TH1F>>>()),
-      apvBaselineHistograms_tob1_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tob2_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tob3_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tob4_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tob5_(std::vector<std::vector<TH1F>>()),
-      apvBaselineHistograms_tob6_(std::vector<std::vector<TH1F>>()) {
+      apvBaselineHistograms_tib_(),
+      apvBaselineHistograms_tob_() {
   if (peakMode) {
     LogDebug("StripDigiInfo") << "APVs running in peak mode (poor time resolution)";
   } else {
@@ -134,6 +114,29 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
   }
 
   if (includeAPVSimulation_) {
+    edm::FileInPath apvBaselinesFile_tib1_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib1");
+    edm::FileInPath apvBaselinesFile_tib2_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib2");
+    edm::FileInPath apvBaselinesFile_tib3_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib3");
+    edm::FileInPath apvBaselinesFile_tib4_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tib4");
+    edm::FileInPath apvBaselinesFile_tob1_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob1");
+    edm::FileInPath apvBaselinesFile_tob2_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob2");
+    edm::FileInPath apvBaselinesFile_tob3_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob3");
+    edm::FileInPath apvBaselinesFile_tob4_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob4");
+    edm::FileInPath apvBaselinesFile_tob5_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob5");
+    edm::FileInPath apvBaselinesFile_tob6_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob6");
+
+
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib1_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib2_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib3_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib4_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob1_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob2_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob3_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob4_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob5_;
+    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob6_;
+
     fillAPVBaselineHistograms(apvBaselineHistograms_tib1_, apvBaselinesFile_tib1_.fullPath());
     fillAPVBaselineHistograms(apvBaselineHistograms_tib2_, apvBaselinesFile_tib2_.fullPath());
     fillAPVBaselineHistograms(apvBaselineHistograms_tib3_, apvBaselinesFile_tib3_.fullPath());
