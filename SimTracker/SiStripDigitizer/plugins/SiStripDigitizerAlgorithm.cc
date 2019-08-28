@@ -125,41 +125,20 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
     edm::FileInPath apvBaselinesFile_tob5_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob5");
     edm::FileInPath apvBaselinesFile_tob6_ = conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob6");
 
+    apvBaselineHistograms_tib_.resize(4);
+    fillAPVBaselineHistograms(apvBaselineHistograms_tib_[0], apvBaselinesFile_tib1_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tib_[1], apvBaselinesFile_tib2_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tib_[2], apvBaselinesFile_tib3_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tib_[3], apvBaselinesFile_tib4_.fullPath());
 
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib1_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib2_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib3_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tib4_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob1_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob2_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob3_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob4_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob5_;
-    std::vector<std::vector<TH1F>> apvBaselineHistograms_tob6_;
+    apvBaselineHistograms_tob_.resize(6);
+    fillAPVBaselineHistograms(apvBaselineHistograms_tob_[0], apvBaselinesFile_tob1_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tob_[1], apvBaselinesFile_tob2_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tob_[2], apvBaselinesFile_tob3_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tob_[3], apvBaselinesFile_tob4_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tob_[4], apvBaselinesFile_tob5_.fullPath());
+    fillAPVBaselineHistograms(apvBaselineHistograms_tob_[5], apvBaselinesFile_tob6_.fullPath());
 
-    fillAPVBaselineHistograms(apvBaselineHistograms_tib1_, apvBaselinesFile_tib1_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tib2_, apvBaselinesFile_tib2_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tib3_, apvBaselinesFile_tib3_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tib4_, apvBaselinesFile_tib4_.fullPath());
-
-    apvBaselineHistograms_tib_.push_back(apvBaselineHistograms_tib1_);
-    apvBaselineHistograms_tib_.push_back(apvBaselineHistograms_tib2_);
-    apvBaselineHistograms_tib_.push_back(apvBaselineHistograms_tib3_);
-    apvBaselineHistograms_tib_.push_back(apvBaselineHistograms_tib4_);
-
-    fillAPVBaselineHistograms(apvBaselineHistograms_tob1_, apvBaselinesFile_tob1_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tob2_, apvBaselinesFile_tob2_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tob3_, apvBaselinesFile_tob3_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tob4_, apvBaselinesFile_tob4_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tob5_, apvBaselinesFile_tob5_.fullPath());
-    fillAPVBaselineHistograms(apvBaselineHistograms_tob6_, apvBaselinesFile_tob6_.fullPath());
-
-    apvBaselineHistograms_tob_.push_back(apvBaselineHistograms_tob1_);
-    apvBaselineHistograms_tob_.push_back(apvBaselineHistograms_tob2_);
-    apvBaselineHistograms_tob_.push_back(apvBaselineHistograms_tob3_);
-    apvBaselineHistograms_tob_.push_back(apvBaselineHistograms_tob4_);
-    apvBaselineHistograms_tob_.push_back(apvBaselineHistograms_tob5_);
-    apvBaselineHistograms_tob_.push_back(apvBaselineHistograms_tob6_);
   }
 }
 
