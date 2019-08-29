@@ -165,16 +165,12 @@ void SiStripDigitizerAlgorithm::fillAPVBaselineHistograms(std::vector<std::vecto
   if (!apvBaselineFile.good()) {
     throw cms::Exception("FileError") << "Problem opening APV baselines file: " << apvBaselinesFileName;
   }
-  std::string line;
-  while (std::getline(apvBaselineFile, line)) {
-    if (!line.empty()) {
-      std::istringstream lStr{line};
-      double value;
-      while (lStr >> value) {
-        theAPVBaselines.push_back(value);
-      }
-    }
+
+  double apvBasline;
+  while ( apvBaselineFile >> apvBasline ) {
+    theAPVBaselines.push_back(apvBasline);
   }
+
   if (theAPVBaselines.empty()) {
     throw cms::Exception("WrongAPVBaselines")
         << "Problem reading from APV baselines file " << apvBaselinesFileName << ": no values read in";
