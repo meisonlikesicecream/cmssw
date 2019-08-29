@@ -125,9 +125,10 @@ SiStripSimBlock = cms.PSet(
     apvfCPerElectron           = cms.double( 1.602e-4 ),
     apvBaselines_minBaseline   =  cms.double( 0 ),
     apvBaselines_maxBaseline   =  cms.double( 738 ),
-    apvBaselines_zBinEdges     =  cms.vdouble(),
-    apvBaselines_puBinEdges    =  cms.vdouble(),
+    apvBaselines_zBinEdges     =  cms.vdouble( 0, 25, 50, 75 ),
+    apvBaselines_puBinEdges    =  cms.vdouble( 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50 ),
     apvBaselines_nBinsPerBaseline  =  cms.uint32( 82 ),
+
     apvBaselinesFile_tib1      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TIB1_12us.txt'),
     apvBaselinesFile_tib2      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TIB2_15us.txt'),
     apvBaselinesFile_tib3      = cms.FileInPath('SimTracker/SiStripDigitizer/data/APVBaselines_TIB3_16us.txt'),
