@@ -128,12 +128,6 @@ private:
   const bool zeroSuppression;
   const double theElectronPerADC;
 
-  const double apv_maxResponse;
-
-  const double apv_rate;
-  const double apv_mVPerQ;
-  const double apv_fCPerElectron;
-
   const double theTOFCutForPeak;
   const double theTOFCutForDeconvolution;
   const double tofCut;
@@ -188,6 +182,10 @@ private:
   int NumberOfBxBetweenHIPandEvent;
 
   bool includeAPVSimulation_;
+  const double apv_maxResponse;
+  const double apv_rate;
+  const double apv_mVPerQ;
+  const double apv_fCPerElectron;
   unsigned int nTruePU_;
 };
 
