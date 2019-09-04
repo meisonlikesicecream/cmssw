@@ -240,9 +240,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   }
   std::vector<edm::DetSet<SiStripDigi>> theDigiVector;
   std::vector<edm::DetSet<SiStripRawDigi>> theRawDigiVector;
-  std::vector<edm::DetSet<SiStripRawDigi>> theStripAmplitudeVector;
-  std::vector<edm::DetSet<SiStripRawDigi>> theStripAmplitudeVectorPostAPV;
-  std::vector<edm::DetSet<SiStripRawDigi>> theStripAPVBaselines;
+  std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> theStripAmplitudeVector( new edm::DetSetVector<SiStripRawDigi>());
+  std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> theStripAmplitudeVectorPostAPV( new edm::DetSetVector<SiStripRawDigi>());
+  std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> theStripAPVBaselines( new edm::DetSetVector<SiStripRawDigi>());
   std::unique_ptr<edm::DetSetVector<StripDigiSimLink>> pOutputDigiSimLink(new edm::DetSetVector<StripDigiSimLink>);
 
   edm::ESHandle<TrackerTopology> tTopoHand;
@@ -286,9 +286,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
                             theAffectedAPVvector,
                             randomEngine_,
                             tTopo);
-      theStripAmplitudeVector.push_back(collectorStripAmplitudes);
-      theStripAmplitudeVectorPostAPV.push_back(collectorStripAmplitudesPostAPV);
-      theStripAPVBaselines.push_back(collectorStripAPVBaselines);
+      if ( !collectorStripAmplitudes.data.empty() ) theStripAmplitudeVector->insert(collectorStripAmplitudes);
+      if ( !collectorStripAmplitudesPostAPV.data.empty() ) theStripAmplitudeVectorPostAPV->insert(collectorStripAmplitudesPostAPV);
+      if ( !collectorStripAPVBaselines.data.empty() ) theStripAPVBaselines->insert(collectorStripAPVBaselines);
 
       if (zeroSuppression) {
         if (!collectorZS.data.empty()) {
