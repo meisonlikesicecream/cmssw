@@ -55,12 +55,6 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
       theFedAlgo(conf.getParameter<int>("FedAlgorithm")),
       zeroSuppression(conf.getParameter<bool>("ZeroSuppression")),
       theElectronPerADC(conf.getParameter<double>(peakMode ? "electronPerAdcPeak" : "electronPerAdcDec")),
-
-      apv_maxResponse(conf.getParameter<double>("apv_maxResponse")),     // 729
-      apv_rate(conf.getParameter<double>("apv_rate")),                   // 66.2
-      apv_mVPerQ(conf.getParameter<double>("apv_mVPerQ")),               // 5.5
-      apv_fCPerElectron(conf.getParameter<double>("apvfCPerElectron")),  // 1.602e-4
-
       theTOFCutForPeak(conf.getParameter<double>("TOFCutForPeak")),
       theTOFCutForDeconvolution(conf.getParameter<double>("TOFCutForDeconvolution")),
       tofCut(peakMode ? theTOFCutForPeak : theTOFCutForDeconvolution),
@@ -75,6 +69,10 @@ SiStripDigitizerAlgorithm::SiStripDigitizerAlgorithm(const edm::ParameterSet& co
       theSiZeroSuppress(new SiStripFedZeroSuppression(theFedAlgo)),
       APVProbabilityFile(conf.getParameter<edm::FileInPath>("APVProbabilityFile")),
       includeAPVSimulation_(conf.getParameter<bool>("includeAPVSimulation")),
+      apv_maxResponse(conf.getParameter<double>("apv_maxResponse")),   
+      apv_rate(conf.getParameter<double>("apv_rate")),                 
+      apv_mVPerQ(conf.getParameter<double>("apv_mVPerQ")),             
+      apv_fCPerElectron(conf.getParameter<double>("apvfCPerElectron")),
       apvBaselines_nBinsPerBaseline_(conf.getParameter<unsigned int>("apvBaselines_nBinsPerBaseline")),
       apvBaselines_minBaseline_(conf.getParameter<double>("apvBaselines_minBaseline")),
       apvBaselines_maxBaseline_(conf.getParameter<double>("apvBaselines_maxBaseline")),
