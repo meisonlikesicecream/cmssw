@@ -308,12 +308,6 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
   if (zeroSuppression) {
     // Step C: create output collection
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_virginraw(new edm::DetSetVector<SiStripRawDigi>());
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes_postAPV(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripAPVBaselines(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_scopemode(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_processedraw(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripDigi>> output(new edm::DetSetVector<SiStripDigi>(theDigiVector));
@@ -324,9 +318,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     iEvent.put(std::move(output), ZSDigi);
     iEvent.put(std::move(output_scopemode), SCDigi);
     iEvent.put(std::move(output_virginraw), VRDigi);
-    iEvent.put(std::move(output_stripamplitudes), "StripAmplitudes");
-    iEvent.put(std::move(output_stripamplitudes_postAPV), "StripAmplitudesPostAPV");
-    iEvent.put(std::move(output_stripAPVBaselines), "StripAPVBaselines");
+    iEvent.put(std::move(theStripAmplitudeVector), "StripAmplitudes");
+    iEvent.put(std::move(theStripAmplitudeVectorPostAPV), "StripAmplitudesPostAPV");
+    iEvent.put(std::move(theStripAPVBaselines), "StripAPVBaselines");
     iEvent.put(std::move(output_processedraw), PRDigi);
     iEvent.put(std::move(AffectedAPVList), "AffectedAPVList");
     if (makeDigiSimLinks_)
@@ -336,12 +330,7 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     // Step C: create output collection
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_virginraw(
         new edm::DetSetVector<SiStripRawDigi>(theRawDigiVector));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVector));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripamplitudes_postAPV(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAmplitudeVectorPostAPV));
-    std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_stripAPVBaselines(
-        new edm::DetSetVector<SiStripRawDigi>(theStripAPVBaselines));
+
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_scopemode(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripRawDigi>> output_processedraw(new edm::DetSetVector<SiStripRawDigi>());
     std::unique_ptr<edm::DetSetVector<SiStripDigi>> output(new edm::DetSetVector<SiStripDigi>());
@@ -350,9 +339,9 @@ void SiStripDigitizer::finalizeEvent(edm::Event& iEvent, edm::EventSetup const& 
     iEvent.put(std::move(output), ZSDigi);
     iEvent.put(std::move(output_scopemode), SCDigi);
     iEvent.put(std::move(output_virginraw), VRDigi);
-    iEvent.put(std::move(output_stripamplitudes), "StripAmplitudes");
-    iEvent.put(std::move(output_stripamplitudes_postAPV), "StripAmplitudesPostAPV");
-    iEvent.put(std::move(output_stripAPVBaselines), "StripAPVBaselines");
+    iEvent.put(std::move(theStripAmplitudeVector), "StripAmplitudes");
+    iEvent.put(std::move(theStripAmplitudeVectorPostAPV), "StripAmplitudesPostAPV");
+    iEvent.put(std::move(theStripAPVBaselines), "StripAPVBaselines");
     iEvent.put(std::move(output_processedraw), PRDigi);
     if (makeDigiSimLinks_)
       iEvent.put(
