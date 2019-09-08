@@ -450,23 +450,25 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
           // Fitted parameters from G Hall/M Raymond
           double maxResponse = apv_maxResponse;
           double rate = apv_rate;
-          double baselineQ = apv_maxResponse;
 
-          // Convert V0 into baseline charge
-          if (baselineV < baselineQ) {
-            baselineQ = -1.0 * rate * log(2 * maxResponse / (baselineV + maxResponse) - 1);
+          double outputChargeInADC = 0;
+          if ( baselineV < apv_maxResponse ) {
+            // Convert V0 into baseline charge
+            double baselineQ = -1.0 * rate * log(2 * maxResponse / (baselineV + maxResponse) - 1);
+
+
+            // Add charge deposited in this BX
+            double newStripCharge = baselineQ + stripCharge;
+
+            // Apply APV response
+            double signalV = 2 * maxResponse / (1 + exp(-1.0 * newStripCharge / rate)) - maxResponse;
+            double gain = signalV - baselineV;
+
+            // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
+            double outputCharge = gain / apv_mVPerQ;
+            outputChargeInADC = outputCharge / apv_fCPerElectron;            
           }
 
-          // Add charge deposited in this BX
-          double newStripCharge = baselineQ + stripCharge;
-
-          // Apply APV response
-          double signalV = 2 * maxResponse / (1 + exp(-1.0 * newStripCharge / rate)) - maxResponse;
-          double gain = signalV - baselineV;
-
-          // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
-          double outputCharge = gain / apv_mVPerQ;
-          double outputChargeInADC = outputCharge / apv_fCPerElectron;
 
           // Output charge back to original container
           detAmpl[strip] = outputChargeInADC;
