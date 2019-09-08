@@ -437,6 +437,10 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
 
     // Simulate APV response for each strip
     if (SubDet == 3 || SubDet == 5) {
+      std::cout << SubDet << " " << numStrips << std::endl;
+
+      std::bitset<6> isAPVSaturated;
+
       for (int strip = 0; strip < numStrips; ++strip) {
         if (detAmpl[strip] > 0) {
           // Convert charge from electrons to fC
@@ -444,6 +448,13 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
 
           // Get APV baseline
           double baselineV = apvBaselineDistribution->GetRandom();
+
+          // Note if this strip is saturated, so will saturate whole APV
+          if ( baselineV >= apv_maxResponse ) {
+            unsigned int nAPV = strip / 128;
+            isAPVSaturated[nAPV] = true;
+          }
+
           // Store APV baseline for this strip
           outStripAPVBaselines.emplace_back(SiStripRawDigi(baselineV));
 
@@ -473,6 +484,9 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
           // Output charge back to original container
           detAmpl[strip] = outputChargeInADC;
         }
+      }
+      for (int strip = 0; strip < numStrips; ++strip) {
+        if ( isAPVSaturated[strip/128] ) detAmpl[strip] = 0;
       }
     }
     // Store SCD, after APV sim
