@@ -449,12 +449,6 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
           // Get APV baseline
           double baselineV = apvBaselineDistribution->GetRandom();
 
-          // Note if this strip is saturated, so will saturate whole APV
-          if ( baselineV >= apv_maxResponse ) {
-            unsigned int nAPV = strip / 128;
-            isAPVSaturated[nAPV] = true;
-          }
-
           // Store APV baseline for this strip
           outStripAPVBaselines.emplace_back(SiStripRawDigi(baselineV));
 
@@ -474,6 +468,12 @@ void SiStripDigitizerAlgorithm::digitize(edm::DetSet<SiStripDigi>& outdigi,
             // Apply APV response
             double signalV = 2 * maxResponse / (1 + exp(-1.0 * newStripCharge / rate)) - maxResponse;
             double gain = signalV - baselineV;
+
+            // Note if this strip is saturated, so will saturate whole APV
+            if ( baselineV < apv_maxResponse && ( signalV - apv_maxResponse ) < 0.01 ) {
+              unsigned int nAPV = strip / 128;
+              isAPVSaturated[nAPV] = true;
+            }
 
             // Convert gain (mV) to charge (assuming linear region of APV) and then to electrons
             double outputCharge = gain / apv_mVPerQ;
