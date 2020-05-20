@@ -67,12 +67,14 @@ private:
   unsigned nChan_;  // number of channels per quad
   unsigned nQuad_;
   unsigned nLink_;
-  unsigned nHeaderFrames_;
+  // unsigned nHeaderFrames_;
   unsigned nPayloadFrames_;
-  unsigned nClearFrames_;
+  // unsigned nClearFrames_;
   unsigned nFrame_;
-  unsigned nFrameFile_;
   unsigned nEvents_;
+  unsigned evPerFile_ = 50;
+  unsigned framesPerFile_ = 1015;
+
   float    ptLSB_;
   float    phiLSB_;
   float    etaLSB_;
@@ -114,11 +116,11 @@ L1TS2PFJetInputPatternWriter::L1TS2PFJetInputPatternWriter(const edm::ParameterS
   etaLSB_ = 0.0043633231;
   phiLSB_ = 0.0043633231;
 
-  nHeaderFrames_ = iConfig.getUntrackedParameter<unsigned>("nHeaderFrames");
   nPayloadFrames_ = iConfig.getUntrackedParameter<unsigned>("nPayloadFrames");
-  nClearFrames_ = iConfig.getUntrackedParameter<unsigned>("nClearFrames");
+  evPerFile_ = iConfig.getUntrackedParameter<unsigned>("evPerFile");
+  framesPerFile_ = iConfig.getUntrackedParameter<unsigned>("framesPerFile");
+  
   nFrame_ = 0;
-  nFrameFile_ = 0;
   nEvents_ = 0;
 
   nLink_ = nChan_ * nQuad_;
@@ -146,9 +148,6 @@ void
 L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
-  
-  //count events
-  nEvents_++;
 
   edm::Handle<std::vector<l1t::PFCandidate>> pfHandle;
   iEvent.getByToken(pfToken_, pfHandle);
@@ -164,29 +163,50 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
       pfPartsB.push_back(*pfIt);
   }
 
-  if(pfPartsA.size()==0 && pfPartsB.size()==0)
-    return;
-
-  if(nFrame_ == 0 || nFrameFile_ == 0){
-    //first empty frames
-    while(nFrameFile_ < 14){
+// put null up to frame framesPerFile_ and start a new file after nEventsPerFile_
+  if ( this -> nEvents_ % this -> evPerFile_ == 0 )
+  {
+    while (nFrame_ % framesPerFile_ != 0) 
+    {
       dataValid_.push_back( 1 );
+      // loop over links
       for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
-	for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
-	  uint iLink = (iQuad*nChan_)+iChan;
-	  if(iLink==0)
-	    data_.at(iLink).push_back(0);
-	  else
-	    data_.at(iLink).push_back(0);
-	  continue;
-	}
+        for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
+
+          // get tower ieta, iphi for link
+          uint iLink = (iQuad*nChan_)+iChan;
+
+          uint64_t data=0;     
+
+          if(iLink < 24){
+            data |= ((uint64_t)floor(0)     & 0xffff);
+            data |= ((uint64_t)floor(0)     & 0x3ff)  << 16;
+            data |= ((uint64_t)floor(0)     & 0x3ff)  << 26;
+          }
+          // add data to output
+          data_.at(iLink).push_back( data );
+        }
       }
       nFrame_++;
-      nFrameFile_++;
     }
   }
 
-  // loop over frames
+  while (nFrame_ % framesPerFile_ <= 1){
+    //first reset frames
+    dataValid_.push_back( 1 );
+    for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
+      for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
+        uint iLink = (iQuad*nChan_)+iChan;
+        if (nFrame_ % framesPerFile_ == 0)
+          data_.at(iLink).push_back(0x51091AA40951309E);
+        else
+          data_.at(iLink).push_back(0);
+      }
+    }
+    nFrame_++;
+  }
+
+  // put event 
   for ( unsigned iFrame=0; iFrame<nPayloadFrames_; ++iFrame ) {
     dataValid_.push_back( 1 );
     // loop over links
@@ -194,37 +214,47 @@ L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::Event
       for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
 
         // get tower ieta, iphi for link
-	uint iLink = (iQuad*nChan_)+iChan;
+        uint iLink = (iQuad*nChan_)+iChan;
 
-	uint64_t data=0;     
+        uint64_t data=0;     
 
-	if((nFrameFile_%13) == 1 ){
-	  if(iLink < 24 && pfPartsA.size() > iLink){
-	    data |= ((uint64_t)floor(pfPartsA.at(iLink).pt()  / ptLSB_ )     & 0xffff);
-	    data |= ((uint64_t)floor(pfPartsA.at(iLink).phi() / phiLSB_)     & 0x3ff)  << 16;
-	    data |= ((uint64_t)floor(pfPartsA.at(iLink).eta() / etaLSB_)     & 0x3ff)  << 26;
-	    //std::cout << std::fixed << std::setprecision(2) << pfPartsA.at(iLink).pt() << "\t" <<  
-	    // pfPartsA.at(iLink).eta() << "\t" << pfPartsA.at(iLink).phi() << std::endl;
+        if((iFrame%nPayloadFrames_) == 0 ){
+          if(iLink < 24 && pfPartsA.size() > iLink){
+            data |= ((uint64_t)floor(pfPartsA.at(iLink).pt()  / ptLSB_ )     & 0xffff);
+            data |= ((uint64_t)floor(pfPartsA.at(iLink).phi() / phiLSB_)     & 0x3ff)  << 16;
+            data |= ((uint64_t)floor(pfPartsA.at(iLink).eta() / etaLSB_)     & 0x3ff)  << 26;
+            //std::cout << std::fixed << std::setprecision(2) << pfPartsA.at(iLink).pt() << "\t" <<  
+            // pfPartsA.at(iLink).eta() << "\t" << pfPartsA.at(iLink).phi() << std::endl;
 
-	  }
-	}
-	if((nFrameFile_%13) == 2 ){ 
-	  if(iLink < 24 && pfPartsB.size() > iLink){
-	    data |= ((uint64_t)floor(pfPartsB.at(iLink).pt()  / ptLSB_ )     & 0xffff);
-	    data |= ((uint64_t)floor(pfPartsB.at(iLink).phi() / phiLSB_)     & 0x3ff)  << 16;
-	    data |= ((uint64_t)floor((pfPartsB.at(iLink).eta()-0.75) / etaLSB_)     & 0x3ff)  << 26;
-	    //std::cout << std::fixed << std::setprecision(2) << pfPartsB.at(iLink).pt() << "\t" <<  
-	    //  pfPartsB.at(iLink).eta() << "\t" << pfPartsB.at(iLink).phi() << std::endl;
-	  }
-	}
-	// add data to output
-	data_.at(iLink).push_back( data );
+          }
+        }
+        if((iFrame%nPayloadFrames_) == 1 ){ 
+          if(iLink < 24 && pfPartsB.size() > iLink){
+            data |= ((uint64_t)floor(pfPartsB.at(iLink).pt()  / ptLSB_ )     & 0xffff);
+            data |= ((uint64_t)floor(pfPartsB.at(iLink).phi() / phiLSB_)     & 0x3ff)  << 16;
+            data |= ((uint64_t)floor((pfPartsB.at(iLink).eta()-0.75) / etaLSB_)     & 0x3ff)  << 26;
+            //std::cout << std::fixed << std::setprecision(2) << pfPartsB.at(iLink).pt() << "\t" <<  
+            //  pfPartsB.at(iLink).eta() << "\t" << pfPartsB.at(iLink).phi() << std::endl;
+          }
+        }
+        // DEBUG: adds a special fram at end of event
+        // if((iFrame%nPayloadFrames_) == (nPayloadFrames_ - 1) ){ 
+        //   if(iLink < 24){
+        //     data |= ((uint64_t)floor(0x11)     & 0xffff);
+        //     data |= ((uint64_t)floor(0x11)     & 0x3ff)  << 16;
+        //     data |= ((uint64_t)floor(0x11)      & 0x3ff)  << 26;
+        //     //std::cout << std::fixed << std::setprecision(2) << pfPartsB.at(iLink).pt() << "\t" <<  
+        //     //  pfPartsB.at(iLink).eta() << "\t" << pfPartsB.at(iLink).phi() << std::endl;
+        //   }
+        // }
+        // add data to output
+        data_.at(iLink).push_back( data );
       }
     }
     nFrame_++;
-    nFrameFile_++;
-    if(nFrame_%1015==0) nFrameFile_ = 0;
   }
+  //count events
+  nEvents_++;
 }
 
 
@@ -242,16 +272,19 @@ L1TS2PFJetInputPatternWriter::endJob()
 {
 
   //frames per event
-  unsigned int framesPerEv = nHeaderFrames_ + nPayloadFrames_ + nClearFrames_;
+  unsigned int framesPerEv = nPayloadFrames_ ;
+  // used to be:
+  // unsigned int framesPerEv = nHeaderFrames_ + nPayloadFrames_ + nClearFrames_;
 
   //frames per file
-  unsigned int framesPerFile = 1015;
+  
 
-  //events per file
-  unsigned int evPerFile = floor(framesPerFile/framesPerEv);
+  //events per file (2 are used by the reset and subtracted by the total)
+  // unsigned int evPerFile = floor((framesPerFile - 2)/framesPerEv);
+  // 50 events with 15 payload frames is 750, leaving ~200 clock latency to the algo
 
   //number of output files
-  unsigned int nOutFiles = ceil((float)nEvents_/(float)evPerFile);
+  unsigned int nOutFiles = ceil((float)nEvents_/(float)evPerFile_);
 
   LogDebug("L1TDebug") << "Read " << nFrame_ << " frames" << std::endl;
   LogDebug("L1TDebug") << "Read " << nEvents_ << " events" << std::endl;
@@ -262,6 +295,7 @@ L1TS2PFJetInputPatternWriter::endJob()
   std::vector< std::ofstream > outFiles(nOutFiles);
     
   //make output files and write to them
+  unsigned iFrameToWrite = 0;
   for(uint itFile=0; itFile<nOutFiles; ++itFile){
     std::stringstream outFilename;
     outFilename << outDir_ << "/" << filename_ << "_" << itFile << ".txt";
@@ -291,29 +325,25 @@ L1TS2PFJetInputPatternWriter::endJob()
     outFiles[itFile] << std::endl;
 
     // then the data
-    unsigned iFileFrame=0;
-    for ( unsigned iFrame=itFile*framesPerFile; iFrame<(itFile*framesPerFile+framesPerFile); ++iFrame ) {
-      if( iFrame <= nFrame_  && iFrame < (framesPerEv*nEvents_)){
-	outFiles[itFile] << "Frame " << std::dec << std::setw(4) << std::setfill('0') << iFileFrame << " : ";
-	for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
-	  for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
-	    unsigned iLink = (iQuad*nChan_)+iChan;
-	    if (iLink<data_.size() && iFrame<data_.at(iLink).size()) {
-	      outFiles[itFile] << std::hex << ::std::setw(1) << dataValid_.at(iFrame) << "v" << std::hex << std::setw(16) << std::setfill('0') << data_.at(iLink).at(iFrame) << " ";
-	    }
-	    else {
-	      //std::cerr << "Out of range : " << iLink << ", " << iFrame << std::endl;
-	      outFiles[itFile] << std::hex << ::std::setw(1) << 0 << "v" << std::hex << std::setw(16) << std::setfill('0') << 0 << " ";
-	    }
-	  }
-	}
+    for (unsigned iFileFrame=0; iFileFrame < framesPerFile_; iFileFrame++ ) {
+      outFiles[itFile] << "Frame " << std::dec << std::setw(4) << std::setfill('0') << iFileFrame << " : ";
+      for ( unsigned iQuad=0; iQuad<nQuad_; ++iQuad ) {
+        for ( unsigned iChan=0; iChan<nChan_; ++iChan ) {
+          unsigned iLink = (iQuad*nChan_)+iChan;
+          if (iLink<data_.size() && iFrameToWrite<data_.at(iLink).size()) {
+            outFiles[itFile] << std::hex << ::std::setw(1) << dataValid_.at(iFrameToWrite) << "v" << std::hex << std::setw(16) << std::setfill('0') << data_.at(iLink).at(iFrameToWrite) << " ";
+          }
+          else {
+            // std::cerr << "Out of range : " << iLink << ", " << iFileFrame << std::endl;
+            outFiles[itFile] << std::hex << ::std::setw(1) << 0 << "v" << std::hex << std::setw(16) << std::setfill('0') << 0 << " ";
+          }
+        }
       }
       outFiles[itFile] << std::endl;
-      iFileFrame++;
+      ++iFrameToWrite;
     }
     outFiles[itFile].close();
   }
-  
 }
 
 
