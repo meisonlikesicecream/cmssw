@@ -6,6 +6,7 @@
 /**\class Phase1L1TJetProducer Phase1L1TJetProducer.cc L1Trigger/L1CaloTrigger/plugin/Phase1L1TJetProducer.cc
 
 Description: Produces jets with a phase-1 like sliding window algorithm using a collection of reco::Candidates in input.
+  If flag is enabled, computes MET and MHT.
 
 *** INPUT PARAMETERS ***
   * etaBinning: vdouble with eta binning (allows non-homogeneous binning in eta)
@@ -19,7 +20,9 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
   * outputCollectionName: string, tag for the output collection
   * vetoZeroPt: bool, controls whether jets with 0 pt should be save. 
     It matters if PU is ON, as you can get negative or zero pt jets after it.
+  * outputSumsCollectionName: string, tag for the output collection containing MET and HT
   * inputCollectionTag: inputtag, collection of reco::candidates used as input to the algo
+  * htPtThreshold: double, threshold for computing ht
 
 */
 //
@@ -34,6 +37,7 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/L1TParticleFlow/interface/PFCandidate.h"
 #include "DataFormats/L1TParticleFlow/interface/PFCluster.h"
+#include "DataFormats/L1Trigger/interface/EtSum.h"
 #include "DataFormats/L1Trigger/interface/L1Candidate.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -42,6 +46,7 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "DataFormats/L1Trigger/interface/BXVector.h"
 
 #include "TH2F.h"
 
@@ -51,6 +56,46 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
 public:
   explicit Phase1L1TJetProducer(const edm::ParameterSet&);
   ~Phase1L1TJetProducer() override;
+   public:
+      explicit Phase1L1TJetProducer(const edm::ParameterSet&);
+      ~Phase1L1TJetProducer();
+
+      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+
+   private:
+      virtual void produce(edm::Event&, const edm::EventSetup&);
+      
+      /// Finds the seeds in the caloGrid, seeds are saved in a vector that contain the index in the TH2F of each seed
+      std::vector<std::tuple<int, int>> _findSeeds(const TH2F & caloGrid, float seedThreshold);
+      
+      std::vector<reco::CaloJet> _buildJetsFromSeedsWithPUSubtraction(const TH2F & caloGrid, const std::vector<std::tuple<int, int>> & seeds, bool killZeroPt);
+      std::vector<reco::CaloJet> _buildJetsFromSeeds(const TH2F & caloGrid, const std::vector<std::tuple<int, int>> & seeds);
+      
+      void _subtract9x9Pileup(const TH2F & caloGrid, reco::CaloJet & jet);
+      
+      /// Get the energy of a certain tower while correctly handling phi periodicity in case of overflow
+      float _getTowerEnergy(const TH2F & caloGrid, int iEta, int iPhi);
+      
+      reco::CaloJet _buildJetFromSeed(const TH2F & caloGrid, const std::tuple<int, int> & seed);
+      
+      // <3 handy method to fill the calogrid with whatever type
+      template <class Container>
+      void _fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives);
+
+      edm::EDGetTokenT<edm::View<reco::Candidate>> *_inputCollectionTag;
+
+      std::vector<double> _etaBinning;
+      size_t _nBinsEta;
+      unsigned int _nBinsPhi;
+      double _phiLow;
+      double _phiUp;
+      unsigned int _jetIEtaSize;
+      unsigned int _jetIPhiSize;
+      double _seedPtThreshold;
+      bool _puSubtraction;
+      bool _vetoZeroPt;
+
+      std::string _outputCollectionName;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -303,6 +348,15 @@ std::vector<reco::CaloJet> Phase1L1TJetProducer::_buildJetsFromSeedsWithPUSubtra
       continue;
     jets.push_back(jet);
   }
+
+  // sort by pt
+  std::sort(jets.begin(), jets.end(), 
+    [](const reco::CaloJet& jet1, const reco::CaloJet& jet2) 
+    {
+      return jet1.pt() > jet2.pt();   
+    }
+  );
+
   return jets;
 }
 
@@ -315,6 +369,15 @@ std::vector<reco::CaloJet> Phase1L1TJetProducer::_buildJetsFromSeeds(const TH2F&
     reco::CaloJet jet = buildJetFromSeed(caloGrid, seed);
     jets.push_back(jet);
   }
+
+  // sort by pt
+  std::sort(jets.begin(), jets.end(), 
+    [](const reco::CaloJet& jet1, const reco::CaloJet& jet2) 
+    {
+      return jet1.pt() > jet2.pt();   
+    }
+  );
+
   return jets;
 }
 

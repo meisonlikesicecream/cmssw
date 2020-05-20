@@ -60,11 +60,10 @@ private:
   unsigned nChan_;  // number of channels per quad
   unsigned nQuad_;
   unsigned nLink_;
-  unsigned nHeaderFrames_;
+  // unsigned nHeaderFrames_;
   unsigned nPayloadFrames_;
-  unsigned nClearFrames_;
+  // unsigned nClearFrames_;
   unsigned nFrame_;
-  unsigned nFrameFile_;
   unsigned nEvents_;
   float ptLSB_;
   float phiLSB_;
@@ -109,7 +108,6 @@ L1TS2PFJetInputPatternWriter::L1TS2PFJetInputPatternWriter(const edm::ParameterS
   phiLSB_ = 0.0043633231;
 
   nFrame_ = 0;
-  nFrameFile_ = 0;
   nEvents_ = 0;
 
   nLink_ = nChan_ * nQuad_;
@@ -165,7 +163,6 @@ void L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::
         }
       }
       nFrame_++;
-      nFrameFile_++;
     }
   }
 
@@ -203,6 +200,8 @@ void L1TS2PFJetInputPatternWriter::analyze(const edm::Event& iEvent, const edm::
     if (nFrame_ % 1015 == 0)
       nFrameFile_ = 0;
   }
+  //count events
+  nEvents_++;
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -211,10 +210,12 @@ void L1TS2PFJetInputPatternWriter::beginJob() {}
 // ------------ method called once each job just after ending the event loop  ------------
 void L1TS2PFJetInputPatternWriter::endJob() {
   //frames per event
-  unsigned int framesPerEv = nHeaderFrames_ + nPayloadFrames_ + nClearFrames_;
+  unsigned int framesPerEv = nPayloadFrames_ ;
+  // used to be:
+  // unsigned int framesPerEv = nHeaderFrames_ + nPayloadFrames_ + nClearFrames_;
 
   //frames per file
-  unsigned int framesPerFile = 1015;
+  
 
   //events per file
   unsigned int evPerFile = floor(framesPerFile / framesPerEv);
@@ -278,7 +279,7 @@ void L1TS2PFJetInputPatternWriter::endJob() {
         }
       }
       outFiles[itFile] << std::endl;
-      iFileFrame++;
+      ++iFrameToWrite;
     }
     outFiles[itFile].close();
   }
