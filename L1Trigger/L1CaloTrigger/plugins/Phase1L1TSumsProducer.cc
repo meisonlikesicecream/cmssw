@@ -73,17 +73,17 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       unsigned int _nBinsPhi;
       
       // lower phi value
-      double _phiLow;
+      ap_uint<8> _phiLow_hls = _phiLow / 0.0043633231;
       // higher phi value
-      double _phiUp;
+      ap_uint<8> _phiUp_hls = _phiUp / 0.0043633231;
       // lower eta value
-      double _etaLow;
+      ap_uint<8> _etaLow_hls = _etaLow / 0.0043633231;
       // higher eta value
-      double _etaUp;
+      ap_uint<8> _etaUp_hls =  _etaUp / 0.0043633231;
       // size of a phi bin
-      double _phiStep;
+      ap_uint<8> _phiStep_hls = _phiStep / 0.0043633231;
       // threshold for ht calculation
-      double _htPtThreshold;
+      ap_uint<16>_htPtThreshold_hls =  _htPtThreshold / 0.25;
       // label of sums
       std::string _outputCollectionName;
 

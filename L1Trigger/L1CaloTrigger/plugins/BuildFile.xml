@@ -29,4 +29,5 @@
 <use   name="PhysicsTools/UtilAlgos"/>
 <use   name="root"/>
 <use   name="boost"/>
+<use   name="hls"/>
 <flags EDM_PLUGIN="1"/>
