@@ -73,17 +73,17 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       unsigned int _nBinsPhi;
       
       // lower phi value
-      ap_uint<8> _phiLow_hls = _phiLow / 0.0043633231;
+      ap_uint<8> _phiLow_hls
       // higher phi value
-      ap_uint<8> _phiUp_hls = _phiUp / 0.0043633231;
+      ap_uint<8> _phiUp_hls
       // lower eta value
-      ap_uint<8> _etaLow_hls = _etaLow / 0.0043633231;
+      ap_uint<8> _etaLow_hls
       // higher eta value
-      ap_uint<8> _etaUp_hls =  _etaUp / 0.0043633231;
+      ap_uint<8> _etaUp_hls
       // size of a phi bin
-      ap_uint<8> _phiStep_hls = _phiStep / 0.0043633231;
+      ap_uint<8> _phiStep_hls
       // threshold for ht calculation
-      ap_uint<16>_htPtThreshold_hls =  _htPtThreshold / 0.25;
+      ap_uint<16>_htPtThreshold_hls
       // label of sums
       std::string _outputCollectionName;
 
@@ -95,11 +95,11 @@ Phase1L1TSumsProducer::Phase1L1TSumsProducer(const edm::ParameterSet& iConfig):
   _sinPhi(iConfig.getParameter<std::vector<double> >("sinPhi")),
   _cosPhi(iConfig.getParameter<std::vector<double> >("cosPhi")),
   _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi")),
-  _phiLow(iConfig.getParameter<double>("phiLow")),
-  _phiUp(iConfig.getParameter<double>("phiUp")),
-  _etaLow(iConfig.getParameter<double>("etaLow")),
-  _etaUp(iConfig.getParameter<double>("etaUp")),
-  _htPtThreshold(iConfig.getParameter<double>("htPtThreshold")),
+  _phiLow_hls(iConfig.getParameter<double>("phiLow") / 0.0043633231),
+  _phiUp_hls(iConfig.getParameter<double>("phiUp") / 0.0043633231),
+  _etaLow_hls(iConfig.getParameter<double>("etaLow") / 0.0043633231),
+  _etaUp_hls(iConfig.getParameter<double>("etaUp") / 0.0043633231),
+  _htPtThreshold_hls(iConfig.getParameter<double>("htPtThreshold") / 0.25),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
 {
   // three things are happening in this line:
@@ -109,7 +109,7 @@ Phase1L1TSumsProducer::Phase1L1TSumsProducer(const edm::ParameterSet& iConfig):
   this -> _particleCollectionTag = new edm::EDGetTokenT< edm::View<reco::Candidate> >(consumes< edm::View<reco::Candidate> > (iConfig.getParameter< edm::InputTag >("particleCollectionTag")));  
   // same thing here, I am setting myself up to access jets down the road
   this -> _jetCollectionTag = new edm::EDGetTokenT< std::vector<reco::CaloJet> >(consumes< std::vector<reco::CaloJet> > (iConfig.getParameter< edm::InputTag >("jetCollectionTag")));  
-  this -> _phiStep = ( this -> _phiUp - this -> _phiLow ) / this -> _nBinsPhi;
+  this -> _phiStep = ( this -> _phiUp_hls - this -> _phiLow_hls ) / this -> _nBinsPhi;
   // preparing CMSSW to save my sums later
   // "setBranchAlias" specifies the label that my output will have in the output file
   // produces <> sets up the producer to save stuff later
@@ -169,12 +169,12 @@ l1t::EtSum Phase1L1TSumsProducer::_computeHT(const std::vector<reco::CaloJet>& l
     double lJetEta = jet.eta();
     if 
     (
-      (lJetPhi < this -> _phiLow) ||
-      (lJetPhi >= this -> _phiUp)  ||
-      (lJetEta < this -> _etaLow)||
-      (lJetEta >= this -> _etaUp)  
+      (lJetPhi < this -> _phiLow_hls) ||
+      (lJetPhi >= this -> _phiUp_hls)  ||
+      (lJetEta < this -> _etaLow_hls)||
+      (lJetEta >= this -> _etaU_hlsp)  
     ) continue;
-    lHT += (lJetPt >= this -> _htPtThreshold) ? lJetPt : 0;
+    lHT += (lJetPt >= this -> _htPtThreshold_hls) ? lJetPt : 0;
   }
 
   reco::Candidate::PolarLorentzVector lHTVector;
@@ -207,13 +207,13 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMET(const ParticleCollection & particl
     // skip particle if it does not fall in the range
     if 
     (
-      (lParticlePhi < this -> _phiLow) ||
-      (lParticlePhi >= this -> _phiUp)  ||
-      (lParticleEta < this -> _etaLow)  ||
-      (lParticleEta >= this -> _etaUp)  
+      (lParticlePhi < this -> _phiLow_hls) ||
+      (lParticlePhi >= this -> _phiUp_hls)  ||
+      (lParticleEta < this -> _etaLow_hls)  ||
+      (lParticleEta >= this -> _etaUp_hls)  
     ) continue;
     // computing bin index
-    unsigned int iPhi = ( lParticlePhi - this -> _phiLow ) / this -> _phiStep;
+    unsigned int iPhi = ( lParticlePhi - this -> _phiLow_hls ) / this -> _phiStep;
     // retrieving sin cos from LUT emulator
     double lSinPhi = this -> _sinPhi[iPhi];
     double lCosPhi = this -> _cosPhi[iPhi];
@@ -251,9 +251,9 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
   { 
     double lJetPhi = jet.phi();
 
-    if ((lJetPhi < this -> _phiLow) || (lJetPhi >= this -> _phiUp)) continue;
+    if ((lJetPhi < this -> _phiLow_hls) || (lJetPhi >= this -> _phiUp_hls)) continue;
 
-    unsigned int iPhi = ( lJetPhi - this -> _phiLow ) / this -> _phiStep;
+    unsigned int iPhi = ( lJetPhi - this -> _phiLow_hls ) / this -> _phiStep;
 
     // retrieving sin cos from LUT emulator
     double lSinPhi = this -> _sinPhi[iPhi];
@@ -261,8 +261,8 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
     
    
     // checking if above threshold
-    lTotalJetPx += (jet.pt() >= this -> _htPtThreshold) ? jet.pt() * lCosPhi: 0;
-    lTotalJetPy += (jet.pt() >= this -> _htPtThreshold) ? jet.pt() * lSinPhi: 0;
+    lTotalJetPx += (jet.pt() >= this -> _htPtThreshold_hls) ? jet.pt() * lCosPhi: 0;
+    lTotalJetPy += (jet.pt() >= this -> _htPtThreshold_hls) ? jet.pt() * lSinPhi: 0;
   }
 
   double lMHT = sqrt(lTotalJetPx * lTotalJetPx + lTotalJetPy * lTotalJetPy);
