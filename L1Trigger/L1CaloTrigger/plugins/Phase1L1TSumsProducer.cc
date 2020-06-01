@@ -215,8 +215,8 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMET(const ParticleCollection & particl
     // computing bin index
     unsigned int iPhi = ( lParticlePhi - this -> _phiLow_hls ) / this -> _phiStep;
     // retrieving sin cos from LUT emulator
-    double lSinPhi = this -> _sinPhi[iPhi];
-    double lCosPhi = this -> _cosPhi[iPhi];
+    ap_ufixed<8, 1, AP_RND> lSinPhi = this -> _sinPhi[iPhi];
+    ap_ufixed<8, 1, AP_RND> lCosPhi = this -> _cosPhi[iPhi];
     // computing px and py of the particle and adding it to the total px and py of the event
     lTotalPx += (lParticlePt * lCosPhi);
     lTotalPy += (lParticlePt * lSinPhi);
@@ -249,15 +249,15 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
 
   for (const auto & jet: l1jetVector)
   { 
-    double lJetPhi = jet.phi();
+    ap_uint<16> lJetPhi = jet.phi();
 
     if ((lJetPhi < this -> _phiLow_hls) || (lJetPhi >= this -> _phiUp_hls)) continue;
 
     unsigned int iPhi = ( lJetPhi - this -> _phiLow_hls ) / this -> _phiStep;
 
     // retrieving sin cos from LUT emulator
-    double lSinPhi = this -> _sinPhi[iPhi];
-    double lCosPhi = this -> _cosPhi[iPhi];
+    ap_ufixed<8, 1, AP_RND> lSinPhi = this -> _sinPhi[iPhi];
+    ap_ufixed<8, 1, AP_RND> lCosPhi = this -> _cosPhi[iPhi];
     
    
     // checking if above threshold
