@@ -383,9 +383,9 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
       // {
       //   std::cout << "input pt-eta-phi: " << (float) primitiveIterator -> pt() << "\t" <<(float) primitiveIterator -> eta() << "\t" << (float) primitiveIterator -> phi() << std::endl;
       // }
-      ap_uint<16> pt = primitiveIterator -> pt() / 0.25;
-      ap_uint<8> eta = primitiveIterator -> eta() / 0.0043633231;
-      ap_uint<8> phi = primitiveIterator -> phi() / 0.0043633231;
+      ap_uint<16> pt = primitiveIterator -> pt() / lsb_pt;
+      ap_uint<8> eta = primitiveIterator -> eta() / lsb;
+      ap_uint<8> phi = primitiveIterator -> phi() / lsb;
       caloGrid.Fill(eta, phi, pt);
       // caloGrid.Fill((float) primitiveIterator -> eta(), (float) primitiveIterator -> phi(), (float) primitiveIterator -> pt());
     }
