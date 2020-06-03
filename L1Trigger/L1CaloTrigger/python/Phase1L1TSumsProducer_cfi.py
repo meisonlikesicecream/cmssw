@@ -36,6 +36,8 @@ Phase1L1TSumsProducer = cms.EDProducer('Phase1L1TSumsProducer',
   # phiUp = cms.double(0.7),
   sinPhi = sinPhi,
   cosPhi = cosPhi,
+  lsb = cms.double(0.0043633231),
+  lsb_pt = cms.double(0.25),
   htPtThreshold = cms.double(30),
   outputCollectionName = cms.string("Sums"),
 )

@@ -51,6 +51,9 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 
 #include <algorithm>
 
+#include "ap_fixed.h"
+#include "ap_int.h"
+
 class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResources> {
    public:
       explicit Phase1L1TJetProducer(const edm::ParameterSet&);
@@ -83,13 +86,15 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       std::vector<double> _etaBinning;
       size_t _nBinsEta;
       unsigned int _nBinsPhi;
-      double _phiLow;
-      double _phiUp;
-      unsigned int _jetIEtaSize;
-      unsigned int _jetIPhiSize;
-      double _seedPtThreshold;
+      ap_uint<8> _phiLow_hls;
+      ap_uint<8> _phiUp_hls;
+      ap_uint<8> _jetIEtaSize_hls;
+      ap_uint<8> _jetIPhiSize_hls;
+      ap_uint<16> _seedPtThreshold_hls;
       bool _puSubtraction;
       bool _vetoZeroPt;
+      float lsb;
+      float lsb_pt;
 
       std::string _outputCollectionName;
 
@@ -101,11 +106,11 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _etaBinning(iConfig.getParameter<std::vector<double> >("etaBinning")),
   _nBinsEta(this -> _etaBinning.size() - 1),
   _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi")),
-  _phiLow(iConfig.getParameter<double>("phiLow")),
-  _phiUp(iConfig.getParameter<double>("phiUp")),
-  _jetIEtaSize(iConfig.getParameter<unsigned int>("jetIEtaSize")),
-  _jetIPhiSize(iConfig.getParameter<unsigned int>("jetIPhiSize")),
-  _seedPtThreshold(iConfig.getParameter<double>("seedPtThreshold")),
+  _phiLow_hls(iConfig.getParameter<double>("phiLow") / lsb),
+  _phiUp_hls(iConfig.getParameter<double>("phiUp") / lsb),
+  _jetIEtaSize_hls(iConfig.getParameter<unsigned int>("jetIEtaSize") / lsb),
+  _jetIPhiSize_hls(iConfig.getParameter<unsigned int>("jetIPhiSize") / lsb),
+  _seedPtThreshold_hls(iConfig.getParameter<double>("seedPtThreshold") / lsb_pt),
   _puSubtraction(iConfig.getParameter<bool>("puSubtraction")),
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
@@ -146,7 +151,7 @@ float Phase1L1TJetProducer::_getTowerEnergy(const TH2F & caloGrid, int iEta, int
 void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-  TH2F lCaloGrid("caloGrid", "Calorimeter grid", this -> _nBinsEta, this-> _etaBinning.data(), this -> _nBinsPhi, this -> _phiLow, this -> _phiUp);
+  TH2F lCaloGrid("caloGrid", "Calorimeter grid", this -> _nBinsEta, this-> _etaBinning.data(), this -> _nBinsPhi, this -> _phiLow_hls, this -> _phiUp_hls);
   lCaloGrid.GetXaxis() -> SetTitle("#eta");
   lCaloGrid.GetYaxis() -> SetTitle("#phi");
   
@@ -167,7 +172,7 @@ void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     //   }
     //   std::cout << std::endl;
     // }
-    const auto seedsVector = this -> _findSeeds(lCaloGrid, this -> _seedPtThreshold); // seedPtThreshold = 6
+    const auto seedsVector = this -> _findSeeds(lCaloGrid, this -> _seedPtThreshold_hls); // seedPtThreshold = 6
     std::vector<reco::CaloJet> l1jetVector;
     if (this -> _puSubtraction)
     {
@@ -226,8 +231,15 @@ void Phase1L1TJetProducer::_subtract9x9Pileup(const TH2F & caloGrid, reco::CaloJ
   //math::PtEtaPhiMLorentzVector ptVector;
   reco::Candidate::PolarLorentzVector ptVector;
   // removing pu contribution
-  float ptAfterPUSubtraction = jet.pt() - pileUpEnergy;
-  ptVector.SetPt((ptAfterPUSubtraction > 0)? ptAfterPUSubtraction : 0); 
+  // ap_uint<16> ptAfterPUSubtraction = jet.pt() - pileUpEnergy;
+  //ptVector.SetPt((ptAfterPUSubtraction > 0)? ptAfterPUSubtraction : 0); 
+  
+  if (pileUpEnergy < jet.pt()) {
+    ptVector.SetPt( ap_uint<16> (jet.pt() - pileUpEnergy)); 
+  }
+  else {
+  ptVector.SetPt(0);
+  }
   ptVector.SetEta(jet.eta());
   ptVector.SetPhi(jet.phi());
   //updating the jet
@@ -243,8 +255,8 @@ std::vector<std::tuple<int, int>> Phase1L1TJetProducer::_findSeeds(const TH2F & 
 
   std::vector<std::tuple<int, int>> seeds;
 
-  int etaHalfSize = (int) this -> _jetIEtaSize/2;
-  int phiHalfSize = (int) this -> _jetIPhiSize/2;
+  ap_uint<8> etaHalfSize = (int) this -> _jetIEtaSize_hls/2;
+  ap_uint<8> phiHalfSize = (int) this -> _jetIPhiSize_hls/2;
 
   // for each point of the grid check if it is a local maximum
   // to do so I take a point, and look if is greater than the points around it (in the 9x9 neighborhood)
@@ -255,7 +267,7 @@ std::vector<std::tuple<int, int>> Phase1L1TJetProducer::_findSeeds(const TH2F & 
   {
     for (int iEta = 1; iEta <= nBinsX; iEta++)
     {
-      float centralPt = caloGrid.GetBinContent(iEta, iPhi);
+      ap_uint<16> centralPt = caloGrid.GetBinContent(iEta, iPhi);
       if (centralPt < seedThreshold) continue;
       bool isLocalMaximum = true;
 
@@ -293,19 +305,20 @@ std::vector<std::tuple<int, int>> Phase1L1TJetProducer::_findSeeds(const TH2F & 
 
 reco::CaloJet Phase1L1TJetProducer::_buildJetFromSeed(const TH2F & caloGrid, const std::tuple<int, int> & seed) 
 {
-  int iEta = std::get<0>(seed);
-  int iPhi = std::get<1>(seed);
+  ap_uint<8> iEta = std::get<0>(seed);
+  ap_uint<8> iPhi = std::get<1>(seed);
 
-  int etaHalfSize = (int) this -> _jetIEtaSize/2;
-  int phiHalfSize = (int) this -> _jetIPhiSize/2;
+  ap_uint<8> etaHalfSize = (int) this -> _jetIEtaSize_hls/2;
+  ap_uint<8> phiHalfSize = (int) this -> _jetIPhiSize_hls/2;
 
-  float ptSum = 0;
+  ap_uint<16> ptSum = 0;
   // Scanning through the grid centered on the seed
   for (int etaIndex = -etaHalfSize; etaIndex <= etaHalfSize; etaIndex++)
   {
     for (int phiIndex = -phiHalfSize; phiIndex <= phiHalfSize; phiIndex++)
     {
-      ptSum += this -> _getTowerEnergy(caloGrid, iEta + etaIndex, iPhi + phiIndex);
+      // ptSum += this -> _getTowerEnergy(caloGrid, iEta + etaIndex, iPhi + phiIndex);
+      ptSum = ptSum + this->_getTowerEnergy(caloGrid, iEta + etaIndex, iPhi + phiIndex);
     }
 
   }

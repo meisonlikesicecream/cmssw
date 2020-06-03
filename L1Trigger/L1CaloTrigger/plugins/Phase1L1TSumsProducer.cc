@@ -35,8 +35,8 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/L1Trigger/interface/EtSum.h"
-#include "DataFormats/Phase2L1ParticleFlow/interface/PFCandidate.h"
-#include "DataFormats/Phase2L1ParticleFlow/interface/PFCluster.h"
+#include "DataFormats/L1TParticleFlow/interface/PFCandidate.h"
+#include "DataFormats/L1TParticleFlow/interface/PFCluster.h"
 #include "DataFormats/L1Trigger/interface/L1Candidate.h"
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -48,6 +48,8 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 #include "DataFormats/L1Trigger/interface/BXVector.h"
 
 #include <cmath>
+#include "ap_fixed.h"
+#include "ap_int.h"
 
 class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResources> {
    public:
@@ -86,6 +88,9 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       ap_uint<16>_htPtThreshold_hls
       // label of sums
       std::string _outputCollectionName;
+
+      float lsb;
+      float lsb_pt;
 
 };
 
