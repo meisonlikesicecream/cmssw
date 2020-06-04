@@ -74,6 +74,8 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       ap_ufixed<8, 1, AP_RND> _cosPhi; 
       unsigned int _nBinsPhi;
       
+      double _lsb;
+      double _lsb_pt;
       // lower phi value
       ap_uint<8> _phiLow_hls;
       // higher phi value
@@ -89,23 +91,26 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       // label of sums
       std::string _outputCollectionName;
 
-      float lsb;
-      float lsb_pt;
+    
 
 };
 
 // initialises plugin configuration and prepares ROOT file for saving the sums
 Phase1L1TSumsProducer::Phase1L1TSumsProducer(const edm::ParameterSet& iConfig):
   // getting configuration settings
-  _sinPhi(iConfig.getParameter<std::vector< ap_ufixed<8, 1, AP_RND> >("sinPhi")),
-  _cosPhi(iConfig.getParameter<std::vector< ap_ufixed<8, 1, AP_RND> >("cosPhi")),
-  _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi")),
-  _phiLow_hls(iConfig.getParameter<double>("phiLow") / lsb),
-  _phiUp_hls(iConfig.getParameter<double>("phiUp") / lsb),
-  _etaLow_hls(iConfig.getParameter<double>("etaLow") / lsb),
-  _etaUp_hls(iConfig.getParameter<double>("etaUp") / lsb),
-  _htPtThreshold_hls(iConfig.getParameter<double>("htPtThreshold") / lsb_pt),
+  _lsb(iConfig.getParameter<double>("lsb")),
+  _lsb_pt(iConfig.getParameter<double>("lsb_pt")),
+  _sinPhi(iConfig.getParameter<std::vector< ap_ufixed<8, 1, AP_RND> >>("sinPhi")),
+  _cosPhi(iConfig.getParameter<std::vector< ap_ufixed<8, 1, AP_RND> >>("cosPhi")),
+  _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi") / _lsb),
+  _phiLow_hls(iConfig.getParameter<double>("phiLow") / _lsb),
+  _phiUp_hls(iConfig.getParameter<double>("phiUp") / _lsb),
+  _etaLow_hls(iConfig.getParameter<double>("etaLow") / _lsb),
+  _etaUp_hls(iConfig.getParameter<double>("etaUp") / _lsb),
+  _htPtThreshold_hls(iConfig.getParameter<double>("htPtThreshold") / _lsb_pt),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
+  
+
 {
   // three things are happening in this line:
   // 1) retrieving the tag for the input particle collection with "iConfig.getParameter(string)"
@@ -183,8 +188,9 @@ l1t::EtSum Phase1L1TSumsProducer::_computeHT(const std::vector<reco::CaloJet>& l
     //lHT += (lJetPt >= this -> _htPtThreshold_hls) ? lJetPt : 0;
     //lHT *= lsb_pt;
     if (lJetPt >= this -> _htPtThreshold_hls){
-      lHT = lHT + (lJetPt * lsb_pt); 
+      lHT = lHT + (lJetPt * _lsb_pt); 
       //lHT += lJetPt * lsb_pt;
+      
     }
     
   }
@@ -235,7 +241,7 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMET(const ParticleCollection & particl
     lTotalPy += (lParticlePt * lSinPhi);
   }
 
-  ap_uint<16> lMET = sqrt(static_cast<double>(lTotalPx * lTotalPx + lTotalPy * lTotalPy)) * lsb_pt;
+  ap_uint<16> lMET = sqrt(static_cast<double>(lTotalPx * lTotalPx + lTotalPy * lTotalPy)) * _lsb_pt;
   //packing in EtSum object
   reco::Candidate::PolarLorentzVector lMETVector;
   double lCosMETPhi = lTotalPx/lMET;
@@ -288,7 +294,7 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
   
   }
 
-  ap_uint<16> lMHT = sqrt(static_cast<double> (lTotalJetPx * lTotalJetPx + lTotalJetPy * lTotalJetPy)) * lsb_pt;
+  ap_uint<16> lMHT = sqrt(static_cast<double> (lTotalJetPx * lTotalJetPx + lTotalJetPy * lTotalJetPy)) * _lsb_pt;
 
   reco::Candidate::PolarLorentzVector lMHTVector;
   lMHTVector.SetPt(lMHT);

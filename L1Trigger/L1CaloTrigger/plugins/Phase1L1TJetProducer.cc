@@ -93,8 +93,8 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       ap_uint<16> _seedPtThreshold_hls;
       bool _puSubtraction;
       bool _vetoZeroPt;
-      float lsb;
-      float lsb_pt;
+      double _lsb;
+      double _lsb_pt;
 
       std::string _outputCollectionName;
 
@@ -103,14 +103,16 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
 
 Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   // getting configuration settings
+  _lsb(iConfig.getParameter<double>("lsb")),
+  _lsb_pt(iConfig.getParameter<double>("lsb_pt")),
   _etaBinning(iConfig.getParameter<std::vector<double> >("etaBinning")),
   _nBinsEta(this -> _etaBinning.size() - 1),
   _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi")),
-  _phiLow_hls(iConfig.getParameter<double>("phiLow") / lsb),
-  _phiUp_hls(iConfig.getParameter<double>("phiUp") / lsb),
-  _jetIEtaSize_hls(iConfig.getParameter<unsigned int>("jetIEtaSize") / lsb),
-  _jetIPhiSize_hls(iConfig.getParameter<unsigned int>("jetIPhiSize") / lsb),
-  _seedPtThreshold_hls(iConfig.getParameter<double>("seedPtThreshold") / lsb_pt),
+  _phiLow_hls(iConfig.getParameter<double>("phiLow") / _lsb),
+  _phiUp_hls(iConfig.getParameter<double>("phiUp") / _lsb),
+  _jetIEtaSize_hls(iConfig.getParameter<unsigned int>("jetIEtaSize") / _lsb),
+  _jetIPhiSize_hls(iConfig.getParameter<unsigned int>("jetIPhiSize") / _lsb),
+  _seedPtThreshold_hls(iConfig.getParameter<double>("seedPtThreshold") / _lsb_pt),
   _puSubtraction(iConfig.getParameter<bool>("puSubtraction")),
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
@@ -396,9 +398,9 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
       // {
       //   std::cout << "input pt-eta-phi: " << (float) primitiveIterator -> pt() << "\t" <<(float) primitiveIterator -> eta() << "\t" << (float) primitiveIterator -> phi() << std::endl;
       // }
-      ap_uint<16> pt = primitiveIterator -> pt() / lsb_pt;
-      ap_uint<8> eta = primitiveIterator -> eta() / lsb;
-      ap_uint<8> phi = primitiveIterator -> phi() / lsb;
+      ap_uint<16> pt = primitiveIterator -> pt() / _lsb_pt;
+      ap_uint<8> eta = primitiveIterator -> eta() / _lsb;
+      ap_uint<8> phi = primitiveIterator -> phi() / _lsb;
       caloGrid.Fill(eta, phi, pt);
       // caloGrid.Fill((float) primitiveIterator -> eta(), (float) primitiveIterator -> phi(), (float) primitiveIterator -> pt());
     }
