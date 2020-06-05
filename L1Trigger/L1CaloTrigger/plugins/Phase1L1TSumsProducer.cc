@@ -69,9 +69,11 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       edm::EDGetTokenT<edm::View<reco::Candidate>> *_particleCollectionTag;
       edm::EDGetTokenT<std::vector<reco::CaloJet> > *_jetCollectionTag;
 
-      // holds the sin and cos for HLs LUT emulation
-      ap_ufixed<8, 1, AP_RND> _sinPhi; 
-      ap_ufixed<8, 1, AP_RND> _cosPhi; 
+      // holds the sin and cos for HLS LUT emulation
+      std::vector< double > _sinPhi;
+      std::vector< double > _cosPhi;
+      std::vector< ap_ufixed<8, 1, AP_RND> > _sinPhi_hls; 
+      std::vector< ap_ufixed<8, 1, AP_RND> > _cosPhi_hls; 
       unsigned int _nBinsPhi;
       
       double _lsb;
@@ -98,11 +100,11 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
 // initialises plugin configuration and prepares ROOT file for saving the sums
 Phase1L1TSumsProducer::Phase1L1TSumsProducer(const edm::ParameterSet& iConfig):
   // getting configuration settings
+  _sinPhi(iConfig.getParameter<std::vector< double > >("sinPhi")),
+  _cosPhi(iConfig.getParameter<std::vector< double > >("cosPhi")),
+  _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi") / _lsb),
   _lsb(iConfig.getParameter<double>("lsb")),
   _lsb_pt(iConfig.getParameter<double>("lsb_pt")),
-  _sinPhi(iConfig.getParameter<std::vector< ap_ufixed<8, 1, AP_RND> >>("sinPhi")),
-  _cosPhi(iConfig.getParameter<std::vector< ap_ufixed<8, 1, AP_RND> >>("cosPhi")),
-  _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi") / _lsb),
   _phiLow_hls(iConfig.getParameter<double>("phiLow") / _lsb),
   _phiUp_hls(iConfig.getParameter<double>("phiUp") / _lsb),
   _etaLow_hls(iConfig.getParameter<double>("etaLow") / _lsb),
@@ -124,6 +126,11 @@ Phase1L1TSumsProducer::Phase1L1TSumsProducer(const edm::ParameterSet& iConfig):
   // "setBranchAlias" specifies the label that my output will have in the output file
   // produces <> sets up the producer to save stuff later
   produces< BXVector<l1t::EtSum> >( this -> _outputCollectionName ).setBranchAlias(this -> _outputCollectionName);
+
+
+  std::copy(_sinPhi.begin(), _sinPhi.end(), _sinPhi_hls.begin());
+  std::copy(_cosPhi.begin(), _cosPhi.end(), _cosPhi_hls.begin());
+
 }
 
 // delete dynamically allocated tags (which were created with new)
@@ -244,7 +251,7 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMET(const ParticleCollection & particl
   ap_uint<16> lMET = sqrt(static_cast<double>(lTotalPx * lTotalPx + lTotalPy * lTotalPy)) * _lsb_pt;
   //packing in EtSum object
   reco::Candidate::PolarLorentzVector lMETVector;
-  double lCosMETPhi = lTotalPx/lMET;
+  // double lCosMETPhi = lTotalPx/lMET;
   lMETVector.SetPxPyPzE(lTotalPx, lTotalPy, 0, lMET);
   // lMETVector.SetEta(0);
   // lMETVector.SetPhi(0);

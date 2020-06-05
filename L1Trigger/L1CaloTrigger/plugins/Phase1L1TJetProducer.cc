@@ -103,8 +103,6 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
 
 Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   // getting configuration settings
-  _lsb(iConfig.getParameter<double>("lsb")),
-  _lsb_pt(iConfig.getParameter<double>("lsb_pt")),
   _etaBinning(iConfig.getParameter<std::vector<double> >("etaBinning")),
   _nBinsEta(this -> _etaBinning.size() - 1),
   _nBinsPhi(iConfig.getParameter<unsigned int>("nBinsPhi")),
@@ -115,6 +113,8 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _seedPtThreshold_hls(iConfig.getParameter<double>("seedPtThreshold") / _lsb_pt),
   _puSubtraction(iConfig.getParameter<bool>("puSubtraction")),
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
+  _lsb(iConfig.getParameter<double>("lsb")),
+  _lsb_pt(iConfig.getParameter<double>("lsb_pt")),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
 {
   this -> _inputCollectionTag = new edm::EDGetTokenT< edm::View<reco::Candidate> >(consumes< edm::View<reco::Candidate> > (iConfig.getParameter< edm::InputTag >("inputCollectionTag")));  
