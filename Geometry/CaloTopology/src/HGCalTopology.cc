@@ -471,7 +471,9 @@ bool HGCalTopology::valid(const DetId& idin) const {
   } else if (mode_ == HGCalGeometryMode::Trapezoid) {
     flag = ((idin.det() == det_) && hdcons_.isValidTrap(id.iLay, id.iSec1, id.iCell1));
   } else {
-    flag = ((idin.det() == det_) && hdcons_.isValidHex8(id.iLay, id.iSec1, id.iSec2, id.iCell1, id.iCell2));
+    // flag = ((idin.det() == det_) && hdcons_.isValidHex8(id.iLay, id.iSec1, id.iSec2, id.iCell1, id.iCell2));
+    bool mask = hdcons_.maskCell(idin, 3);
+    flag = ((idin.det() == det_) && hdcons_.isValidHex8(id.iLay, id.iSec1, id.iSec2, id.iCell1, id.iCell2)) && !mask;
   }
   return flag;
 }

@@ -511,8 +511,13 @@ bool HGCalDDDConstants::isValidHex8(int layer, int modU, int modV, int cellU, in
     return false;
 
   auto ktr = hgpar_->waferTypes_.find(indx);
-  if (ktr != hgpar_->waferTypes_.end())
-    return false;
+  // if (ktr != hgpar_->waferTypes_.end())
+  //   return false;
+  if (ktr != hgpar_->waferTypes_.end()) {
+    if ( ktr->second.first == 3 ) {
+      return false;    
+    }
+  }
 
   //  edm::LogVerbatim("HGCalGeom") << "Corners " << (ktr->second).first << ":" << waferVirtual(layer,modU,modV);
   int type = ((itr == hgpar_->typesInLayers_.end()) ? 2 : hgpar_->waferTypeL_[itr->second]);

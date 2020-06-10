@@ -1387,8 +1387,10 @@ void HGCalGeomParameters::loadWaferHexagon8(HGCalParameters& php) {
 #ifdef EDM_ML_DEBUG
         indtypes.emplace_back(kndx);
 #endif
+
+
         std::pair<int, int> corner =
-            HGCalGeomTools::waferCorner(xpos, ypos, r, R, php.rMinLayHex_[i], php.rMaxLayHex_[i], false);
+            HGCalGeomTools::waferCorner(xpos, ypos + xyoff.second, r, R, php.rMinLayHex_[i], php.rMaxLayHex_[i], false);
 #ifdef EDM_ML_DEBUG
         if (((corner.first == 0) && std::abs(u) < 5 && std::abs(v) < 5) || (std::abs(u) < 2 && std::abs(v) < 2)) {
           edm::LogVerbatim("HGCalGeom") << "Layer " << lay << " R " << php.rMinLayHex_[i] << ":" << php.rMaxLayHex_[i]
