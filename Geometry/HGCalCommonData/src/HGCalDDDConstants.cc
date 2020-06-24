@@ -514,158 +514,163 @@ bool HGCalDDDConstants::isValidHex8(int layer, int modU, int modV, int cellU, in
   // if (ktr != hgpar_->waferTypes_.end())
   //   return false;
   if (ktr != hgpar_->waferTypes_.end()) {
-    if ( ktr->second.first == 3 ) {
+    if ( ktr->second.first <= 3 ) {
 
-      int layerToCheck = hgpar_->detectorType_ == 1 ? layer : layer + 28;
-      if ( ! (
-(layerToCheck == 1 && modU == 2 && modV == 1) ||
-(layerToCheck == 1 && modU == 1 && modV == 2) ||
-(layerToCheck == 2 && modU == 1 && modV == 2) ||
-(layerToCheck == 2 && modU == 2 && modV == 1) ||
-(layerToCheck == 3 && modU == 1 && modV == 2) ||
-(layerToCheck == 3 && modU == 2 && modV == 1) ||
-(layerToCheck == 4 && modU == 1 && modV == 2) ||
-(layerToCheck == 4 && modU == 2 && modV == 1) ||
-(layerToCheck == 5 && modU == 1 && modV == 2) ||
-(layerToCheck == 5 && modU == 2 && modV == 1) ||
-(layerToCheck == 6 && modU == 1 && modV == 2) ||
-(layerToCheck == 6 && modU == 2 && modV == 1) ||
-(layerToCheck == 7 && modU == 1 && modV == 2) ||
-(layerToCheck == 7 && modU == 2 && modV == 1) ||
-(layerToCheck == 8 && modU == 1 && modV == 2) ||
-(layerToCheck == 8 && modU == 2 && modV == 1) ||
-(layerToCheck == 9 && modU == 1 && modV == 2) ||
-(layerToCheck == 9 && modU == 2 && modV == 1) ||
-(layerToCheck == 10 && modU == 1 && modV == 2) ||
-(layerToCheck == 10 && modU == 2 && modV == 1) ||
-(layerToCheck == 11 && modU == 1 && modV == 2) ||
-(layerToCheck == 11 && modU == 2 && modV == 1) ||
-(layerToCheck == 12 && modU == 1 && modV == 2) ||
-(layerToCheck == 12 && modU == 2 && modV == 1) ||
-(layerToCheck == 13 && modU == 1 && modV == 2) ||
-(layerToCheck == 13 && modU == 2 && modV == 1) ||
-(layerToCheck == 14 && modU == 1 && modV == 2) ||
-(layerToCheck == 14 && modU == 2 && modV == 1) ||
-(layerToCheck == 15 && modU == 1 && modV == 2) ||
-(layerToCheck == 15 && modU == 2 && modV == 1) ||
-(layerToCheck == 16 && modU == 1 && modV == 2) ||
-(layerToCheck == 16 && modU == 2 && modV == 1) ||
-(layerToCheck == 17 && modU == 1 && modV == 2) ||
-(layerToCheck == 17 && modU == 2 && modV == 1) ||
-(layerToCheck == 18 && modU == 1 && modV == 2) ||
-(layerToCheck == 18 && modU == 2 && modV == 1) ||
-(layerToCheck == 19 && modU == 1 && modV == 2) ||
-(layerToCheck == 19 && modU == 2 && modV == 1) ||
-(layerToCheck == 20 && modU == 1 && modV == 2) ||
-(layerToCheck == 20 && modU == 2 && modV == 1) ||
-(layerToCheck == 21 && modU == 1 && modV == 2) ||
-(layerToCheck == 21 && modU == 2 && modV == 1) ||
-(layerToCheck == 22 && modU == 1 && modV == 2) ||
-(layerToCheck == 22 && modU == 2 && modV == 1) ||
-(layerToCheck == 23 && modU == 1 && modV == 2) ||
-(layerToCheck == 23 && modU == 2 && modV == 1) ||
-(layerToCheck == 24 && modU == 1 && modV == 2) ||
-(layerToCheck == 24 && modU == 2 && modV == 1) ||
-(layerToCheck == 25 && modU == 1 && modV == 2) ||
-(layerToCheck == 25 && modU == 2 && modV == 1) ||
-(layerToCheck == 25 && modU == 4 && modV == 11) ||
-(layerToCheck == 25 && modU == 7 && modV == 11) ||
-(layerToCheck == 25 && modU == 11 && modV == 4) ||
-(layerToCheck == 25 && modU == 11 && modV == 7) ||
-(layerToCheck == 26 && modU == 1 && modV == 2) ||
-(layerToCheck == 26 && modU == 2 && modV == 1) ||
-(layerToCheck == 27 && modU == 1 && modV == 2) ||
-(layerToCheck == 27 && modU == 2 && modV == 1) ||
-(layerToCheck == 28 && modU == 1 && modV == 2) ||
-(layerToCheck == 28 && modU == 2 && modV == 1) ||
-(layerToCheck == 29 && modU == 2 && modV == 0) ||
-(layerToCheck == 30 && modU == 1 && modV == 3) ||
-(layerToCheck == 30 && modU == 2 && modV == 3) ||
-(layerToCheck == 30 && modU == 5 && modV == 12) ||
-(layerToCheck == 30 && modU == 7 && modV == 12) ||
-(layerToCheck == 31 && modU == 2 && modV == 0) ||
-(layerToCheck == 31 && modU == 11 && modV == 3) ||
-(layerToCheck == 31 && modU == 11 && modV == 7) ||
-(layerToCheck == 32 && modU == 1 && modV == 3) ||
-(layerToCheck == 32 && modU == 2 && modV == 3) ||
-(layerToCheck == 33 && modU == 2 && modV == 0) ||
-(layerToCheck == 33 && modU == 4 && modV == 11) ||
-(layerToCheck == 33 && modU == 7 && modV == 11) ||
-(layerToCheck == 34 && modU == 1 && modV == 3) ||
-(layerToCheck == 34 && modU == 2 && modV == 3) ||
-(layerToCheck == 34 && modU == 2 && modV == 12) ||
-(layerToCheck == 34 && modU == 10 && modV == 12) ||
-(layerToCheck == 34 && modU == 12 && modV == 4) ||
-(layerToCheck == 35 && modU == 1 && modV == 11) ||
-(layerToCheck == 35 && modU == 2 && modV == 0) ||
-(layerToCheck == 35 && modU == 5 && modV == 12) ||
-(layerToCheck == 35 && modU == 7 && modV == 12) ||
-(layerToCheck == 35 && modU == 10 && modV == 11) ||
-(layerToCheck == 35 && modU == 12 && modV == 3) ||
-(layerToCheck == 35 && modU == 12 && modV == 4) ||
-(layerToCheck == 36 && modU == 1 && modV == 3) ||
-(layerToCheck == 36 && modU == 2 && modV == 3) ||
-(layerToCheck == 36 && modU == 13 && modV == 4) ||
-(layerToCheck == 36 && modU == 13 && modV == 10) ||
-(layerToCheck == 37 && modU == 2 && modV == 1) ||
-(layerToCheck == 37 && modU == 10 && modV == 3) ||
-(layerToCheck == 37 && modU == 10 && modV == 4) ||
-(layerToCheck == 37 && modU == 10 && modV == 5) ||
-(layerToCheck == 37 && modU == 10 && modV == 6) ||
-(layerToCheck == 38 && modU == 4 && modV == 11) ||
-(layerToCheck == 38 && modU == 5 && modV == 11) ||
-(layerToCheck == 38 && modU == 6 && modV == 11) ||
-(layerToCheck == 38 && modU == 7 && modV == 11) ||
-(layerToCheck == 39 && modU == 2 && modV == 1) ||
-(layerToCheck == 39 && modU == 10 && modV == 3) ||
-(layerToCheck == 39 && modU == 10 && modV == 4) ||
-(layerToCheck == 39 && modU == 10 && modV == 5) ||
-(layerToCheck == 39 && modU == 10 && modV == 6) ||
-(layerToCheck == 40 && modU == 4 && modV == 11) ||
-(layerToCheck == 40 && modU == 5 && modV == 11) ||
-(layerToCheck == 40 && modU == 6 && modV == 11) ||
-(layerToCheck == 40 && modU == 7 && modV == 11) ||
-(layerToCheck == 41 && modU == 9 && modV == 3) ||
-(layerToCheck == 41 && modU == 9 && modV == 4) ||
-(layerToCheck == 41 && modU == 9 && modV == 5) ||
-(layerToCheck == 42 && modU == 4 && modV == 10) ||
-(layerToCheck == 42 && modU == 5 && modV == 10) ||
-(layerToCheck == 42 && modU == 6 && modV == 10) ||
-(layerToCheck == 43 && modU == 1 && modV == 7) ||
-(layerToCheck == 43 && modU == 6 && modV == 7) ||
-(layerToCheck == 43 && modU == 7 && modV == 0) ||
-(layerToCheck == 43 && modU == 7 && modV == 6) ||
-(layerToCheck == 44 && modU == 1 && modV == 8) ||
-(layerToCheck == 44 && modU == 7 && modV == 8) ||
-(layerToCheck == 44 && modU == 8 && modV == 2) ||
-(layerToCheck == 44 && modU == 8 && modV == 7) ||
-(layerToCheck == 45 && modU == 1 && modV == 7) ||
-(layerToCheck == 45 && modU == 6 && modV == 7) ||
-(layerToCheck == 45 && modU == 7 && modV == 0) ||
-(layerToCheck == 45 && modU == 7 && modV == 6) ||
-(layerToCheck == 46 && modU == 1 && modV == 8) ||
-// (layerToCheck == 46 && modU == 7 && modV == 8) ||
-(layerToCheck == 46 && modU == 8 && modV == 2) ||
-(layerToCheck == 46 && modU == 8 && modV == 7) ||
-(layerToCheck == 47 && modU == 1 && modV == 6) ||
-(layerToCheck == 47 && modU == 5 && modV == 6) ||
-(layerToCheck == 48 && modU == 7 && modV == 2) ||
-(layerToCheck == 48 && modU == 7 && modV == 6) ||
-(layerToCheck == 49 && modU == 1 && modV == 6) ||
-(layerToCheck == 49 && modU == 5 && modV == 6) ||
-(layerToCheck == 50 && modU == 7 && modV == 2) ||
-(layerToCheck == 50 && modU == 7 && modV == 6) ||
-(layerToCheck == 29 && modU == 2 && modV == 1) ||
-(layerToCheck == 31 && modU == 2 && modV == 1) ||
-(layerToCheck == 33 && modU == 2 && modV == 1) ||
-(layerToCheck == 34 && modU == 2 && modV == 12) ||
-(layerToCheck == 34 && modU == 10 && modV == 12) ||
-(layerToCheck == 35 && modU == 1 && modV == 11) ||
-(layerToCheck == 35 && modU == 2 && modV == 1) ||
-(layerToCheck == 35 && modU == 10 && modV == 11) ||
-(layerToCheck == 37 && modU == 2 && modV == 1) ||
-(layerToCheck == 39 && modU == 2 && modV == 1)
-        ) ) {
+      if ( hgpar_->detectorType_ == 1 ) {
+        if ( ! (
+                  (layer == 1 && modU == 2 && modV == 1) ||
+                  (layer == 1 && modU == 1 && modV == 2) ||
+                  (layer == 2 && modU == 1 && modV == 2) ||
+                  (layer == 2 && modU == 2 && modV == 1) ||
+                  (layer == 3 && modU == 1 && modV == 2) ||
+                  (layer == 3 && modU == 2 && modV == 1) ||
+                  (layer == 4 && modU == 1 && modV == 2) ||
+                  (layer == 4 && modU == 2 && modV == 1) ||
+                  (layer == 5 && modU == 1 && modV == 2) ||
+                  (layer == 5 && modU == 2 && modV == 1) ||
+                  (layer == 6 && modU == 1 && modV == 2) ||
+                  (layer == 6 && modU == 2 && modV == 1) ||
+                  (layer == 7 && modU == 1 && modV == 2) ||
+                  (layer == 7 && modU == 2 && modV == 1) ||
+                  (layer == 8 && modU == 1 && modV == 2) ||
+                  (layer == 8 && modU == 2 && modV == 1) ||
+                  (layer == 9 && modU == 1 && modV == 2) ||
+                  (layer == 9 && modU == 2 && modV == 1) ||
+                  (layer == 10 && modU == 1 && modV == 2) ||
+                  (layer == 10 && modU == 2 && modV == 1) ||
+                  (layer == 11 && modU == 1 && modV == 2) ||
+                  (layer == 11 && modU == 2 && modV == 1) ||
+                  (layer == 12 && modU == 1 && modV == 2) ||
+                  (layer == 12 && modU == 2 && modV == 1) ||
+                  (layer == 13 && modU == 1 && modV == 2) ||
+                  (layer == 13 && modU == 2 && modV == 1) ||
+                  (layer == 14 && modU == 1 && modV == 2) ||
+                  (layer == 14 && modU == 2 && modV == 1) ||
+                  (layer == 15 && modU == 1 && modV == 2) ||
+                  (layer == 15 && modU == 2 && modV == 1) ||
+                  (layer == 16 && modU == 1 && modV == 2) ||
+                  (layer == 16 && modU == 2 && modV == 1) ||
+                  (layer == 17 && modU == 1 && modV == 2) ||
+                  (layer == 17 && modU == 2 && modV == 1) ||
+                  (layer == 18 && modU == 1 && modV == 2) ||
+                  (layer == 18 && modU == 2 && modV == 1) ||
+                  (layer == 19 && modU == 1 && modV == 2) ||
+                  (layer == 19 && modU == 2 && modV == 1) ||
+                  (layer == 20 && modU == 1 && modV == 2) ||
+                  (layer == 20 && modU == 2 && modV == 1) ||
+                  (layer == 21 && modU == 1 && modV == 2) ||
+                  (layer == 21 && modU == 2 && modV == 1) ||
+                  (layer == 22 && modU == 1 && modV == 2) ||
+                  (layer == 22 && modU == 2 && modV == 1) ||
+                  (layer == 23 && modU == 1 && modV == 2) ||
+                  (layer == 23 && modU == 2 && modV == 1) ||
+                  (layer == 24 && modU == 1 && modV == 2) ||
+                  (layer == 24 && modU == 2 && modV == 1) ||
+                  (layer == 25 && modU == 1 && modV == 2) ||
+                  (layer == 25 && modU == 2 && modV == 1) ||
+                  (layer == 25 && modU == 4 && modV == 11) ||
+                  (layer == 25 && modU == 7 && modV == 11) ||
+                  (layer == 25 && modU == 11 && modV == 4) ||
+                  (layer == 25 && modU == 11 && modV == 7) ||
+                  (layer == 26 && modU == 1 && modV == 2) ||
+                  (layer == 26 && modU == 2 && modV == 1) ||
+                  (layer == 27 && modU == 1 && modV == 2) ||
+                  (layer == 27 && modU == 2 && modV == 1) ||
+                  (layer == 28 && modU == 1 && modV == 2) ||
+                  (layer == 28 && modU == 2 && modV == 1)
+         ) ) {
+                return false;
+              }
+      }
+      else if ( hgpar_->detectorType_ == 2 ) {
+
+        if ( ! (
+                (layer == 1 && modU == 2 && modV == 0) ||
+                // (layer == 2 && modU == 1 && modV == 3) ||
+                // (layer == 2 && modU == 2 && modV == 3) ||
+                // (layer == 2 && modU == 5 && modV == 12) ||
+                // (layer == 2 && modU == 7 && modV == 12) ||
+                (layer == 3 && modU == 2 && modV == 0) ||
+                (layer == 3 && modU == 11 && modV == 3) ||
+                (layer == 3 && modU == 11 && modV == 7) ||
+                (layer == 1 && modU == 2 && modV == 1) ||
+                (layer == 3 && modU == 2 && modV == 1) ||
+                // (layer == 4 && modU == 1 && modV == 3) ||
+                // (layer == 4 && modU == 2 && modV == 3) ||
+                (layer == 5 && modU == 2 && modV == 0) ||
+                (layer == 5 && modU == 2 && modV == 1) ||
+                (layer == 5 && modU == 4 && modV == 11) ||
+                (layer == 5 && modU == 7 && modV == 11) ||
+                // (layer == 6 && modU == 1 && modV == 3) ||
+                // (layer == 6 && modU == 2 && modV == 3) ||
+                // (layer == 6 && modU == 2 && modV == 12) ||
+                // (layer == 6 && modU == 10 && modV == 12) ||
+                // (layer == 6 && modU == 12 && modV == 4) ||
+                (layer == 7 && modU == 1 && modV == 11) ||
+                (layer == 7 && modU == 2 && modV == 0) ||
+                (layer == 7 && modU == 2 && modV == 1) ||
+                (layer == 7 && modU == 5 && modV == 12) ||
+                (layer == 7 && modU == 7 && modV == 12) ||
+                (layer == 7 && modU == 10 && modV == 11) ||
+                (layer == 7 && modU == 12 && modV == 3) ||
+                (layer == 7 && modU == 12 && modV == 4) ||
+                // (layer == 8 && modU == 1 && modV == 3) ||
+                // (layer == 8 && modU == 2 && modV == 3) ||
+                // (layer == 8 && modU == 13 && modV == 4) ||
+                // (layer == 8 && modU == 13 && modV == 10) ||
+                (layer == 9 && modU == 2 && modV == 1) ||
+                (layer == 9 && modU == 10 && modV == 3) ||
+                (layer == 9 && modU == 10 && modV == 4) ||
+                (layer == 9 && modU == 10 && modV == 5) ||
+                (layer == 9 && modU == 10 && modV == 6) ||
+                // (layer == 10 && modU == 4 && modV == 11) ||
+                // (layer == 10 && modU == 5 && modV == 11) ||
+                // (layer == 10 && modU == 6 && modV == 11) ||
+                // (layer == 10 && modU == 7 && modV == 11) ||
+                (layer == 11 && modU == 2 && modV == 1) ||
+                (layer == 11 && modU == 10 && modV == 3) ||
+                (layer == 11 && modU == 10 && modV == 4) ||
+                (layer == 11 && modU == 10 && modV == 5) ||
+                (layer == 11 && modU == 10 && modV == 6) ||
+                // (layer == 12 && modU == 4 && modV == 11) ||
+                // (layer == 12 && modU == 5 && modV == 11) ||
+                // (layer == 12 && modU == 6 && modV == 11) ||
+                // (layer == 12 && modU == 7 && modV == 11) ||
+                (layer == 13 && modU == 9 && modV == 3) ||
+                (layer == 13 && modU == 9 && modV == 4) ||
+                (layer == 13 && modU == 9 && modV == 5) ||
+                // (layer == 14 && modU == 4 && modV == 10) ||
+                // (layer == 14 && modU == 5 && modV == 10) ||
+                // (layer == 14 && modU == 6 && modV == 10) ||
+                (layer == 15 && modU == 1 && modV == 7) ||
+                (layer == 15 && modU == 6 && modV == 7) ||
+                (layer == 15 && modU == 7 && modV == 0) ||
+                (layer == 15 && modU == 7 && modV == 6) ||
+                // (layer == 16 && modU == 1 && modV == 8) ||
+                // (layer == 16 && modU == 7 && modV == 8) ||
+                // (layer == 16 && modU == 8 && modV == 2) ||
+                // (layer == 16 && modU == 8 && modV == 7) ||
+                (layer == 17 && modU == 1 && modV == 7) ||
+                (layer == 17 && modU == 6 && modV == 7) ||
+                (layer == 17 && modU == 7 && modV == 0) ||
+                (layer == 17 && modU == 7 && modV == 6) ||
+                // (layer == 18 && modU == 1 && modV == 8) ||
+                // (layer == 18 && modU == 7 && modV == 8) ||
+                // (layer == 18 && modU == 8 && modV == 2) ||
+                // (layer == 18 && modU == 8 && modV == 7) ||
+                (layer == 19 && modU == 1 && modV == 6) ||
+                (layer == 19 && modU == 5 && modV == 6) ||
+                // (layer == 20 && modU == 7 && modV == 2) ||
+                // (layer == 20 && modU == 7 && modV == 6) ||
+                (layer == 21 && modU == 1 && modV == 6) ||
+                (layer == 21 && modU == 5 && modV == 6) 
+                // (layer == 22 && modU == 7 && modV == 2) ||
+                // (layer == 22 && modU == 7 && modV == 6)
+                ) ) {
+          return false;
+        }
+      }
+      else { 
         return false;
       }
     }
