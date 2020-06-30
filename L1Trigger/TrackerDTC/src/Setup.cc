@@ -643,7 +643,8 @@ namespace trackerDTC {
       const double baseZ = hybridBasesZ_.at(type);
       const double baseR = hybridBasesR_.at(type);
       // parse bit vector
-      bv >>= 1 + hybridWidthLayer_ + widthBend + widthAlpha;
+      // bv >>= 1 + hybridWidthLayer_ + widthBend + widthAlpha;
+      bv >>= widthBend + widthAlpha;
       double phi = (bv.val(widthPhi, 0, true) + .5) * basePhi;
       bv >>= widthPhi;
       double z = (bv.val(widthZ, 0, true) + .5) * baseZ;

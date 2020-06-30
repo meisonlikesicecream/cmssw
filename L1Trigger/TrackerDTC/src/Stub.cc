@@ -159,8 +159,9 @@ namespace trackerDTC {
     const TTBV hwGap(0, setup_->hybridNumUnusedBits(type));
     const TTBV hwValid(1, 1);
     // assemble final bitset
-    return TTDTC::BV(hwGap.str() + hwR.str() + hwZ.str() + hwPhi.str() + hwAlpha.str() + hwBend.str() + hwLayer.str() +
-                     hwValid.str());
+    // return TTDTC::BV(hwGap.str() + hwR.str() + hwZ.str() + hwPhi.str() + hwAlpha.str() + hwBend.str() + hwLayer.str() +
+    //                  hwValid.str());
+    return TTDTC::BV(hwGap.str() + hwValid.str() + hwLayer.str() + hwR.str() + hwZ.str() + hwPhi.str() + hwAlpha.str() + hwBend.str());
   }
 
   TTDTC::BV Stub::formatTMTT(int region) const {
