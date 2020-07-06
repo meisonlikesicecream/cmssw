@@ -34,6 +34,10 @@ Phase1L1TSumsProducer = cms.EDProducer('Phase1L1TSumsProducer',
   # nBinsPhi = cms.uint32(8),
   # phiLow = cms.double(0),
   # phiUp = cms.double(0.7),
+
+  etaLow = cms.double(-5),
+  etaUp = cms.double(5),
+
   sinPhi = sinPhi,
   cosPhi = cosPhi,
   htPtThreshold = cms.double(30),

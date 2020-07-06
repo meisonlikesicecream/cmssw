@@ -111,28 +111,28 @@ phase2_SimL1Emulator += l1EGammaEEProducer
 from L1Trigger.L1CaloTrigger.L1CaloJets_cff import *
 phase2_SimL1Emulator += l1CaloJetsSequence
 
-# TPS Algorithm L1Tk + Stub
-# ########################################################################
+# # TPS Algorithm L1Tk + Stub
+# # ########################################################################
 
-from L1Trigger.L1TMuonTPS.L1TTrackerPlusStubs_cfi import *
-#l1TPSMuons = l1StubMatchedMuons.clone()
-#phase2_SimL1Emulator += l1TPSMuons
-phase2_SimL1Emulator += l1TrackerPlusStubsSequence
+# from L1Trigger.L1TMuonTPS.L1TTrackerPlusStubs_cfi import *
+# #l1TPSMuons = l1StubMatchedMuons.clone()
+# #phase2_SimL1Emulator += l1TPSMuons
+# phase2_SimL1Emulator += l1TrackerPlusStubsSequence
 
-#  Overlap L1Tk + Stub
-# ########################################################################
-from L1Trigger.L1TMuonBayes.simBayesMuCorrelatorTrackProducer_cfi import *
-l1TkMuonStubOverlap = simBayesMuCorrelatorTrackProducer.clone()
-phase2_SimL1Emulator += l1TkMuonStubOverlap
+# #  Overlap L1Tk + Stub
+# # ########################################################################
+# from L1Trigger.L1TMuonBayes.simBayesMuCorrelatorTrackProducer_cfi import *
+# l1TkMuonStubOverlap = simBayesMuCorrelatorTrackProducer.clone()
+# phase2_SimL1Emulator += l1TkMuonStubOverlap
 
 
-# EndCap L1Tk + Stub
-# ########################################################################
-from L1Trigger.L1TTrackMatch.L1TkMuonStubProducer_cfi import *
-l1TkMuonStubEndCap = L1TkMuonStub.clone()
-phase2_SimL1Emulator += l1TkMuonStubEndCap
-l1TkMuonStubEndCapS12 = L1TkMuonStubS12.clone()
-phase2_SimL1Emulator += l1TkMuonStubEndCapS12
+# # EndCap L1Tk + Stub
+# # ########################################################################
+# from L1Trigger.L1TTrackMatch.L1TkMuonStubProducer_cfi import *
+# l1TkMuonStubEndCap = L1TkMuonStub.clone()
+# phase2_SimL1Emulator += l1TkMuonStubEndCap
+# l1TkMuonStubEndCapS12 = L1TkMuonStubS12.clone()
+# phase2_SimL1Emulator += l1TkMuonStubEndCapS12
 
 # Tk + StandaloneObj
 # (include L1TkPrimaryVertex)
@@ -204,25 +204,25 @@ phase2_SimL1Emulator += produceL1HPSPFTausPF
 from L1Trigger.Phase2L1Taus.L1HPSPFTausPuppi_cff import *
 phase2_SimL1Emulator += produceL1HPSPFTausPuppi
 
-# NNTaus
-# ########################################################################
-from L1Trigger.Phase2L1Taus.L1NNTauProducer_cff import *
-l1NNTauProducer = L1NNTauProducer.clone()
-l1NNTauProducer.L1PFObjects = cms.InputTag("l1pfCandidates","PF")
-l1NNTauProducerPuppi = L1NNTauProducerPuppi.clone()
-l1NNTauProducerPuppi.L1PFObjects = cms.InputTag("l1pfCandidates","Puppi")
-phase2_SimL1Emulator += l1NNTauProducer
-phase2_SimL1Emulator += l1NNTauProducerPuppi
+# # NNTaus
+# # ########################################################################
+# from L1Trigger.Phase2L1Taus.L1NNTauProducer_cff import *
+# l1NNTauProducer = L1NNTauProducer.clone()
+# l1NNTauProducer.L1PFObjects = cms.InputTag("l1pfCandidates","PF")
+# l1NNTauProducerPuppi = L1NNTauProducerPuppi.clone()
+# l1NNTauProducerPuppi.L1PFObjects = cms.InputTag("l1pfCandidates","Puppi")
+# phase2_SimL1Emulator += l1NNTauProducer
+# phase2_SimL1Emulator += l1NNTauProducerPuppi
 
-# NNTaus
-# ########################################################################
-from L1Trigger.L1TTrackMatch.L1TkBsCandidateProducer_cfi import *
-l1TkBsCandidates = L1TkBsCandidates.clone()
-l1TkBsCandidatesLooseWP = L1TkBsCandidatesLooseWP.clone()
-l1TkBsCandidatesTightWP = L1TkBsCandidatesTightWP.clone()
-phase2_SimL1Emulator += l1TkBsCandidates
-phase2_SimL1Emulator += l1TkBsCandidatesLooseWP
-phase2_SimL1Emulator += l1TkBsCandidatesTightWP
+# # NNTaus
+# # ########################################################################
+# from L1Trigger.L1TTrackMatch.L1TkBsCandidateProducer_cfi import *
+# l1TkBsCandidates = L1TkBsCandidates.clone()
+# l1TkBsCandidatesLooseWP = L1TkBsCandidatesLooseWP.clone()
+# l1TkBsCandidatesTightWP = L1TkBsCandidatesTightWP.clone()
+# phase2_SimL1Emulator += l1TkBsCandidates
+# phase2_SimL1Emulator += l1TkBsCandidatesLooseWP
+# phase2_SimL1Emulator += l1TkBsCandidatesTightWP
 
 from Configuration.Eras.Modifier_phase2_trigger_cff import phase2_trigger
 phase2_trigger.toReplaceWith( SimL1Emulator , phase2_SimL1Emulator)

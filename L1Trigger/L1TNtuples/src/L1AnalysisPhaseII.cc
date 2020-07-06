@@ -608,21 +608,21 @@ void L1Analysis::L1AnalysisPhaseII::SetL1PfPhase1L1TJet(const      edm::Handle< 
 }
 
 
-/*
-void L1Analysis::L1AnalysisPhaseII::SetPFJetForMET(const edm::Handle<l1t::PFJetCollection> PFJet, unsigned maxL1Extra)
-{
 
-  for(l1t::PFJetCollection::const_iterator it=PFJet->begin(); it!=PFJet->end() && l1extra_.nPuppiJetForMETs<maxL1Extra; it++){
-    l1extra_.puppiJetForMETEt .push_back(it->pt());
-    l1extra_.puppiJetForMETEtUnCorr .push_back(it->rawPt());
-    l1extra_.puppiJetForMETEta.push_back(it->eta());
-    l1extra_.puppiJetForMETPhi.push_back(it->phi());
-//    l1extra_.puppiJetForMETzVtx.push_back(it->getJetVtx());
-    l1extra_.puppiJetForMETBx .push_back(0);//it->bx());
-    l1extra_.nPuppiJetForMETs++;
-  }
-}
-*/
+// void L1Analysis::L1AnalysisPhaseII::SetPFJetForMET(const edm::Handle<l1t::PFJetCollection> PFJet, unsigned maxL1Extra)
+// {
+
+//   for(l1t::PFJetCollection::const_iterator it=PFJet->begin(); it!=PFJet->end() && l1extra_.nPuppiJetForMETs<maxL1Extra; it++){
+//     l1extra_.puppiJetForMETEt .push_back(it->pt());
+//     l1extra_.puppiJetForMETEtUnCorr .push_back(it->rawPt());
+//     l1extra_.puppiJetForMETEta.push_back(it->eta());
+//     l1extra_.puppiJetForMETPhi.push_back(it->phi());
+// //    l1extra_.puppiJetForMETzVtx.push_back(it->getJetVtx());
+//     l1extra_.puppiJetForMETBx .push_back(0);//it->bx());
+//     l1extra_.nPuppiJetForMETs++;
+//   }
+// }
+
 
 void L1Analysis::L1AnalysisPhaseII::SetPFJet(const edm::Handle<l1t::PFJetCollection> PFJet, unsigned maxL1Extra)
 {

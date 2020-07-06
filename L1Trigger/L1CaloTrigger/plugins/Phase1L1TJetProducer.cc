@@ -111,8 +111,10 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
 {
+  std::cout << "In constructor" << std::endl;
   this -> _inputCollectionTag = new edm::EDGetTokenT< edm::View<reco::Candidate> >(consumes< edm::View<reco::Candidate> > (iConfig.getParameter< edm::InputTag >("inputCollectionTag")));  
   produces<std::vector<reco::CaloJet> >( this -> _outputCollectionName ).setBranchAlias(this -> _outputCollectionName);
+  std::cout << "Done constructor" << std::endl;
 }
 
 Phase1L1TJetProducer::~Phase1L1TJetProducer()
@@ -146,7 +148,7 @@ float Phase1L1TJetProducer::_getTowerEnergy(const TH2F & caloGrid, int iEta, int
 
 void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-
+  std::cout << "In produce" << std::endl;
   TH2F lCaloGrid("caloGrid", "Calorimeter grid", this -> _nBinsEta, this-> _etaBinning.data(), this -> _nBinsPhi, this -> _phiLow, this -> _phiUp);
   lCaloGrid.GetXaxis() -> SetTitle("#eta");
   lCaloGrid.GetYaxis() -> SetTitle("#phi");

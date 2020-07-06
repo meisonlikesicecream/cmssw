@@ -23,10 +23,11 @@ l1PhaseIITree = cms.EDAnalyzer("L1PhaseIITreeProducer",
    #TkMuonStubsTokenBMTF = cms.InputTag("l1TPSMuons",""), #Changed to this by Mike, then to 
    TkMuonStubsTokenBMTF = cms.InputTag("l1StubMatchedMuons",""),  # by Vlad... 
    TkMuonStubsTokenEMTF = cms.InputTag("l1TkMuonStubEndCapS12",""),
-   TkMuonStubsTokenOMTF = cms.InputTag("l1TkMuonStubOverlap","MuonTracks"),
-   TkMuonStubsTokenME0 = cms.InputTag("l1TkMuonStubEndCap","ME0Ext"),
 
-   TkMuonStubsTokenHSCP = cms.InputTag("l1TkMuonStubOverlap","HscpTracks"),
+   # TkMuonStubsTokenOMTF = cms.InputTag("l1TkMuonStubOverlap","MuonTracks"),
+   # TkMuonStubsTokenME0 = cms.InputTag("l1TkMuonStubEndCap","ME0Ext"),
+
+   # TkMuonStubsTokenHSCP = cms.InputTag("l1TkMuonStubOverlap","HscpTracks"),
 
    tkTrackerJetToken = cms.InputTag("TwoLayerJets", "L1TwoLayerJets"),                                            
    tkCaloJetToken = cms.InputTag("L1TkCaloJets","L1TkCaloJets"),
@@ -42,7 +43,7 @@ l1PhaseIITree = cms.EDAnalyzer("L1PhaseIITreeProducer",
    l1PFCandidates = cms.InputTag("l1pfCandidates","Puppi"),
 #   l1PFCandidates = cms.InputTag("l1pfCandidates","PF"),
 
-   l1pfSumToken = cms.InputTag("l1pfSumsProducer", "L1PFEtSum")
+   # l1pfSumToken = cms.InputTag("l1pfSumsProducer", "L1PFEtSum")
 
    caloTauToken = cms.InputTag("L1CaloJetProducer","L1CaloTauCollectionBXV"),
    caloJetToken = cms.InputTag("L1CaloJetProducer","L1CaloJetCollectionBXV"),
