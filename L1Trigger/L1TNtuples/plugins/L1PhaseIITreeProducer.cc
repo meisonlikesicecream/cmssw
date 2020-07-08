@@ -168,16 +168,10 @@ private:
 
   //edm::EDGetTokenT<std::vector<reco::CaloJet> > l1pfPhase1L1TJetToken_; // why are these caloJets???
 
-<<<<<<< HEAD
   edm::EDGetTokenT<float> z0PuppiToken_;
   //edm::EDGetTokenT<l1t::VertexCollection> l1vertextdrToken_;
   //edm::EDGetTokenT<l1t::VertexCollection> l1verticesToken_;
   edm::EDGetTokenT<l1t::TkPrimaryVertexCollection> l1TkPrimaryVertexToken_;
-=======
-                edm::EDGetTokenT<l1t::L1PFTauCollection> L1PFTauToken_;
-                edm::EDGetTokenT< std::vector<l1t::PFCandidate> > l1PFCandidates_; 
-                edm::EDGetTokenT<l1t::l1pfSumsCollection> l1pfSumToken_;
->>>>>>> cf3826bad09... squashed commit of sum work
 
   //edm::EDGetTokenT<l1t::PFTauCollection> PFTauToken_;
   edm::EDGetTokenT<std::vector<l1t::PFCandidate>> l1PFCandidates_;
