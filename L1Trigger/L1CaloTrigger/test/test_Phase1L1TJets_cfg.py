@@ -16,7 +16,7 @@ process.SaveSums = cms.EDAnalyzer("SaveGenSumsAndL1Sums",
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 # fileList = FileUtils.loadListFromFile('ttbar.list')
 # readFiles = cms.untracked.vstring(*fileList)
@@ -28,16 +28,27 @@ process.source = cms.Source("PoolSource",
   #)
 )
 
+# Loads 7x7 sequence
 process.load('L1Trigger.L1CaloTrigger.Phase1L1TJets_cff')
+
+# Load 9x9 sequence
+process.load('L1Trigger.L1CaloTrigger.Phase1L1TJets_9x9_cff')
+
+# AK4 PF jets
+process.load('L1Trigger.Phase2L1ParticleFlow.l1pfJetMet_cff')
+process.l1PFJets = cms.Sequence( process.ak4PFL1Puppi + process.ak4PFL1PuppiCorrected )
 
 process.out = cms.OutputModule("PoolOutputModule",
   fileName = cms.untracked.string('myOutputFile.root'),
   outputCommands = cms.untracked.vstring(
     "drop *",
-    "keep *_Phase1L1TJetProducer_*_*",
+    "keep *_Phase1L1TJetProducer*_*_*",
     "keep *_ak4GenJetsNoNu_*_*",
-    "keep *_Phase1L1TJetCalibrator_*_*",
-    "keep *_Phase1L1TSumsProducer_*_*",
+    "keep *_Phase1L1TJetCalibrator*_*_*",
+    "keep *_Phase1L1TSumsProducer*_*_*",
+    "keep *_ak4PFL1Puppi*_*_*",
+    "keep *_l1PFMetPuppi*_*_*",
+    "keep *_genMetTrue_*_*",
   ),
 )
 
@@ -48,15 +59,7 @@ process.out = cms.OutputModule("PoolOutputModule",
 #   l1tHTCollectionTag = cms.InputTag("", "", "")
 # )
 
-process.SaveSums = cms.EDAnalyzer("SaveGenSumsAndL1Sums",
-  genMETCollectionTag = cms.InputTag("genMetTrue"), # taking pre-existing MET collection
-  l1tMETCollectionTag = cms.InputTag("Phase1L1TSumsProducer", "Sums"), # taking L1T MET produced by jet trigger
-  genJetCollectionTag = cms.InputTag("ak4GenJetsNoNu"), # taking pre-existing gen jet collection
-  l1tHTCollectionTag = cms.InputTag("Phase1L1TSumsProducer", "Sums"), # taking L1T HT produced by jet trigger
-  l1tMHTCollectionTag = cms.InputTag("Phase1L1TSumsProducer", "Sums"), # taking L1T MHT produced by jet trigger
-)
-
-process.p = cms.Path(process.Phase1L1TJetsSequence + process.SaveSums)
+process.p = cms.Path(process.Phase1L1TJetsSequence * process.Phase1L1TJetsSequence9x9 * process.l1PFJets * process.l1PFMetPuppi )
 
 process.e = cms.EndPath(process.out)
 
