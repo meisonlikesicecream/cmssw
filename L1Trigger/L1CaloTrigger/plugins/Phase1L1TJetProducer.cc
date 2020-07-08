@@ -79,6 +79,11 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       template <class Container>
       void _fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives);
 
+      // Determine if this tower should be trimmed or not
+      // Trim == removing 3 towers in each corner of the square grid
+      // giving a cross shaped grid, which is a bit more circular in shape than a square
+      bool _trimTower( const int etaIndex, const int phiIndex );
+
       edm::EDGetTokenT<edm::View<reco::Candidate>> *_inputCollectionTag;
 
       std::vector<double> _etaBinning;
@@ -88,6 +93,7 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       double _phiUp;
       unsigned int _jetIEtaSize;
       unsigned int _jetIPhiSize;
+      bool _trimmedGrid;
       double _seedPtThreshold;
       bool _puSubtraction;
       bool _vetoZeroPt;
@@ -106,6 +112,7 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _phiUp(iConfig.getParameter<double>("phiUp")),
   _jetIEtaSize(iConfig.getParameter<unsigned int>("jetIEtaSize")),
   _jetIPhiSize(iConfig.getParameter<unsigned int>("jetIPhiSize")),
+  _trimmedGrid(iConfig.getParameter<bool>("trimmedGrid")),
   _seedPtThreshold(iConfig.getParameter<double>("seedPtThreshold")),
   _puSubtraction(iConfig.getParameter<bool>("puSubtraction")),
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
@@ -113,6 +120,8 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
 {
   this -> _inputCollectionTag = new edm::EDGetTokenT< edm::View<reco::Candidate> >(consumes< edm::View<reco::Candidate> > (iConfig.getParameter< edm::InputTag >("inputCollectionTag")));  
   produces<std::vector<reco::CaloJet> >( this -> _outputCollectionName ).setBranchAlias(this -> _outputCollectionName);
+
+
 }
 
 Phase1L1TJetProducer::~Phase1L1TJetProducer()
@@ -265,6 +274,10 @@ std::vector<std::tuple<int, int>> Phase1L1TJetProducer::_findSeeds(const TH2F & 
       {
         for (int phiIndex = -phiHalfSize; phiIndex <= phiHalfSize; phiIndex++)
         {
+          if ( _trimmedGrid ) {
+            if ( _trimTower( etaIndex, phiIndex ) ) continue;
+          }
+
           if ((etaIndex == 0) && (phiIndex == 0)) continue;
           if (phiIndex > 0) {
             if (phiIndex > -etaIndex){
@@ -306,6 +319,9 @@ reco::CaloJet Phase1L1TJetProducer::_buildJetFromSeed(const TH2F & caloGrid, con
   {
     for (int phiIndex = -phiHalfSize; phiIndex <= phiHalfSize; phiIndex++)
     {
+      if ( _trimmedGrid ) {
+        if ( _trimTower( etaIndex, phiIndex ) ) continue;
+      }
       ptSum += this -> _getTowerEnergy(caloGrid, iEta + etaIndex, iPhi + phiIndex);
     }
 
@@ -387,6 +403,26 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
       caloGrid.Fill((float) primitiveIterator -> eta(), (float) primitiveIterator -> phi(), (float) primitiveIterator -> pt());
     }
   return;
+}
+
+bool Phase1L1TJetProducer::_trimTower( const int etaIndex, const int phiIndex )
+{
+
+  int etaHalfSize = (int) this -> _jetIEtaSize/2;
+  int phiHalfSize = (int) this -> _jetIPhiSize/2;
+
+  if ( etaIndex == -etaHalfSize || etaIndex == etaHalfSize ) {
+    if ( phiIndex <= -phiHalfSize+1 || phiIndex >= phiHalfSize-1 ) {
+      return true;
+    }
+  }
+  else if ( etaIndex == -etaHalfSize+1 || etaIndex == etaHalfSize-1 ) {
+    if ( phiIndex == -phiHalfSize || phiIndex == phiHalfSize ) {
+      return true;
+    }    
+  }
+
+  return false;
 }
 
 void

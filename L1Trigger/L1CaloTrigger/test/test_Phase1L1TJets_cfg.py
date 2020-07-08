@@ -14,15 +14,16 @@ process.SaveSums = cms.EDAnalyzer("SaveGenSumsAndL1Sums",
 )
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # fileList = FileUtils.loadListFromFile('ttbar.list')
 # readFiles = cms.untracked.vstring(*fileList)
 
 process.source = cms.Source("PoolSource",
-  fileNames = cms.untracked.vstring("file:/hdfs/user/sb17498/CMS_Phase_2/jetMETStudies/TTBar_200_10_4_0_MTD/TTBar_PU200.root"),
+  # fileNames = cms.untracked.vstring("file:/hdfs/user/sb17498/CMS_Phase_2/jetMETStudies/QCD_TTBar_PU200_10_4_0_MTD/TTBAR_QCD_Merged.root"),
+  fileNames = cms.untracked.vstring("file:/hdfs/user/sb17498/CMS_Phase_2/jetMETStudies/SingleNeutrino_PU200_104XMTD/SingleNeutrino_PU200.root"),
   #fileNames = cms.untracked.vstring(
   #  "file:pf500.root",
   #)
@@ -33,6 +34,10 @@ process.load('L1Trigger.L1CaloTrigger.Phase1L1TJets_cff')
 
 # Load 9x9 sequence
 process.load('L1Trigger.L1CaloTrigger.Phase1L1TJets_9x9_cff')
+
+# Load trimmed 9x9 sequence
+process.load('L1Trigger.L1CaloTrigger.Phase1L1TJets_9x9trimmed_cff')
+
 
 # AK4 PF jets
 process.load('L1Trigger.Phase2L1ParticleFlow.l1pfJetMet_cff')
@@ -59,7 +64,7 @@ process.out = cms.OutputModule("PoolOutputModule",
 #   l1tHTCollectionTag = cms.InputTag("", "", "")
 # )
 
-process.p = cms.Path(process.Phase1L1TJetsSequence * process.Phase1L1TJetsSequence9x9 * process.l1PFJets * process.l1PFMetPuppi )
+process.p = cms.Path(process.Phase1L1TJetsSequence * process.Phase1L1TJetsSequence9x9 * process.Phase1L1TJetsSequence9x9trimmed * process.l1PFJets * process.l1PFMetPuppi )
 
 process.e = cms.EndPath(process.out)
 
