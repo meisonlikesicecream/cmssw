@@ -10,9 +10,14 @@
 
 #include "DataFormats/L1Trigger/interface/Jet.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
+#include "DataFormats/METReco/interface/GenMET.h"
+#include "DataFormats/METReco/interface/GenMETFwd.h"
+#include "DataFormats/METReco/interface/PFMET.h"
+#include "DataFormats/METReco/interface/PFMETFwd.h"
 #include "L1Trigger/L1TNtuples/interface/L1AnalysisPhaseIPFJetDataFormat.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/Phase2L1ParticleFlow/interface/PFJet.h"
+#include "DataFormats/L1Trigger/interface/EtSum.h"
 
 namespace L1Analysis
 {
@@ -27,6 +32,10 @@ namespace L1Analysis
     void SetGenJet  (const edm::Handle<reco::GenJetCollection > genJets,    unsigned maxL1Extra);
     void SetPhaseIPFJet  (const edm::Handle< vector<reco::CaloJet> >  phaseIPFJets,    unsigned maxL1Extra);
     void SetPFJet  (const      edm::Handle<l1t::PFJetCollection>  PFJet,    unsigned maxL1Extra);
+
+    void SetGenMET(const edm::Handle<reco::GenMETCollection> genMET);
+    void SetPhaseIPFSums  (const edm::Handle< BXVector<l1t::EtSum> >  phaseIPFSums);
+    void SetPFMET  (const      edm::Handle<reco::PFMETCollection>  pfMET);
 
     L1AnalysisPhaseIPFJetDataFormat * getData() {return &l1extra_;}
 

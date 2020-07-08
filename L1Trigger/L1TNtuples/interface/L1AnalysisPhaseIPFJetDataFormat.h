@@ -26,12 +26,14 @@ namespace L1Analysis
       phaseIPFJetEta.clear();
       phaseIPFJetPhi.clear();
       phaseIPFJetHt = 0;
+      phaseIPFJetMET = 0;
 
       nAK4PFJets = 0;
       ak4PFJetEt.clear();
       ak4PFJetEta.clear();
       ak4PFJetPhi.clear();
       ak4PFJetHt = 0;
+      pfMet = 0;
 
       nGenJet = 0;     
       genJetPt.clear();
@@ -39,6 +41,7 @@ namespace L1Analysis
       genJetPhi.clear();
       genJetM.clear();
       genJetHt = 0;
+      genMet = 0;
 
 
     }
@@ -48,12 +51,14 @@ namespace L1Analysis
     std::vector<double> phaseIPFJetEta;
     std::vector<double> phaseIPFJetPhi;
     double phaseIPFJetHt;
+    double phaseIPFJetMET;
 
     unsigned short int nAK4PFJets;
     std::vector<double> ak4PFJetEt;
     std::vector<double> ak4PFJetEta;
     std::vector<double> ak4PFJetPhi;
     double ak4PFJetHt;
+    double pfMet;
 
     int nGenJet;
     std::vector<float> genJetPt;
@@ -61,6 +66,9 @@ namespace L1Analysis
     std::vector<float> genJetPhi;
     std::vector<float> genJetM;
     double genJetHt;
+    double genMet;
+
+
 
 
 
