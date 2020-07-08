@@ -142,9 +142,6 @@ void Phase1L1TSumsProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
   l1t::EtSum lMET = this -> _computeMET<>(*particleCollectionHandle);
   l1t::EtSum lMHT = this -> _computeMHT(*jetCollectionHandle);
 
-  lHT.setType(l1t::EtSum::kTotalHt);
-  lMET.setType(l1t::EtSum::kMissingEt);
-
   //packing sums in BXVector for event saving
   std::unique_ptr< BXVector<l1t::EtSum> > lSumVectorPtr(new BXVector<l1t::EtSum>(0));
   lSumVectorPtr -> push_back(0, lHT);
