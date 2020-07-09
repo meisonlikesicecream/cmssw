@@ -42,6 +42,9 @@ void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFSums  (const edm::Handle< std
     else if ( sumType == l1t::EtSum::kMissingEt ) {
       l1extra_.phaseIPFJetMET = sumItr->pt();
     }
+    else if ( sumType == l1t::EtSum::kMissingEtHF ) {
+      l1extra_.phaseIPFJetMETHF = sumItr->pt();     
+    }
   } 
 }
 

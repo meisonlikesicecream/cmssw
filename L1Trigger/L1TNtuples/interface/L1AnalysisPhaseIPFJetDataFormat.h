@@ -27,6 +27,7 @@ namespace L1Analysis
       phaseIPFJetPhi.clear();
       phaseIPFJetHt = 0;
       phaseIPFJetMET = 0;
+      phaseIPFJetMETHF = 0;
 
       nAK4PFJets = 0;
       ak4PFJetEt.clear();
@@ -52,6 +53,7 @@ namespace L1Analysis
     std::vector<double> phaseIPFJetPhi;
     double phaseIPFJetHt;
     double phaseIPFJetMET;
+    double phaseIPFJetMETHF;
 
     unsigned short int nAK4PFJets;
     std::vector<double> ak4PFJetEt;
