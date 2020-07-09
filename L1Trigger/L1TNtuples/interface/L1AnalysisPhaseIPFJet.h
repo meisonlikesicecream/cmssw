@@ -34,7 +34,7 @@ namespace L1Analysis
     void SetPFJet  (const      edm::Handle<l1t::PFJetCollection>  PFJet,    unsigned maxL1Extra);
 
     void SetGenMET(const edm::Handle<reco::GenMETCollection> genMET);
-    void SetPhaseIPFSums  (const edm::Handle< BXVector<l1t::EtSum> >  phaseIPFSums);
+    void SetPhaseIPFSums  (const edm::Handle< std::vector<l1t::EtSum> >  phaseIPFSums);
     void SetPFMET  (const      edm::Handle<reco::PFMETCollection>  pfMET);
 
     L1AnalysisPhaseIPFJetDataFormat * getData() {return &l1extra_;}

@@ -84,7 +84,7 @@ private:
 
   edm::EDGetTokenT<reco::GenMETCollection> genMET_;
   edm::EDGetTokenT<reco::PFMETCollection> pfMET_;
-  edm::EDGetTokenT<BXVector<l1t::EtSum>> phaseIL1PFSums_;
+  edm::EDGetTokenT<std::vector<l1t::EtSum>> phaseIL1PFSums_;
 
 };
 
@@ -95,7 +95,7 @@ L1PhaseIPFJetTreeProducer::L1PhaseIPFJetTreeProducer(const edm::ParameterSet& iC
   phaseIL1PFJets_ = consumes<std::vector<reco::CaloJet> > (iConfig.getUntrackedParameter<edm::InputTag>("l1PhaseIPFJets"));
   genMET_ = consumes<reco::GenMETCollection>(iConfig.getUntrackedParameter<edm::InputTag>("genMetToken"));
   pfMET_ = consumes<reco::PFMETCollection>(iConfig.getUntrackedParameter<edm::InputTag>("pfMetToken"));
-	phaseIL1PFSums_ = consumes<BXVector<l1t::EtSum> > (iConfig.getUntrackedParameter<edm::InputTag>("l1PhaseIPFSums"));
+	phaseIL1PFSums_ = consumes<std::vector<l1t::EtSum> > (iConfig.getUntrackedParameter<edm::InputTag>("l1PhaseIPFSums"));
 
   maxL1Extra_ = iConfig.getParameter<unsigned int>("maxL1Extra");
 
@@ -175,7 +175,7 @@ L1PhaseIPFJetTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSet
     edm::LogWarning("MissingProduct") << "L1PhaseIPFJet PFJets not found. Branch will not be filled" << std::endl;
   }
 
-  edm::Handle< BXVector<l1t::EtSum> >  phaseIL1PFSums;
+  edm::Handle< std::vector<l1t::EtSum> >  phaseIL1PFSums;
   iEvent.getByToken(phaseIL1PFSums_,phaseIL1PFSums);
   if (phaseIL1PFSums.isValid()){
     l1Extra->SetPhaseIPFSums(phaseIL1PFSums);

@@ -27,10 +27,10 @@ void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFJet(const edm::Handle< vector
   }
 }
 
-void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFSums  (const edm::Handle< BXVector<l1t::EtSum> >  phaseIPFSums)
+void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFSums  (const edm::Handle< std::vector<l1t::EtSum> >  phaseIPFSums)
 {
-  BXVector<l1t::EtSum>::const_iterator sumItr = phaseIPFSums->begin(0);
-  const BXVector<l1t::EtSum>::const_iterator sumItrEnd = phaseIPFSums->end(0);
+  std::vector<l1t::EtSum>::const_iterator sumItr = phaseIPFSums->begin();
+  const std::vector<l1t::EtSum>::const_iterator sumItrEnd = phaseIPFSums->end();
   for ( ; sumItr != sumItrEnd; ++sumItr ) {
     l1t::EtSum::EtSumType sumType{ sumItr->getType() };
 

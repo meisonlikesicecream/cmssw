@@ -45,7 +45,6 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-#include "DataFormats/L1Trigger/interface/BXVector.h"
 
 #include <cmath>
 
@@ -113,7 +112,7 @@ Phase1L1TSumsProducer::Phase1L1TSumsProducer(const edm::ParameterSet& iConfig):
   // preparing CMSSW to save my sums later
   // "setBranchAlias" specifies the label that my output will have in the output file
   // produces <> sets up the producer to save stuff later
-  produces< BXVector<l1t::EtSum> >( this -> _outputCollectionName ).setBranchAlias(this -> _outputCollectionName);
+  produces< std::vector<l1t::EtSum> >( this -> _outputCollectionName ).setBranchAlias(this -> _outputCollectionName);
 }
 
 // delete dynamically allocated tags (which were created with new)
@@ -142,11 +141,11 @@ void Phase1L1TSumsProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
   l1t::EtSum lMET = this -> _computeMET<>(*particleCollectionHandle);
   l1t::EtSum lMHT = this -> _computeMHT(*jetCollectionHandle);
 
-  //packing sums in BXVector for event saving
-  std::unique_ptr< BXVector<l1t::EtSum> > lSumVectorPtr(new BXVector<l1t::EtSum>(0));
-  lSumVectorPtr -> push_back(0, lHT);
-  lSumVectorPtr -> push_back(0, lMET);
-  lSumVectorPtr -> push_back(0, lMHT);
+  //packing sums in vector for event saving
+  std::unique_ptr< std::vector<l1t::EtSum> > lSumVectorPtr(new std::vector<l1t::EtSum>(0));
+  lSumVectorPtr -> push_back(lHT);
+  lSumVectorPtr -> push_back(lMET);
+  lSumVectorPtr -> push_back(lMHT);
   //std::cout << "HT-MET sums prod: " << lHT.pt() << "\t" << lMET.pt() << std::endl;
   //std::cout << "MET-MHT sums prod: " << lMET.pt() << "\t" << lMHT.pt() << std::endl;
   //std::cout << "MHT sums prod: " << lMHT.pt() << std::endl;
