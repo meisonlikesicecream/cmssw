@@ -423,6 +423,10 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
 {
   if ( _debug ) std::cout << "Filling calo grid" << std::endl;
 
+  unsigned int nRegion0 = 0;
+  unsigned int nRegion1 = 0;
+  const unsigned int maxInputsPerRegion = 24;
+
   //Filling the calo grid with the primitives
   for (auto primitiveIterator = triggerPrimitives.begin(); primitiveIterator != triggerPrimitives.end(); primitiveIterator++)
     {
@@ -439,7 +443,18 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
 
         float eta = primitiveIterator->eta();
         float phi = primitiveIterator->phi();
-        if ( _debug )  std::cout << eta << " " << phi << " " << primitiveIterator->pt() << " " << caloGrid.FindBin( eta, phi) << std::endl;
+
+        if ( eta < 0.75 ) {
+          if ( nRegion0 >= maxInputsPerRegion ) continue;
+          ++nRegion0;
+        }
+        else if ( eta < 1.5 ) {
+          if ( nRegion1 >= maxInputsPerRegion ) continue;
+          ++nRegion1;
+        }
+
+        if ( _debug ) std::cout << "====== New input ======" << std::endl;
+        if ( _debug )  std::cout << "Input pt, eta, phi : " << primitiveIterator->pt() << " " << eta << " " << phi << " " << caloGrid.FindBin( eta, phi) << std::endl;
 
         int digitisedEta = eta < 0.75 ? floor( eta / 0.0043633231 ) : floor( ( eta - 0.75 ) / 0.0043633231 );
         int digitisedPhi = floor( phi / 0.0043633231 );
@@ -453,7 +468,9 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
         for ( int i = 0; i < etaAxis->GetNbins(); ++i ) {
           int digiEdgeBinUp =  etaAxis->GetBinUpEdge(i) < 0.75 ? floor( etaAxis->GetBinUpEdge(i) / 0.0043633231 ) : floor( ( etaAxis->GetBinUpEdge(i) - 0.75 ) / 0.0043633231 );
           if ( digiEdgeBinUp == digitisedEta ){
-            digitisedEta += 1;
+            if ( digiEdgeBinUp != 171 ) {
+              digitisedEta += 1;
+            }
             if ( _debug ) std::cout << "Changed digi eta to : " << digitisedEta << std::endl;
           }
         }
@@ -481,7 +498,6 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
           phi =   caloGrid.GetYaxis()->GetBinCenter(caloGrid.GetNbinsY());        
           if ( _debug )  std::cout << "Setting phi to : " << eta << std::endl;
         }
-
 
         caloGrid.Fill( eta, phi, (float) primitiveIterator -> pt());
       }
