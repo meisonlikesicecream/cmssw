@@ -46,7 +46,6 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-#include "DataFormats/L1Trigger/interface/BXVector.h"
 
 #include "TH2F.h"
 
@@ -98,6 +97,8 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       bool _puSubtraction;
       bool _vetoZeroPt;
 
+      bool _debug;
+
       std::string _outputCollectionName;
 
 };
@@ -116,6 +117,7 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _seedPtThreshold(iConfig.getParameter<double>("seedPtThreshold")),
   _puSubtraction(iConfig.getParameter<bool>("puSubtraction")),
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
+  _debug(iConfig.getParameter<bool>("debug")),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
 {
   this -> _inputCollectionTag = new edm::EDGetTokenT< edm::View<reco::Candidate> >(consumes< edm::View<reco::Candidate> > (iConfig.getParameter< edm::InputTag >("inputCollectionTag")));  
@@ -159,6 +161,21 @@ void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   TH2F lCaloGrid("caloGrid", "Calorimeter grid", this -> _nBinsEta, this-> _etaBinning.data(), this -> _nBinsPhi, this -> _phiLow, this -> _phiUp);
   lCaloGrid.GetXaxis() -> SetTitle("#eta");
   lCaloGrid.GetYaxis() -> SetTitle("#phi");
+
+  if ( _debug ) {
+    TAxis* phiAxis = lCaloGrid.GetYaxis();
+    std::cout << "Phi bins : ";
+    for ( int i = 0; i < phiAxis->GetNbins(); ++i ) {
+      std::cout << phiAxis->GetBinUpEdge(i) << " ";
+    }
+    std::cout << std::endl;
+    TAxis* etaAxis = lCaloGrid.GetXaxis();
+    std::cout << "Eta bins : ";
+    for ( int i = 0; i < etaAxis->GetNbins(); ++i ) {
+      std::cout << etaAxis->GetBinUpEdge(i) << " ";
+    }
+    std::cout << std::endl;
+  }
   
   if (this -> _inputCollectionTag) {
     edm::Handle < edm::View< reco::Candidate > > inputCollectionHandle;
@@ -178,6 +195,7 @@ void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     //   std::cout << std::endl;
     // }
     const auto seedsVector = this -> _findSeeds(lCaloGrid, this -> _seedPtThreshold); // seedPtThreshold = 6
+    if ( _debug ) std::cout << "Number of seeds : " << seedsVector.size() << std::endl;
     std::vector<reco::CaloJet> l1jetVector;
     if (this -> _puSubtraction)
     {
@@ -268,7 +286,7 @@ std::vector<std::tuple<int, int>> Phase1L1TJetProducer::_findSeeds(const TH2F & 
       float centralPt = caloGrid.GetBinContent(iEta, iPhi);
       if (centralPt < seedThreshold) continue;
       bool isLocalMaximum = true;
-
+      if ( _debug ) std::cout << "Testing seed : " << iEta << " " << iPhi << " " << caloGrid.GetXaxis()->GetBinCenter( iEta ) << " " << caloGrid.GetYaxis()->GetBinCenter( iPhi ) << std::endl;
       // Scanning through the grid centered on the seed
       for (int etaIndex = -etaHalfSize; etaIndex <= etaHalfSize; etaIndex++)
       {
@@ -296,6 +314,7 @@ std::vector<std::tuple<int, int>> Phase1L1TJetProducer::_findSeeds(const TH2F & 
       }
       if (isLocalMaximum)
       {
+        if ( _debug ) std::cout << "Seed ieta, iphi : " << iEta << " " << iPhi << std::endl;
         seeds.emplace_back(std::make_tuple(iEta, iPhi));
       }
 
@@ -313,6 +332,8 @@ reco::CaloJet Phase1L1TJetProducer::_buildJetFromSeed(const TH2F & caloGrid, con
   int etaHalfSize = (int) this -> _jetIEtaSize/2;
   int phiHalfSize = (int) this -> _jetIPhiSize/2;
 
+  if ( _debug ) std::cout << "Building jet based on seed : " << iEta << " " << iPhi << std::endl;
+
   float ptSum = 0;
   // Scanning through the grid centered on the seed
   for (int etaIndex = -etaHalfSize; etaIndex <= etaHalfSize; etaIndex++)
@@ -321,6 +342,13 @@ reco::CaloJet Phase1L1TJetProducer::_buildJetFromSeed(const TH2F & caloGrid, con
     {
       if ( _trimmedGrid ) {
         if ( _trimTower( etaIndex, phiIndex ) ) continue;
+      }
+      if ( _debug ) {
+        if ( this -> _getTowerEnergy(caloGrid, iEta + etaIndex, iPhi + phiIndex) > 0 ) {
+          std::cout << "Adding this tower to jet : " << this -> _getTowerEnergy(caloGrid, iEta + etaIndex, iPhi + phiIndex) << std::endl;
+          std::cout << etaIndex << " " << phiIndex << std::endl;
+          std::cout << iEta + etaIndex << " " << iPhi + phiIndex << std::endl;          
+        }
       }
       ptSum += this -> _getTowerEnergy(caloGrid, iEta + etaIndex, iPhi + phiIndex);
     }
@@ -375,7 +403,7 @@ std::vector<reco::CaloJet> Phase1L1TJetProducer::_buildJetsFromSeeds(const TH2F 
   for (const auto& seed: seeds)
   {
     reco::CaloJet jet = this -> _buildJetFromSeed(caloGrid, seed);
-    // std::cout << "jet pt-eta-phi: " << (float) jet.pt() << "\t" <<(float) jet.eta() << "\t" << (float) jet.phi() << std::endl;
+    if ( _debug ) std::cout << "jet pt-eta-phi: " << (float) jet.pt() << "\t" <<(float) jet.eta() << "\t" << (float) jet.phi() << std::endl;
     jets.push_back(jet);
   }
 
@@ -393,6 +421,8 @@ std::vector<reco::CaloJet> Phase1L1TJetProducer::_buildJetsFromSeeds(const TH2F 
 template <class Container>
 void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives)
 {
+  if ( _debug ) std::cout << "Filling calo grid" << std::endl;
+
   //Filling the calo grid with the primitives
   for (auto primitiveIterator = triggerPrimitives.begin(); primitiveIterator != triggerPrimitives.end(); primitiveIterator++)
     {
@@ -400,7 +430,61 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
       // {
       //   std::cout << "input pt-eta-phi: " << (float) primitiveIterator -> pt() << "\t" <<(float) primitiveIterator -> eta() << "\t" << (float) primitiveIterator -> phi() << std::endl;
       // }
-      caloGrid.Fill((float) primitiveIterator -> eta(), (float) primitiveIterator -> phi(), (float) primitiveIterator -> pt());
+
+      if(primitiveIterator -> phi() >= _phiLow &&
+        primitiveIterator -> phi() < _phiUp &&
+        primitiveIterator -> eta() >= _etaBinning.front() &&
+        primitiveIterator -> eta() < _etaBinning.back()){
+
+
+        float eta = primitiveIterator->eta();
+        float phi = primitiveIterator->phi();
+        if ( _debug )  std::cout << eta << " " << phi << " " << primitiveIterator->pt() << " " << caloGrid.FindBin( eta, phi) << std::endl;
+
+        int digitisedEta = eta < 0.75 ? floor( eta / 0.0043633231 ) : floor( ( eta - 0.75 ) / 0.0043633231 );
+        int digitisedPhi = floor( phi / 0.0043633231 );
+
+
+        if ( _debug )  std::cout << "Digi (int) eta, phi : " << digitisedEta << " " << digitisedPhi << std::endl;
+
+        // If eta or phi is on a bin edge
+        // Put in bin below, to match behaviour of HLS
+        TAxis* etaAxis = caloGrid.GetXaxis();
+        for ( int i = 0; i < etaAxis->GetNbins(); ++i ) {
+          int digiEdgeBinUp =  etaAxis->GetBinUpEdge(i) < 0.75 ? floor( etaAxis->GetBinUpEdge(i) / 0.0043633231 ) : floor( ( etaAxis->GetBinUpEdge(i) - 0.75 ) / 0.0043633231 );
+          if ( digiEdgeBinUp == digitisedEta ){
+            digitisedEta += 1;
+            if ( _debug ) std::cout << "Changed digi eta to : " << digitisedEta << std::endl;
+          }
+        }
+
+        TAxis* phiAxis = caloGrid.GetYaxis();
+        for ( int i = 0; i < phiAxis->GetNbins(); ++i ) {
+          int digiEdgeBinUp =  floor( phiAxis->GetBinUpEdge(i) / 0.0043633231 );
+          if ( digiEdgeBinUp == digitisedPhi ){
+            digitisedPhi += 1;
+            if ( _debug ) std::cout << "Changed digi phi to : " << digitisedPhi << std::endl;
+          }
+        }
+
+        eta = eta < 0.75 ? ( digitisedEta + 0.5 ) * 0.0043633231 : ( digitisedEta + 0.5 ) * 0.0043633231 + 0.75;
+        phi = ( digitisedPhi + 0.5 ) * 0.0043633231;
+
+
+        if ( _debug )  std::cout << "Digitised eta phi : " << eta << " " << phi << " " << caloGrid.FindBin( eta, phi) << std::endl;
+        if ( eta > caloGrid.GetXaxis()->GetBinCenter( caloGrid.GetNbinsX() ) ) {
+          eta = caloGrid.GetXaxis()->GetBinCenter( caloGrid.GetNbinsX() );
+          if ( _debug )  std::cout << "Setting eta to : " << eta << std::endl;
+        }
+
+        if ( phi > caloGrid.GetYaxis()->GetBinCenter(caloGrid.GetNbinsY())) {
+          phi =   caloGrid.GetYaxis()->GetBinCenter(caloGrid.GetNbinsY());        
+          if ( _debug )  std::cout << "Setting phi to : " << eta << std::endl;
+        }
+
+
+        caloGrid.Fill( eta, phi, (float) primitiveIterator -> pt());
+      }
     }
   return;
 }
