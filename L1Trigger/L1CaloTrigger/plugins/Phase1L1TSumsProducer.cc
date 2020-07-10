@@ -192,14 +192,17 @@ l1t::EtSum Phase1L1TSumsProducer::_computeHT(const std::vector<reco::CaloJet>& l
       (lJetEta >= this -> _etaUp)  
     ) continue;
 
+    // std::cout << "HT : " << lJetPt >= this -> _htPtThreshold << " " << std::fabs( lJetEta ) < _htAbsEtaCut << " " << (lJetPt >= this -> _htPtThreshold && std::fabs( lJetEta ) < _htAbsEtaCut ) << " " << lHT << std::endl;
     lHT += (lJetPt >= this -> _htPtThreshold && std::fabs( lJetEta ) < _htAbsEtaCut ) ? lJetPt : 0;
-
   }
 
-  math::XYZTLorentzVector lHTVector;
+  reco::Candidate::PolarLorentzVector lHTVector;
+  lHTVector.SetPt(lHT);
+  lHTVector.SetEta(0);
+  lHTVector.SetPhi(0);
   // kTotalHt the the EtSum enumerator type for the HT
-  l1t::EtSum lHTSum(lHTVector, l1t::EtSum::EtSumType::kTotalHt, lHT, 0, 0, 0);
-
+  // Not setting hwPt etc. yet
+  l1t::EtSum lHTSum(lHTVector, l1t::EtSum::EtSumType::kTotalHt, 0, 0, 0, 0);
   return lHTSum;
 }
 
@@ -244,12 +247,10 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMET(const ParticleCollection & particl
 
   double lMET = sqrt(lTotalPx * lTotalPx + lTotalPy * lTotalPy);
   //packing in EtSum object
-  math::XYZTLorentzVector lMETVector;
-
+  math::XYZTLorentzVector lMETVector( lTotalPx, lTotalPy, 0, lMET);
   // double lCosMETPhi = lTotalPx/lMET;
   // kMissingEt is the enumerator for MET
-  l1t::EtSum lMETSum(lMETVector, sumType, lMET, 0, acos( lTotalPx/lMET ), 0 );
-
+  l1t::EtSum lMETSum(lMETVector, sumType, 0, 0, 0, 0 );
   // std::cout << lMETVector.pt() << " == " << lMET << "?" << std::endl;
 
   return lMETSum;
@@ -286,10 +287,9 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
 
   double lMHT = sqrt(lTotalJetPx * lTotalJetPx + lTotalJetPy * lTotalJetPy);
 
-  math::XYZTLorentzVector lMHTVector;
+  math::XYZTLorentzVector lMHTVector( lTotalJetPx, lTotalJetPy, 0, lMHT );
   // kTotalMHT the the EtSum enumerator type for the MHT
-  l1t::EtSum lMHTSum(lMHTVector, l1t::EtSum::EtSumType::kMissingHt, lMHT, 0, acos( lTotalJetPx / lMHT ), 0 );
-
+  l1t::EtSum lMHTSum(lMHTVector, l1t::EtSum::EtSumType::kMissingHt, 0, 0, 0, 0 );
   return lMHTSum;
 
 }
