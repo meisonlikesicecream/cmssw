@@ -78,6 +78,11 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       template <class Container>
       void _fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives);
 
+      // Arranges the input candidates into containers containing the inputs for each region
+      // Might also sort the candidates within each region (e.g. by pt) and truncate the inputs.
+      template <class Handle >
+      std::vector< std::vector< reco::CandidatePtr > > _prepareInputsIntoRegions( const Handle triggerPrimitives, const double phiRegionWidth, const std::vector< std::pair<double, double> > etaRegionEdges );
+
       // Determine if this tower should be trimmed or not
       // Trim == removing 3 towers in each corner of the square grid
       // giving a cross shaped grid, which is a bit more circular in shape than a square
@@ -184,8 +189,20 @@ void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
   if (this -> _inputCollectionTag) {
     edm::Handle < edm::View< reco::Candidate > > inputCollectionHandle;
     iEvent.getByToken(*(this -> _inputCollectionTag), inputCollectionHandle);
+
+
+    std::vector< std::pair<double, double> > etaRegionEdges{ {0, 0.75}, {0.75, 1.5} };
+    std::vector< std::vector< reco::CandidatePtr > > inputsInRegions = _prepareInputsIntoRegions<>( inputCollectionHandle, 0.7, etaRegionEdges );
+
+    for (unsigned int i = 0; i < inputsInRegions.size(); ++i ) {
+      // for ( const auto& p : inputsInRegions[i] ) {
+      //   std::cout << p->pt() << " " << p->eta() << " " << p->phi() << std::endl;
+      // }
+      this -> _fillCaloGrid<>(lCaloGrid, inputsInRegions[i]);
+    }
+
     // dumping the data
-    this -> _fillCaloGrid<>(lCaloGrid, *inputCollectionHandle);
+    // this -> _fillCaloGrid<>(lCaloGrid, *inputCollectionHandle);
 
     // int nBinsX = lCaloGrid.GetNbinsX();
     // int nBinsY = lCaloGrid.GetNbinsY();
@@ -432,17 +449,18 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
   const unsigned int maxInputsPerRegion = 24;
 
   //Filling the calo grid with the primitives
-  for (auto primitiveIterator = triggerPrimitives.begin(); primitiveIterator != triggerPrimitives.end(); primitiveIterator++)
+  // for ( const auto& primitiveIterator = triggerPrimitives.begin(); primitiveIterator != triggerPrimitives.end(); primitiveIterator++)
+  for ( const auto primitiveIterator : triggerPrimitives )
     {
       // if(primitiveIterator->eta() >= 0 && primitiveIterator->eta() < 1.5 && primitiveIterator->phi() >= 0 && primitiveIterator->phi() < 0.7)
       // {
       //   std::cout << "input pt-eta-phi: " << (float) primitiveIterator -> pt() << "\t" <<(float) primitiveIterator -> eta() << "\t" << (float) primitiveIterator -> phi() << std::endl;
       // }
 
-      if(primitiveIterator -> phi() >= _phiLow &&
-        primitiveIterator -> phi() < _phiUp &&
-        primitiveIterator -> eta() >= _etaBinning.front() &&
-        primitiveIterator -> eta() < _etaBinning.back()){
+      if( primitiveIterator->phi() >= _phiLow &&
+          primitiveIterator->phi() < _phiUp &&
+          primitiveIterator->eta() >= _etaBinning.front() &&
+          primitiveIterator->eta() < _etaBinning.back()){
 
 
         float eta = primitiveIterator->eta();
@@ -508,6 +526,34 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
     }
   return;
 }
+
+template <class Handle >
+std::vector< std::vector< edm::Ptr< reco::Candidate > > > Phase1L1TJetProducer::_prepareInputsIntoRegions( const Handle triggerPrimitives, const double phiRegionWidth, const std::vector< std::pair<double, double> > etaRegionsEdges )
+{
+  unsigned int nRegions = ceil( etaRegionsEdges.size() * 2 * M_PI / phiRegionWidth );
+  std::vector< std::vector< reco::CandidatePtr > > inputsInRegions{ nRegions };
+
+  for ( unsigned int i = 0; i < triggerPrimitives->size(); ++i ) {
+
+    reco::CandidatePtr tp( triggerPrimitives, i );
+
+    // Which phi region does this tp belong to
+    unsigned int phiRegion = floor( ( tp->phi() + M_PI ) / phiRegionWidth );
+
+    // Which eta region does this tp belong to
+    auto it = find_if(etaRegionsEdges.begin(), etaRegionsEdges.end(),
+                      [&](const std::pair<double, double> etaRegionEdges) { 
+                        return ( tp->eta() >= etaRegionEdges.first && tp->eta() < etaRegionEdges.second); 
+                      });
+
+    if ( it != etaRegionsEdges.end() ) {
+      inputsInRegions[ std::distance(etaRegionsEdges.begin(), it) * phiRegion ].emplace_back( tp );
+    }
+  }
+
+  return inputsInRegions;
+}
+
 
 bool Phase1L1TJetProducer::_trimTower( const int etaIndex, const int phiIndex )
 {
