@@ -48,8 +48,11 @@ process.Phase1L1TJetProducer = cms.EDProducer('Phase1L1TJetProducer',
   trimmedGrid = cms.bool(False),
   seedPtThreshold = cms.double(5), # GeV
   puSubtraction = cms.bool(False),
+  philsb = cms.double(0.0043633231),
+  etalsb = cms.double(0.0043633231),
   outputCollectionName = cms.string("UncalibratedPhase1L1TJetFromPfCandidates"),
-  vetoZeroPt = cms.bool(True)
+  vetoZeroPt = cms.bool(True),
+  debug = cms.bool(False)
 )
 
 # lut configuration, you can generate your own with test/generateConSinPhi.py 
