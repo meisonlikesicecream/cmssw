@@ -94,6 +94,8 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       unsigned int _jetIPhiSize;
       bool _trimmedGrid;
       double _seedPtThreshold;
+      double _philsb;
+      double _etalsb;
       bool _puSubtraction;
       bool _vetoZeroPt;
 
@@ -115,6 +117,8 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _jetIPhiSize(iConfig.getParameter<unsigned int>("jetIPhiSize")),
   _trimmedGrid(iConfig.getParameter<bool>("trimmedGrid")),
   _seedPtThreshold(iConfig.getParameter<double>("seedPtThreshold")),
+  _philsb(iConfig.getParameter<double>("philsb")),
+  _etalsb(iConfig.getParameter<double>("etalsb")),
   _puSubtraction(iConfig.getParameter<bool>("puSubtraction")),
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
   _debug(iConfig.getParameter<bool>("debug")),
@@ -456,8 +460,8 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
         if ( _debug ) std::cout << "====== New input ======" << std::endl;
         if ( _debug )  std::cout << "Input pt, eta, phi : " << primitiveIterator->pt() << " " << eta << " " << phi << " " << caloGrid.FindBin( eta, phi) << std::endl;
 
-        int digitisedEta = eta < 0.75 ? floor( eta / 0.0043633231 ) : floor( ( eta - 0.75 ) / 0.0043633231 );
-        int digitisedPhi = floor( phi / 0.0043633231 );
+        int digitisedEta = eta < 0.75 ? floor( eta / _etalsb ) : floor( ( eta - 0.75 ) / _etalsb );
+        int digitisedPhi = floor( phi / _philsb );
 
 
         if ( _debug )  std::cout << "Digi (int) eta, phi : " << digitisedEta << " " << digitisedPhi << std::endl;
@@ -466,7 +470,7 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
         // Put in bin below, to match behaviour of HLS
         TAxis* etaAxis = caloGrid.GetXaxis();
         for ( int i = 0; i < etaAxis->GetNbins(); ++i ) {
-          int digiEdgeBinUp =  etaAxis->GetBinUpEdge(i) < 0.75 ? floor( etaAxis->GetBinUpEdge(i) / 0.0043633231 ) : floor( ( etaAxis->GetBinUpEdge(i) - 0.75 ) / 0.0043633231 );
+          int digiEdgeBinUp =  etaAxis->GetBinUpEdge(i) < 0.75 ? floor( etaAxis->GetBinUpEdge(i) / _etalsb ) : floor( ( etaAxis->GetBinUpEdge(i) - 0.75 ) / _etalsb );
           if ( digiEdgeBinUp == digitisedEta ){
             if ( digiEdgeBinUp != 171 ) {
               digitisedEta += 1;
@@ -477,15 +481,15 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
 
         TAxis* phiAxis = caloGrid.GetYaxis();
         for ( int i = 0; i < phiAxis->GetNbins(); ++i ) {
-          int digiEdgeBinUp =  floor( phiAxis->GetBinUpEdge(i) / 0.0043633231 );
+          int digiEdgeBinUp =  floor( phiAxis->GetBinUpEdge(i) / _philsb );
           if ( digiEdgeBinUp == digitisedPhi ){
             digitisedPhi += 1;
             if ( _debug ) std::cout << "Changed digi phi to : " << digitisedPhi << std::endl;
           }
         }
 
-        eta = eta < 0.75 ? ( digitisedEta + 0.5 ) * 0.0043633231 : ( digitisedEta + 0.5 ) * 0.0043633231 + 0.75;
-        phi = ( digitisedPhi + 0.5 ) * 0.0043633231;
+        eta = eta < 0.75 ? ( digitisedEta + 0.5 ) * _etalsb : ( digitisedEta + 0.5 ) * _etalsb + 0.75;
+        phi = ( digitisedPhi + 0.5 ) * _philsb;
 
 
         if ( _debug )  std::cout << "Digitised eta phi : " << eta << " " << phi << " " << caloGrid.FindBin( eta, phi) << std::endl;
