@@ -76,12 +76,16 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       
       // <3 handy method to fill the calogrid with whatever type
       template <class Container>
-      void _fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives);
+      void _fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives, const unsigned int pfRegionIndex );
 
       // Arranges the input candidates into containers containing the inputs for each region
       // Might also sort the candidates within each region (e.g. by pt) and truncate the inputs.
       template <class Handle >
-      std::vector< std::vector< reco::CandidatePtr > > _prepareInputsIntoRegions( const Handle triggerPrimitives, const double phiRegionWidth, const std::vector< std::pair<double, double> > etaRegionEdges );
+      std::vector< std::vector< reco::CandidatePtr > > _prepareInputsIntoRegions( const Handle triggerPrimitives );
+
+      unsigned int pfRegionIndex( const unsigned int phiRegion, const unsigned int etaRegion );
+      std::pair< double, double> pfRegionEtaPhiLowEdges( const unsigned int pfRegionIndex );
+      std::pair< double, double> pfRegionEtaPhiUpEdges( const unsigned int pfRegionIndex );
 
       // Determine if this tower should be trimmed or not
       // Trim == removing 3 towers in each corner of the square grid
@@ -103,10 +107,15 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       double _etalsb;
       bool _puSubtraction;
       bool _vetoZeroPt;
-
+      std::vector< double > _etaPFRegionEdges;
+      std::vector< double > _phiPFRegionEdges;
+      unsigned int _maxInputsPerPFRegion;
       bool _debug;
 
       std::string _outputCollectionName;
+
+      // std::vector< std::pair<double, double> > _etaPFRegionEdges;
+
 
 };
 
@@ -126,12 +135,21 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _etalsb(iConfig.getParameter<double>("etalsb")),
   _puSubtraction(iConfig.getParameter<bool>("puSubtraction")),
   _vetoZeroPt(iConfig.getParameter<bool>("vetoZeroPt")),
+  _etaPFRegionEdges(iConfig.getParameter<std::vector<double> >("pfEtaRegions")),
+  _phiPFRegionEdges(iConfig.getParameter<std::vector<double> >("pfPhiRegions")),
+  _maxInputsPerPFRegion(iConfig.getParameter<unsigned int>("maxInputsPerPFRegion")),
   _debug(iConfig.getParameter<bool>("debug")),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
 {
   this -> _inputCollectionTag = new edm::EDGetTokenT< edm::View<reco::Candidate> >(consumes< edm::View<reco::Candidate> > (iConfig.getParameter< edm::InputTag >("inputCollectionTag")));  
   produces<std::vector<reco::CaloJet> >( this -> _outputCollectionName ).setBranchAlias(this -> _outputCollectionName);
 
+  // Make into an exception...
+  if ( !std::is_sorted(_etaPFRegionEdges.begin(),_etaPFRegionEdges.end()) ||
+       !std::is_sorted(_phiPFRegionEdges.begin(),_phiPFRegionEdges.end())
+       ) {
+    std::cout << "Input PF regions are not sorted!!!!" << std::endl;
+  }
 
 }
 
@@ -191,14 +209,14 @@ void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     iEvent.getByToken(*(this -> _inputCollectionTag), inputCollectionHandle);
 
 
-    std::vector< std::pair<double, double> > etaRegionEdges{ {0, 0.75}, {0.75, 1.5} };
-    std::vector< std::vector< reco::CandidatePtr > > inputsInRegions = _prepareInputsIntoRegions<>( inputCollectionHandle, 0.7, etaRegionEdges );
+    // std::vector< std::pair<double, double> > etaRegionEdges{ {0, 0.75}, {0.75, 1.5} };
+    std::vector< std::vector< reco::CandidatePtr > > inputsInRegions = _prepareInputsIntoRegions<>( inputCollectionHandle );
 
     for (unsigned int i = 0; i < inputsInRegions.size(); ++i ) {
       // for ( const auto& p : inputsInRegions[i] ) {
       //   std::cout << p->pt() << " " << p->eta() << " " << p->phi() << std::endl;
       // }
-      this -> _fillCaloGrid<>(lCaloGrid, inputsInRegions[i]);
+      this -> _fillCaloGrid<>(lCaloGrid, inputsInRegions[i], i);
     }
 
     // dumping the data
@@ -440,14 +458,8 @@ std::vector<reco::CaloJet> Phase1L1TJetProducer::_buildJetsFromSeeds(const TH2F 
 
 
 template <class Container>
-void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives)
+void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & triggerPrimitives, const unsigned int pfRegionIndex)
 {
-  if ( _debug ) std::cout << "Filling calo grid" << std::endl;
-
-  unsigned int nRegion0 = 0;
-  unsigned int nRegion1 = 0;
-  const unsigned int maxInputsPerRegion = 24;
-
   //Filling the calo grid with the primitives
   // for ( const auto& primitiveIterator = triggerPrimitives.begin(); primitiveIterator != triggerPrimitives.end(); primitiveIterator++)
   for ( const auto primitiveIterator : triggerPrimitives )
@@ -466,60 +478,57 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
         float eta = primitiveIterator->eta();
         float phi = primitiveIterator->phi();
 
-        if ( eta < 0.75 ) {
-          if ( nRegion0 >= maxInputsPerRegion ) continue;
-          ++nRegion0;
-        }
-        else if ( eta < 1.5 ) {
-          if ( nRegion1 >= maxInputsPerRegion ) continue;
-          ++nRegion1;
-        }
-
-        if ( _debug ) std::cout << "====== New input ======" << std::endl;
+        if ( _debug ) std::cout << "====== New input in _fillCaloGrid ======" << std::endl;
         if ( _debug )  std::cout << "Input pt, eta, phi : " << primitiveIterator->pt() << " " << eta << " " << phi << " " << caloGrid.FindBin( eta, phi) << std::endl;
 
-        int digitisedEta = eta < 0.75 ? floor( eta / _etalsb ) : floor( ( eta - 0.75 ) / _etalsb );
+        // Convert eta and phi to digitised quantities
+        // Use to check behaviour with bin edges/pf region edges
+        std::pair< double, double > pfRegionEdges = pfRegionEtaPhiLowEdges( pfRegionIndex );
+        int digitisedEta = floor( ( eta - pfRegionEdges.second ) / _etalsb );
         int digitisedPhi = floor( phi / _philsb );
-
 
         if ( _debug )  std::cout << "Digi (int) eta, phi : " << digitisedEta << " " << digitisedPhi << std::endl;
 
         // If eta or phi is on a bin edge
-        // Put in bin below, to match behaviour of HLS
+        // Put in bin above, to match behaviour of HLS
+        // Unless it's on the last bin of this pf region
         TAxis* etaAxis = caloGrid.GetXaxis();
-        for ( int i = 0; i < etaAxis->GetNbins(); ++i ) {
-          int digiEdgeBinUp =  etaAxis->GetBinUpEdge(i) < 0.75 ? floor( etaAxis->GetBinUpEdge(i) / _etalsb ) : floor( ( etaAxis->GetBinUpEdge(i) - 0.75 ) / _etalsb );
-          if ( digiEdgeBinUp == digitisedEta ){
-            if ( digiEdgeBinUp != 171 ) {
+        std::pair< double, double > pfRegionUpEdges = pfRegionEtaPhiUpEdges( pfRegionIndex );
+        int digiEtaEdgeLastBinUp = floor( ( pfRegionUpEdges.second - pfRegionEdges.second ) / _etalsb );
+        if ( digitisedEta >= digiEtaEdgeLastBinUp ) {
+          digitisedEta = digiEtaEdgeLastBinUp-1;
+        }
+        else {
+          for ( int i = 0; i < etaAxis->GetNbins(); ++i ) {
+            int digiEdgeBinUp =  floor( ( etaAxis->GetBinUpEdge(i) - pfRegionEdges.second ) / _etalsb );
+            if ( digiEdgeBinUp == digitisedEta ){
               digitisedEta += 1;
+              if ( _debug ) std::cout << "Changed digi eta to : " << digitisedEta << std::endl;
             }
-            if ( _debug ) std::cout << "Changed digi eta to : " << digitisedEta << std::endl;
-          }
+          }          
         }
 
         TAxis* phiAxis = caloGrid.GetYaxis();
-        for ( int i = 0; i < phiAxis->GetNbins(); ++i ) {
-          int digiEdgeBinUp =  floor( phiAxis->GetBinUpEdge(i) / _philsb );
-          if ( digiEdgeBinUp == digitisedPhi ){
-            digitisedPhi += 1;
-            if ( _debug ) std::cout << "Changed digi phi to : " << digitisedPhi << std::endl;
-          }
+        int digiPhiEdgeLastBinUp = floor( ( pfRegionUpEdges.first ) / _etalsb );
+        if ( digitisedPhi >= digiPhiEdgeLastBinUp ) {
+          digitisedPhi = digiPhiEdgeLastBinUp-1;
+        }
+        else {
+          for ( int i = 0; i < phiAxis->GetNbins(); ++i ) {
+            int digiEdgeBinUp =  floor( phiAxis->GetBinUpEdge(i) / _philsb );
+            if ( digiEdgeBinUp == digitisedPhi ){
+              digitisedPhi += 1;
+              if ( _debug ) std::cout << "Changed digi phi to : " << digitisedPhi << std::endl;
+            }
+          }          
         }
 
-        eta = eta < 0.75 ? ( digitisedEta + 0.5 ) * _etalsb : ( digitisedEta + 0.5 ) * _etalsb + 0.75;
+        // Convert digitised eta and phi back to floatin point quantities with reduced precision
+        eta = ( digitisedEta + 0.5 ) * _etalsb + pfRegionEdges.second;
         phi = ( digitisedPhi + 0.5 ) * _philsb;
 
 
         if ( _debug )  std::cout << "Digitised eta phi : " << eta << " " << phi << " " << caloGrid.FindBin( eta, phi) << std::endl;
-        if ( eta > caloGrid.GetXaxis()->GetBinCenter( caloGrid.GetNbinsX() ) ) {
-          eta = caloGrid.GetXaxis()->GetBinCenter( caloGrid.GetNbinsX() );
-          if ( _debug )  std::cout << "Setting eta to : " << eta << std::endl;
-        }
-
-        if ( phi > caloGrid.GetYaxis()->GetBinCenter(caloGrid.GetNbinsY())) {
-          phi =   caloGrid.GetYaxis()->GetBinCenter(caloGrid.GetNbinsY());        
-          if ( _debug )  std::cout << "Setting phi to : " << eta << std::endl;
-        }
 
         caloGrid.Fill( eta, phi, (float) primitiveIterator -> pt());
       }
@@ -528,32 +537,67 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
 }
 
 template <class Handle >
-std::vector< std::vector< edm::Ptr< reco::Candidate > > > Phase1L1TJetProducer::_prepareInputsIntoRegions( const Handle triggerPrimitives, const double phiRegionWidth, const std::vector< std::pair<double, double> > etaRegionsEdges )
+std::vector< std::vector< edm::Ptr< reco::Candidate > > > Phase1L1TJetProducer::_prepareInputsIntoRegions( const Handle triggerPrimitives )
 {
-  unsigned int nRegions = ceil( etaRegionsEdges.size() * 2 * M_PI / phiRegionWidth );
-  std::vector< std::vector< reco::CandidatePtr > > inputsInRegions{ nRegions };
+
+  std::vector< std::vector< reco::CandidatePtr > > inputsInRegions{ _etaPFRegionEdges.size() * ( _phiPFRegionEdges.size() - 1 ) };
 
   for ( unsigned int i = 0; i < triggerPrimitives->size(); ++i ) {
 
     reco::CandidatePtr tp( triggerPrimitives, i );
 
     // Which phi region does this tp belong to
-    unsigned int phiRegion = floor( ( tp->phi() + M_PI ) / phiRegionWidth );
+    auto it_phi = _phiPFRegionEdges.begin();
+    if ( tp->phi() > *_phiPFRegionEdges.begin() ) {
+      it_phi = std::upper_bound (_phiPFRegionEdges.begin(), _phiPFRegionEdges.end(), tp->phi()) - 1;
+    }
 
     // Which eta region does this tp belong to
-    auto it = find_if(etaRegionsEdges.begin(), etaRegionsEdges.end(),
-                      [&](const std::pair<double, double> etaRegionEdges) { 
-                        return ( tp->eta() >= etaRegionEdges.first && tp->eta() < etaRegionEdges.second); 
-                      });
+    auto it_eta = _etaPFRegionEdges.begin();
+    if ( tp->eta() > *_etaPFRegionEdges.begin() ) {
+      it_eta = std::upper_bound (_etaPFRegionEdges.begin(), _etaPFRegionEdges.end(), tp->eta()) - 1;
+    }
 
-    if ( it != etaRegionsEdges.end() ) {
-      inputsInRegions[ std::distance(etaRegionsEdges.begin(), it) * phiRegion ].emplace_back( tp );
+    if ( it_phi != _phiPFRegionEdges.end() && it_eta != _etaPFRegionEdges.end() ) {
+      auto phiRegion = it_phi - _phiPFRegionEdges.begin();
+      auto etaRegion = it_eta - _etaPFRegionEdges.begin();
+
+      inputsInRegions[ pfRegionIndex( phiRegion, etaRegion ) ].emplace_back( tp );
+    }
+  }
+
+  // Truncate inputs in each pf region
+  for ( auto& inputs : inputsInRegions ) {
+    if ( inputs.size() > _maxInputsPerPFRegion ) {
+      inputs.resize( _maxInputsPerPFRegion );
     }
   }
 
   return inputsInRegions;
 }
 
+unsigned int Phase1L1TJetProducer::pfRegionIndex( const unsigned int phiRegion, const unsigned int etaRegion ) {
+  return etaRegion * ( _phiPFRegionEdges.size() - 1 ) + phiRegion;
+}
+
+std::pair< double, double> Phase1L1TJetProducer::pfRegionEtaPhiLowEdges( const unsigned int pfRegionIndex ) {
+  unsigned int phiRegion = pfRegionIndex % ( _phiPFRegionEdges.size() - 1 );
+  unsigned int etaRegion = ( pfRegionIndex - phiRegion ) / ( _phiPFRegionEdges.size() - 1 );
+  return std::pair< double, double > { _phiPFRegionEdges.at( phiRegion ), _etaPFRegionEdges.at( etaRegion ) };
+}
+
+std::pair< double, double> Phase1L1TJetProducer::pfRegionEtaPhiUpEdges( const unsigned int pfRegionIndex ) {
+  unsigned int phiRegion = pfRegionIndex % ( _phiPFRegionEdges.size() - 1 );
+  unsigned int etaRegion = ( pfRegionIndex - phiRegion ) / ( _phiPFRegionEdges.size() - 1 );
+  if ( phiRegion == _phiPFRegionEdges.size()-1 ) {
+    return std::pair< double, double > { _phiPFRegionEdges.at( phiRegion ), _etaPFRegionEdges.at( etaRegion + 1 ) };
+  }
+  else if ( etaRegion == _etaPFRegionEdges.size()-1 ) {
+    return std::pair< double, double > { _phiPFRegionEdges.at( phiRegion + 1), _etaPFRegionEdges.at( etaRegion ) };    
+  }
+
+  return std::pair< double, double > { _phiPFRegionEdges.at( phiRegion + 1 ), _etaPFRegionEdges.at( etaRegion + 1 ) };
+}
 
 bool Phase1L1TJetProducer::_trimTower( const int etaIndex, const int phiIndex )
 {

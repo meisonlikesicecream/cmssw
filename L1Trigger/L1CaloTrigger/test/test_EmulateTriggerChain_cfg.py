@@ -52,6 +52,9 @@ process.Phase1L1TJetProducer = cms.EDProducer('Phase1L1TJetProducer',
   etalsb = cms.double(0.0043633231),
   outputCollectionName = cms.string("UncalibratedPhase1L1TJetFromPfCandidates"),
   vetoZeroPt = cms.bool(True),
+  pfEtaRegions = cms.vdouble( -5., -4.5, -4., -3.5, -3., -2.5, -1.5, -0.75, 0, 0.75, 1.5, 2.5, 3., 3.5, 4., 4.5, 5. ),
+  pfPhiRegions = cms.vdouble( -3.5, -2.8, -2.1, -1.4, -0.7, 0, 0.7, 1.4, 2.1, 2.8, 3.5 ),#, 4.2, 4.9, 5.6, 6.3 ),
+  maxInputsPerPFRegion = cms.uint32( 24 ),
   debug = cms.bool(False)
 )
 
