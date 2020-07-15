@@ -15,6 +15,6 @@ git cms-merge-topic -u cms-l1t-offline:l1t-phase2-v2.39.0
 git cms-addpkg L1Trigger/L1TCommon
 
 # Merge branch with latest PhaseI jet+sums emulator
-git cms-merge-topic -u EmyrClement:PhaseIJetSums
+git cms-merge-topic -u EmyrClement:PhaseIJetSums_EmulatorImprovements
 
 ```
