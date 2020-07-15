@@ -84,7 +84,8 @@ private:
 
   edm::EDGetTokenT<reco::GenMETCollection> genMET_;
   edm::EDGetTokenT<reco::PFMETCollection> pfMET_;
-  edm::EDGetTokenT<std::vector<l1t::EtSum>> phaseIL1PFSums_;
+  edm::EDGetTokenT<std::vector<l1t::EtSum>> phaseIL1PFMET_;
+  edm::EDGetTokenT<std::vector<l1t::EtSum>> phaseIL1PFJetSums_;
 
 };
 
@@ -95,7 +96,8 @@ L1PhaseIPFJetTreeProducer::L1PhaseIPFJetTreeProducer(const edm::ParameterSet& iC
   phaseIL1PFJets_ = consumes<std::vector<reco::CaloJet> > (iConfig.getUntrackedParameter<edm::InputTag>("l1PhaseIPFJets"));
   genMET_ = consumes<reco::GenMETCollection>(iConfig.getUntrackedParameter<edm::InputTag>("genMetToken"));
   pfMET_ = consumes<reco::PFMETCollection>(iConfig.getUntrackedParameter<edm::InputTag>("pfMetToken"));
-	phaseIL1PFSums_ = consumes<std::vector<l1t::EtSum> > (iConfig.getUntrackedParameter<edm::InputTag>("l1PhaseIPFSums"));
+  phaseIL1PFMET_ = consumes<std::vector<l1t::EtSum> > (iConfig.getUntrackedParameter<edm::InputTag>("phaseIL1PFMET"));
+	phaseIL1PFJetSums_ = consumes<std::vector<l1t::EtSum> > (iConfig.getUntrackedParameter<edm::InputTag>("phaseIL1PFJetSums"));
 
   maxL1Extra_ = iConfig.getParameter<unsigned int>("maxL1Extra");
 
@@ -175,10 +177,18 @@ L1PhaseIPFJetTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSet
     edm::LogWarning("MissingProduct") << "L1PhaseIPFJet PFJets not found. Branch will not be filled" << std::endl;
   }
 
-  edm::Handle< std::vector<l1t::EtSum> >  phaseIL1PFSums;
-  iEvent.getByToken(phaseIL1PFSums_,phaseIL1PFSums);
-  if (phaseIL1PFSums.isValid()){
-    l1Extra->SetPhaseIPFSums(phaseIL1PFSums);
+  edm::Handle< std::vector<l1t::EtSum> >  phaseIL1PFMET;
+  iEvent.getByToken(phaseIL1PFMET_,phaseIL1PFMET);
+  if (phaseIL1PFMET.isValid()){
+    l1Extra->SetPhaseIPFMET(phaseIL1PFMET);
+  } else {
+    edm::LogWarning("MissingProduct") << "L1PhaseIPFJet PFSums not found. Branch will not be filled" << std::endl;
+  }
+
+  edm::Handle< std::vector<l1t::EtSum> >  phaseIL1PFJetSums;
+  iEvent.getByToken(phaseIL1PFJetSums_,phaseIL1PFJetSums);
+  if (phaseIL1PFJetSums.isValid()){
+    l1Extra->SetPhaseIPFJetSums(phaseIL1PFJetSums);
   } else {
     edm::LogWarning("MissingProduct") << "L1PhaseIPFJet PFSums not found. Branch will not be filled" << std::endl;
   }

@@ -27,7 +27,28 @@ void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFJet(const edm::Handle< vector
   }
 }
 
-void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFSums  (const edm::Handle< std::vector<l1t::EtSum> >  phaseIPFSums)
+void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFMET  (const edm::Handle< std::vector<l1t::EtSum> >  phaseIPFSums)
+{
+  std::vector<l1t::EtSum>::const_iterator sumItr = phaseIPFSums->begin();
+  const std::vector<l1t::EtSum>::const_iterator sumItrEnd = phaseIPFSums->end();
+  for ( ; sumItr != sumItrEnd; ++sumItr ) {
+    l1t::EtSum::EtSumType sumType{ sumItr->getType() };
+
+    // std::cout << "Sum : " << sumItr->getType() << " " << sumItr->hwPt() << " " << sumItr->pt() << std::endl;
+
+    // if ( sumType == l1t::EtSum::kTotalHt ) {
+    //   l1extra_.phaseIPFJetHt = sumItr->pt();
+    // }
+    if ( sumType == l1t::EtSum::kMissingEt ) {
+      l1extra_.phaseIPFJetMET = sumItr->pt();
+    }
+    else if ( sumType == l1t::EtSum::kMissingEtHF ) {
+      l1extra_.phaseIPFJetMETHF = sumItr->pt();     
+    }
+  } 
+}
+
+void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFJetSums  (const edm::Handle< std::vector<l1t::EtSum> >  phaseIPFSums)
 {
   std::vector<l1t::EtSum>::const_iterator sumItr = phaseIPFSums->begin();
   const std::vector<l1t::EtSum>::const_iterator sumItrEnd = phaseIPFSums->end();
@@ -39,12 +60,12 @@ void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFSums  (const edm::Handle< std
     if ( sumType == l1t::EtSum::kTotalHt ) {
       l1extra_.phaseIPFJetHt = sumItr->pt();
     }
-    else if ( sumType == l1t::EtSum::kMissingEt ) {
-      l1extra_.phaseIPFJetMET = sumItr->pt();
-    }
-    else if ( sumType == l1t::EtSum::kMissingEtHF ) {
-      l1extra_.phaseIPFJetMETHF = sumItr->pt();     
-    }
+    // else if ( sumType == l1t::EtSum::kMissingEt ) {
+    //   l1extra_.phaseIPFJetMET = sumItr->pt();
+    // }
+    // else if ( sumType == l1t::EtSum::kMissingEtHF ) {
+    //   l1extra_.phaseIPFJetMETHF = sumItr->pt();     
+    // }
   } 
 }
 
