@@ -36,6 +36,17 @@ caloEtaSegmentation = cms.vdouble(
   0.833, 0.9163, 0.9996, 1.0829, 1.1662, 1.2495, 1.3328, 1.4161, 1.5
 )
 
+# lut configuration, you can generate your own with test/generateConSinPhi.py 
+# sinPhi = cms.vdouble(0.04374, 0.13087, 0.21701, 0.30149, 0.38365, 0.46289, 0.53858, 0.61015)
+# cosPhi = cms.vdouble(0.99904, 0.9914, 0.97617, 0.95347, 0.92348, 0.88642, 0.84257, 0.79229)
+
+# These are the values actually used by the current HW
+# Values in original LUT could not be stored precisely with current choice of ap_ufixed
+# So need to fix this
+sinPhi = cms.vdouble(0.046875, 0.132813, 0.21875, 0.304688, 0.382813, 0.460938, 0.539063, 0.609375 )
+cosPhi = cms.vdouble( 1, 0.992188, 0.976563, 0.953125, 0.921875, 0.882813, 0.84375, 0.789063 )
+
+
 # sets up jet finder
 process.Phase1L1TJetProducer = cms.EDProducer('Phase1L1TJetProducer',
   inputCollectionTag = cms.InputTag("l1pfCandidates", "Puppi"),
@@ -55,12 +66,13 @@ process.Phase1L1TJetProducer = cms.EDProducer('Phase1L1TJetProducer',
   pfEtaRegions = cms.vdouble( -5., -4.5, -4., -3.5, -3., -2.5, -1.5, -0.75, 0, 0.75, 1.5, 2.5, 3., 3.5, 4., 4.5, 5. ),
   pfPhiRegions = cms.vdouble( -3.5, -2.8, -2.1, -1.4, -0.7, 0, 0.7, 1.4, 2.1, 2.8, 3.5 ),#, 4.2, 4.9, 5.6, 6.3 ),
   maxInputsPerPFRegion = cms.uint32( 24 ),
+  sinPhi = sinPhi,
+  cosPhi = cosPhi,
+  metAbsEtaCut = cms.double(3),
+  metHFAbsEtaCut = cms.double(5),
   debug = cms.bool(False)
 )
 
-# lut configuration, you can generate your own with test/generateConSinPhi.py 
-sinPhi = cms.vdouble(0.04374, 0.13087, 0.21701, 0.30149, 0.38365, 0.46289, 0.53858, 0.61015)
-cosPhi = cms.vdouble(0.99904, 0.9914, 0.97617, 0.95347, 0.92348, 0.88642, 0.84257, 0.79229)
 
 # sum module
 process.Phase1L1TSumsProducer = cms.EDProducer('Phase1L1TSumsProducer',
@@ -74,12 +86,16 @@ process.Phase1L1TSumsProducer = cms.EDProducer('Phase1L1TSumsProducer',
   sinPhi = sinPhi,
   cosPhi = cosPhi,
   htPtThreshold = cms.double(30),
+  htAbsEtaCut = cms.double(2.4),
+  mhtPtThreshold = cms.double(30),
+  mhtAbsEtaCut = cms.double(2.4),
   outputCollectionName = cms.string("Sums"),
+  debug = cms.bool(False)
 )
 
 process.SaveSums = cms.EDAnalyzer("SaveGenSumsAndL1Sums",
   genMETCollectionTag = cms.InputTag("genMetTrue"), # taking pre-existing MET collection
-  l1tMETCollectionTag = cms.InputTag("Phase1L1TSumsProducer", "Sums"), # taking L1T MET produced by jet trigger
+  l1tMETCollectionTag = cms.InputTag("Phase1L1TJetProducer", "UncalibratedPhase1L1TJetFromPfCandidatesMET"), # taking L1T MET produced by jet trigger
   genJetCollectionTag = cms.InputTag("ak4GenJetsNoNu"), # taking pre-existing gen jet collection
   l1tHTCollectionTag = cms.InputTag("Phase1L1TSumsProducer", "Sums"), # taking L1T HT produced by jet trigger
   l1tMHTCollectionTag = cms.InputTag("Phase1L1TSumsProducer", "Sums"), # taking L1T MHT produced by jet trigger

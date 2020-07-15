@@ -46,6 +46,7 @@ Description: Produces jets with a phase-1 like sliding window algorithm using a 
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "DataFormats/L1Trigger/interface/EtSum.h"
 
 #include "TH2F.h"
 
@@ -87,6 +88,8 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       std::pair< double, double> pfRegionEtaPhiLowEdges( const unsigned int pfRegionIndex );
       std::pair< double, double> pfRegionEtaPhiUpEdges( const unsigned int pfRegionIndex );
 
+      l1t::EtSum _computeMET( const TH2F & caloGrid, double etaCut, l1t::EtSum::EtSumType sumType );
+
       // Determine if this tower should be trimmed or not
       // Trim == removing 3 towers in each corner of the square grid
       // giving a cross shaped grid, which is a bit more circular in shape than a square
@@ -110,6 +113,12 @@ class Phase1L1TJetProducer : public edm::one::EDProducer<edm::one::SharedResourc
       std::vector< double > _etaPFRegionEdges;
       std::vector< double > _phiPFRegionEdges;
       unsigned int _maxInputsPerPFRegion;
+      std::vector<double> _sinPhi;
+      std::vector<double> _cosPhi;
+      // input eta cut for met calculation
+      double _metAbsEtaCut;
+      // input eta cut for metHF calculation
+      double _metHFAbsEtaCut;
       bool _debug;
 
       std::string _outputCollectionName;
@@ -138,11 +147,16 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig):
   _etaPFRegionEdges(iConfig.getParameter<std::vector<double> >("pfEtaRegions")),
   _phiPFRegionEdges(iConfig.getParameter<std::vector<double> >("pfPhiRegions")),
   _maxInputsPerPFRegion(iConfig.getParameter<unsigned int>("maxInputsPerPFRegion")),
+  _sinPhi(iConfig.getParameter<std::vector<double> >("sinPhi")),
+  _cosPhi(iConfig.getParameter<std::vector<double> >("cosPhi")),
+  _metAbsEtaCut(iConfig.getParameter<double>("metAbsEtaCut")),
+  _metHFAbsEtaCut(iConfig.getParameter<double>("metHFAbsEtaCut")),
   _debug(iConfig.getParameter<bool>("debug")),
   _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
 {
   this -> _inputCollectionTag = new edm::EDGetTokenT< edm::View<reco::Candidate> >(consumes< edm::View<reco::Candidate> > (iConfig.getParameter< edm::InputTag >("inputCollectionTag")));  
   produces<std::vector<reco::CaloJet> >( this -> _outputCollectionName ).setBranchAlias(this -> _outputCollectionName);
+  produces< std::vector<l1t::EtSum> >( this -> _outputCollectionName + "MET" ).setBranchAlias(this -> _outputCollectionName + "MET");
 
   // Make into an exception...
   if ( !std::is_sorted(_etaPFRegionEdges.begin(),_etaPFRegionEdges.end()) ||
@@ -248,6 +262,20 @@ void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
     std::unique_ptr< std::vector<reco::CaloJet> > l1jetVectorPtr(new std::vector<reco::CaloJet>(l1jetVector));
     iEvent.put(std::move(l1jetVectorPtr), this -> _outputCollectionName);
   }
+
+  if ( _debug ) std::cout << "Calculate MET" << std::endl;
+
+  l1t::EtSum lMET = _computeMET( lCaloGrid, _metAbsEtaCut, l1t::EtSum::EtSumType::kMissingEt );
+  l1t::EtSum lMETHF = _computeMET( lCaloGrid, _metHFAbsEtaCut, l1t::EtSum::EtSumType::kMissingEtHF);
+
+  std::unique_ptr< std::vector<l1t::EtSum> > lSumVectorPtr(new std::vector<l1t::EtSum>(0));
+  lSumVectorPtr -> push_back(lMET);
+  lSumVectorPtr -> push_back(lMETHF);
+  // std::cout << "MET sums prod: " << lMET.pt() << std::endl;
+
+  //saving sums
+  iEvent.put(std::move(lSumVectorPtr), this -> _outputCollectionName+"MET");
+
 
   return;
 
@@ -597,6 +625,42 @@ std::pair< double, double> Phase1L1TJetProducer::pfRegionEtaPhiUpEdges( const un
   }
 
   return std::pair< double, double > { _phiPFRegionEdges.at( phiRegion + 1 ), _etaPFRegionEdges.at( etaRegion + 1 ) };
+}
+
+// computes MET
+// Takes grid used by jet finder and projects to 1D histogram of phi, bin contents are total pt in that phi bin
+// the phi bin index is used to retrieve the sin-cos value from the LUT emulator
+// the pt of the input is multiplied by that sin cos value to obtain px and py that is added to the total event px & py
+// after all the inputs have been processed we compute the total pt of the event, and set that as MET
+l1t::EtSum Phase1L1TJetProducer::_computeMET( const TH2F & caloGrid, double etaCut, l1t::EtSum::EtSumType sumType )
+{
+  const auto phiProjection = caloGrid.ProjectionY();
+
+  unsigned int totalDigiPx{0};
+  unsigned int totalDigiPy{0};
+
+  for ( int i = 1; i < phiProjection->GetNbinsX()+1; ++i ) {
+    double pt = phiProjection->GetBinContent( i );
+    totalDigiPx += floor( floor( pt / 0.25 ) * _cosPhi[i-1] );
+    totalDigiPy += floor( floor( pt / 0.25 ) * _sinPhi[i-1] );
+
+    if ( _debug ) std::cout << i << "\t" << phiProjection->GetBinContent( i ) << "\t" << _sinPhi[i-1] << "\t" << floor( floor( pt / 0.25 ) * _sinPhi[i-1] ) << "\t" << _cosPhi[i-1] << "\t" << floor( floor( pt / 0.25 ) * _cosPhi[i-1] ) << std::endl;
+  }
+
+  double lMET = floor( sqrt(totalDigiPx * totalDigiPx + totalDigiPy * totalDigiPy) ) * 0.25;
+
+  if ( _debug ) {
+    std::cout << "Total digi px, py : " << totalDigiPx << " " << totalDigiPy << std::endl;
+    std::cout << "Squared digi px, py : " << totalDigiPx * totalDigiPx << " " << totalDigiPy * totalDigiPy << std::endl;
+    std::cout << "MET : " << floor( sqrt(totalDigiPx * totalDigiPx + totalDigiPy * totalDigiPy) ) << " " << lMET << std::endl;
+  }
+
+  // math::XYZTLorentzVector lMETVector( ( totalDigiPx ) * 0.25,  ( totalDigiPy ) * 0.25, 0, lMET);
+  math::PtEtaPhiMLorentzVector lMETVector( lMET, 0, totalDigiPx / ( lMET / 0.25 ), 0 );
+  l1t::EtSum lMETSum(lMETVector, l1t::EtSum::EtSumType::kMissingEt, 0, 0, 0, 0 );
+  // std::cout << lMETVector.pt() << " == " << lMET << "?" << std::endl;
+
+  return lMETSum;
 }
 
 bool Phase1L1TJetProducer::_trimTower( const int etaIndex, const int phiIndex )

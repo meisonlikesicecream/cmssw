@@ -18,6 +18,14 @@ caloEtaSegmentation = cms.vdouble(
 #    0.0, 0.0833, 0.1666, 0.2499, 0.3332, 0.4165, 0.4998, 0.5831, 0.6664, 0.7497, 
 #    0.833, 0.9163, 0.9996, 1.0829, 1.1662, 1.2495, 1.3328, 1.4161, 1.5)
 
+# lut configuration, you can generate your own with test/generateConSinPhi.py 
+sinPhi = cms.vdouble(0.04374, 0.13087, 0.21701, 0.30149, 0.38365, 0.46289, 0.53858, 0.61015)
+cosPhi = cms.vdouble(0.99904, 0.9914, 0.97617, 0.95347, 0.92348, 0.88642, 0.84257, 0.79229)
+
+# sinPhi = cms.vdouble(0.046875, 0.132813, 0.21875, 0.304688, 0.382813, 0.460938, 0.539063, 0.609375 )
+# cosPhi = cms.vdouble( 1, 0.992188, 0.976563, 0.953125, 0.921875, 0.882813, 0.84375, 0.789063 )
+
+
 Phase1L1TJetProducer = cms.EDProducer('Phase1L1TJetProducer',
   inputCollectionTag = cms.InputTag("l1pfCandidates", "Puppi"),
   etaBinning = caloEtaSegmentation,
@@ -39,5 +47,9 @@ Phase1L1TJetProducer = cms.EDProducer('Phase1L1TJetProducer',
   pfEtaRegions = cms.vdouble( -5., -4.5, -4., -3.5, -3., -2.5, -1.5, -0.75, 0, 0.75, 1.5, 2.5, 3., 3.5, 4., 4.5, 5. ),
   pfPhiRegions = cms.vdouble( -3.5, -2.8, -2.1, -1.4, -0.7, 0, 0.7, 1.4, 2.1, 2.8, 3.5 ),#, 4.2, 4.9, 5.6, 6.3 ),
   maxInputsPerPFRegion = cms.uint32( 24 ),
+  sinPhi = sinPhi,
+  cosPhi = cosPhi,
+  metAbsEtaCut = cms.double(3),
+  metHFAbsEtaCut = cms.double(5),
   debug = cms.bool(False)
 )

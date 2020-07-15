@@ -59,8 +59,6 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       virtual void produce(edm::Event&, const edm::EventSetup&);
       
       l1t::EtSum _computeHT(const std::vector<reco::CaloJet>& l1jetVector);
-      template <class ParticleCollection>
-      l1t::EtSum _computeMET(const ParticleCollection & caloGrid, double etaCut, l1t::EtSum::EtSumType sumType);
       l1t::EtSum _computeMHT(const std::vector<reco::CaloJet>& l1jetVector);
 
       edm::EDGetTokenT<edm::View<reco::Candidate>> *_particleCollectionTag;
@@ -89,12 +87,10 @@ class Phase1L1TSumsProducer : public edm::one::EDProducer<edm::one::SharedResour
       double _htAbsEtaCut;
       // jet eta cut for mht calculation
       double _mhtAbsEtaCut;
-      // input eta cut for met calculation
-      double _metAbsEtaCut;
-      // input eta cut for metHF calculation
-      double _metHFAbsEtaCut;
       // label of sums
       std::string _outputCollectionName;
+
+      bool _debug;
 
 };
 
@@ -112,9 +108,8 @@ Phase1L1TSumsProducer::Phase1L1TSumsProducer(const edm::ParameterSet& iConfig):
   _mhtPtThreshold(iConfig.getParameter<double>("mhtPtThreshold")),
   _htAbsEtaCut(iConfig.getParameter<double>("htAbsEtaCut")),
   _mhtAbsEtaCut(iConfig.getParameter<double>("mhtAbsEtaCut")),
-  _metAbsEtaCut(iConfig.getParameter<double>("metAbsEtaCut")),
-  _metHFAbsEtaCut(iConfig.getParameter<double>("metHFAbsEtaCut")),
-  _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName"))
+  _outputCollectionName(iConfig.getParameter<std::string>("outputCollectionName")),
+  _debug(iConfig.getParameter<bool>("debug"))
 {
   // three things are happening in this line:
   // 1) retrieving the tag for the input particle collection with "iConfig.getParameter(string)"
@@ -153,15 +148,11 @@ void Phase1L1TSumsProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
   
   // computing sums and storing them in sum object
   l1t::EtSum lHT = this -> _computeHT(*jetCollectionHandle);
-  l1t::EtSum lMET = this -> _computeMET<>(*particleCollectionHandle, _metAbsEtaCut, l1t::EtSum::EtSumType::kMissingEt);
-  l1t::EtSum lMETHF = this -> _computeMET<>(*particleCollectionHandle, _metHFAbsEtaCut, l1t::EtSum::EtSumType::kMissingEtHF);
   l1t::EtSum lMHT = this -> _computeMHT(*jetCollectionHandle);
 
   //packing sums in vector for event saving
   std::unique_ptr< std::vector<l1t::EtSum> > lSumVectorPtr(new std::vector<l1t::EtSum>(0));
   lSumVectorPtr -> push_back(lHT);
-  lSumVectorPtr -> push_back(lMET);
-  lSumVectorPtr -> push_back(lMETHF);
   lSumVectorPtr -> push_back(lMHT);
   //std::cout << "HT-MET sums prod: " << lHT.pt() << "\t" << lMET.pt() << std::endl;
   //std::cout << "MET-MHT sums prod: " << lMET.pt() << "\t" << lMHT.pt() << std::endl;
@@ -189,7 +180,7 @@ l1t::EtSum Phase1L1TSumsProducer::_computeHT(const std::vector<reco::CaloJet>& l
       (lJetPhi < this -> _phiLow) ||
       (lJetPhi >= this -> _phiUp)  ||
       (lJetEta < this -> _etaLow)||
-      (lJetEta >= this -> _etaUp)  
+      (lJetEta >= this -> _etaUp)
     ) continue;
 
     // std::cout << "HT : " << lJetPt >= this -> _htPtThreshold << " " << std::fabs( lJetEta ) < _htAbsEtaCut << " " << (lJetPt >= this -> _htPtThreshold && std::fabs( lJetEta ) < _htAbsEtaCut ) << " " << lHT << std::endl;
@@ -204,57 +195,6 @@ l1t::EtSum Phase1L1TSumsProducer::_computeHT(const std::vector<reco::CaloJet>& l
   // Not setting hwPt etc. yet
   l1t::EtSum lHTSum(lHTVector, l1t::EtSum::EtSumType::kTotalHt, 0, 0, 0, 0);
   return lHTSum;
-}
-
-// computes MET
-// first computes in which bin of the histogram the input falls in
-// the phi bin index is used to retrieve the sin-cos value from the LUT emulator
-// the pt of the input is multiplied by that sin cos value to obtain px and py that is added to the total event px & py
-// after all the inputs have been processed we compute the total pt of the event, and set that as MET
-template <class ParticleCollection>
-l1t::EtSum Phase1L1TSumsProducer::_computeMET(const ParticleCollection & particleCollection, double etaCut, l1t::EtSum::EtSumType sumType) 
-{
-
-  double lTotalPx = 0;
-  double lTotalPy = 0;
-  // range-based for loop, that goes through the particle flow inputs
-  for (const auto & particle : particleCollection)
-  {
-    double lParticlePhi = particle.phi();
-    double lParticleEta = particle.eta();
-    double lParticlePt = particle.pt();
-
-    // skip particle if it does not fall in the range
-    if 
-    (
-      (lParticlePhi < this -> _phiLow) ||
-      (lParticlePhi >= this -> _phiUp)  ||
-      (lParticleEta < this -> _etaLow)  ||
-      (lParticleEta >= this -> _etaUp)  
-    ) continue;
-
-    if ( std::fabs( lParticleEta ) >= etaCut ) continue;
-
-    // computing bin index
-    unsigned int iPhi = ( lParticlePhi - this -> _phiLow ) / this -> _phiStep;
-    // retrieving sin cos from LUT emulator
-    double lSinPhi = this -> _sinPhi[iPhi];
-    double lCosPhi = this -> _cosPhi[iPhi];
-    // computing px and py of the particle and adding it to the total px and py of the event
-    lTotalPx += (lParticlePt * lCosPhi);
-    lTotalPy += (lParticlePt * lSinPhi);
-  }
-
-  double lMET = sqrt(lTotalPx * lTotalPx + lTotalPy * lTotalPy);
-  //packing in EtSum object
-  math::XYZTLorentzVector lMETVector( lTotalPx, lTotalPy, 0, lMET);
-  // double lCosMETPhi = lTotalPx/lMET;
-  // kMissingEt is the enumerator for MET
-  l1t::EtSum lMETSum(lMETVector, sumType, 0, 0, 0, 0 );
-  // std::cout << lMETVector.pt() << " == " << lMET << "?" << std::endl;
-
-  return lMETSum;
-
 }
 
 // computes MHT
