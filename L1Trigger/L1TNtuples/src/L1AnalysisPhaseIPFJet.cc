@@ -17,7 +17,7 @@ void L1Analysis::L1AnalysisPhaseIPFJet::SetPhaseIPFJet(const edm::Handle< vector
 
   for (unsigned int i=0; i<phaseIPFJets->size() && l1extra_.nPhaseIPFJets<maxL1Extra; i++){
     if (phaseIPFJets->at(i).pt()>0){
-      if(phaseIPFJets->at(i).pt()>30 && abs(phaseIPFJets->at(i).eta())<2.4)
+      // if(phaseIPFJets->at(i).pt()>30 && abs(phaseIPFJets->at(i).eta())<2.4)
 	   // l1extra_.phaseIPFJetHt += phaseIPFJets->at(i).pt();
       l1extra_.phaseIPFJetEt .push_back(phaseIPFJets->at(i).pt());
       l1extra_.phaseIPFJetEta.push_back(phaseIPFJets->at(i).eta());

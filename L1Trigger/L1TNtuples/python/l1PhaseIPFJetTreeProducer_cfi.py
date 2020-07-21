@@ -6,7 +6,8 @@ l1PhaseIPFJetTree = cms.EDAnalyzer("L1PhaseIPFJetTreeProducer",
    ak4L1PF = cms.untracked.InputTag("ak4PFL1PuppiCorrected"),
    pfMetToken = cms.untracked.InputTag("l1PFMetPuppi"),
    l1PhaseIPFJets = cms.untracked.InputTag("Phase1L1TJetCalibrator", "Phase1L1TJetFromPfCandidates"),
-   l1PhaseIPFSums = cms.untracked.InputTag("Phase1L1TSumsProducer", "Sums"),
+   phaseIL1PFJetSums = cms.untracked.InputTag("Phase1L1TSumsProducer", "Sums"),
+   phaseIL1PFMET = cms.untracked.InputTag("Phase1L1TJetProducer", "UncalibratedPhase1L1TJetFromPfCandidatesMET"),
 #   ak4L1PF = cms.InputTag("L1TCorrectedPFJetProducer", "ak4PFL1PuppiCorrected"),
    maxL1Extra = cms.uint32(20)
 )
