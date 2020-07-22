@@ -202,10 +202,10 @@ l1t::EtSum Phase1L1TSumsProducer::_computeHT(const std::vector<reco::CaloJet>& l
 l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& l1jetVector)
 {
   
-  double lTotalJetPx = 0;
-  double lTotalJetPy = 0;
-  
-  
+  unsigned int lTotalJetPx = 0;
+  unsigned int lTotalJetPy = 0;
+
+  std::vector<unsigned int> jetPtInPhiBins(_nBinsPhi, 0);
 
   for (const auto & jet: l1jetVector)
   { 
@@ -215,21 +215,55 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
 
     unsigned int iPhi = ( lJetPhi - this -> _phiLow ) / this -> _phiStep;
 
+    if ( jet.pt() >= this -> _mhtPtThreshold && std::fabs( jet.eta() ) < _mhtAbsEtaCut ) {
+      unsigned int digiJetPt = floor( jet.pt() / 0.25 );
+      jetPtInPhiBins[iPhi] += digiJetPt;
+
+      if ( _debug ) {
+        std::cout << "Jet pt : " << jet.pt() << " " << jet.pt() / 0.25 << " " << jet.eta() << " " << jet.phi() << std::endl;
+      }
+    }
+  }
+
+  if ( _debug ) {
+    std::cout << "Jet pt sums in phi bins : " << std::endl;
+    for (const auto& pt : jetPtInPhiBins ) {
+      std::cout << pt << " " << std::endl;
+    }
+  }
+
+  for ( unsigned int iPhi = 0; iPhi < jetPtInPhiBins.size(); ++iPhi ) {
+
+    unsigned int digiJetPtSum = jetPtInPhiBins[iPhi];
+
     // retrieving sin cos from LUT emulator
     double lSinPhi = this -> _sinPhi[iPhi];
     double lCosPhi = this -> _cosPhi[iPhi];
+
+    if ( _debug ) {
+      if ( digiJetPtSum > 0 ) {
+        std::cout << "Jet pt sum : " << digiJetPtSum << std::endl;
+        std::cout << "sin cos : " << lSinPhi << " " << lCosPhi << std::endl;
+        std::cout << "Px, py : " << floor( digiJetPtSum * lCosPhi ) << " " << floor( digiJetPtSum * lSinPhi ) << std::endl;
+        std::cout << "lTotalJetPx/Py : " << lTotalJetPx << " " << lTotalJetPy << std::endl;
+      }
+    }
     
-   
     // checking if above threshold
-    lTotalJetPx += (jet.pt() >= this -> _mhtPtThreshold && std::fabs( jet.eta() ) < _mhtAbsEtaCut ) ? jet.pt() * lCosPhi: 0;
-    lTotalJetPy += (jet.pt() >= this -> _mhtPtThreshold && std::fabs( jet.eta() ) < _mhtAbsEtaCut ) ? jet.pt() * lSinPhi: 0;
+    lTotalJetPx += floor( digiJetPtSum * lCosPhi );
+    lTotalJetPy += floor( digiJetPtSum * lSinPhi );
+
   }
 
-  double lMHT = sqrt(lTotalJetPx * lTotalJetPx + lTotalJetPy * lTotalJetPy);
+  double lMHT = floor( sqrt(lTotalJetPx * lTotalJetPx + lTotalJetPy * lTotalJetPy) ) * 0.25;
 
-  math::XYZTLorentzVector lMHTVector( lTotalJetPx, lTotalJetPy, 0, lMHT );
-  // kTotalMHT the the EtSum enumerator type for the MHT
+  // math::XYZTLorentzVector lMHTVector( lTotalJetPx, lTotalJetPy, 0, digi_lMHT * 0.25 );
+  math::PtEtaPhiMLorentzVector lMHTVector( lMHT, 0, lTotalJetPx / ( lMHT / 0.25 ), 0 );
   l1t::EtSum lMHTSum(lMHTVector, l1t::EtSum::EtSumType::kMissingHt, 0, 0, 0, 0 );
+  // kTotalMHT the the EtSum enumerator type for the MHT
+  // l1t::EtSum lMHTSum(lMHTVector, l1t::EtSum::EtSumType::kMissingHt, 0, 0, 0, 0 );
+
+  if ( _debug ) std::cout << "Output MHT : " << lMHT << " " << lMHTSum.pt() << std::endl;
   return lMHTSum;
 
 }
