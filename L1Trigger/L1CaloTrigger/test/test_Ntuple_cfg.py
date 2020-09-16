@@ -7,7 +7,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 process = cms.Process("Ntuples")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 options = VarParsing.VarParsing ('analysis')
 # get and parse the command line arguments
@@ -34,7 +34,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.source = process.source = cms.Source("PoolSource",
   # fileNames = cms.untracked.vstring( 'file:SingleNu_big.root' )
-  fileNames = cms.untracked.vstring( 'file:myOutputFile.root' )
+  fileNames = cms.untracked.vstring( 'file:myOutputFile_debug.root' )
 )
 
 
@@ -42,24 +42,14 @@ process.source = process.source = cms.Source("PoolSource",
 process.load("L1Trigger.L1TNtuples.l1PhaseIPFJetTreeProducer_cfi")
 
 # process.l1PhaseIPFJetTree.l1PhaseIPFJets = cms.untracked.InputTag("Phase1L1TJetCalibrator9x9", "Phase1L1TJetFromPfCandidates")
-# process.l1PhaseIPFJetTree.l1PhaseIPFSums = cms.untracked.InputTag("Phase1L1TSumsProducer9x9", "Sums")
+# process.l1PhaseIPFJetTree.phaseIL1PFJetSums = cms.untracked.InputTag("Phase1L1TSumsProducer9x9", "Sums")
 
 # process.l1PhaseIPFJetTree.l1PhaseIPFJets = cms.untracked.InputTag("Phase1L1TJetCalibrator9x9trimmed", "Phase1L1TJetFromPfCandidates")
-# process.l1PhaseIPFJetTree.l1PhaseIPFSums = cms.untracked.InputTag("Phase1L1TSumsProducer9x9trimmed", "Sums")
+# process.l1PhaseIPFJetTree.phaseIL1PFJetSums = cms.untracked.InputTag("Phase1L1TSumsProducer9x9trimmed", "Sums")
 
-
-# process.l1PhaseIPFJetTree9x9 = process.l1PhaseIPFJetTree.clone(
-#    l1PhaseIPFJets = cms.untracked.InputTag("Phase1L1TJetCalibrator9x9", "Phase1L1TJetFromPfCandidates"),
-#    l1PhaseIPFSums = cms.untracked.InputTag("Phase1L1TSumsProducer9x9", "Sums"),
-# )
-
-# process.l1PhaseIPFJetTree9x9trimmed = process.l1PhaseIPFJetTree.clone(
-#    l1PhaseIPFJets = cms.untracked.InputTag("Phase1L1TJetCalibrator9x9trimmed", "Phase1L1TJetFromPfCandidates"),
-#    l1PhaseIPFSums = cms.untracked.InputTag("Phase1L1TSumsProducer9x9trimmed", "Sums"),
-# )
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('L1Ntuple_7x7.root')
+    fileName = cms.string('L1Ntuple_9x9_debug.root')
 )
 
 # process.p = cms.Path(process.l1PhaseIPFJetTree+process.l1PhaseIPFJetTree9x9+process.l1PhaseIPFJetTree9x9trimmed)
