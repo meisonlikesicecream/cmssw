@@ -634,7 +634,9 @@ std::pair< double, double> Phase1L1TJetProducer::pfRegionEtaPhiUpEdges( const un
 // after all the inputs have been processed we compute the total pt of the event, and set that as MET
 l1t::EtSum Phase1L1TJetProducer::_computeMET( const TH2F & caloGrid, double etaCut, l1t::EtSum::EtSumType sumType )
 {
-  const auto phiProjection = caloGrid.ProjectionY();
+  const auto lowEtaBin = caloGrid.GetXaxis()->FindBin( -1.0 * etaCut );
+  const auto highEtaBin = caloGrid.GetXaxis()->FindBin( etaCut ) - 1;
+  const auto phiProjection = caloGrid.ProjectionY( "temp", lowEtaBin, highEtaBin );
 
   unsigned int totalDigiPx{0};
   unsigned int totalDigiPy{0};
@@ -657,7 +659,7 @@ l1t::EtSum Phase1L1TJetProducer::_computeMET( const TH2F & caloGrid, double etaC
 
   // math::XYZTLorentzVector lMETVector( ( totalDigiPx ) * 0.25,  ( totalDigiPy ) * 0.25, 0, lMET);
   math::PtEtaPhiMLorentzVector lMETVector( lMET, 0, acos(totalDigiPx / ( lMET / 0.25 )), 0 );
-  l1t::EtSum lMETSum(lMETVector, l1t::EtSum::EtSumType::kMissingEt, 0, 0, 0, 0 );
+  l1t::EtSum lMETSum(lMETVector, sumType, 0, 0, 0, 0 );
   // std::cout << lMETVector.pt() << " == " << lMET << "?" << std::endl;
 
   return lMETSum;
