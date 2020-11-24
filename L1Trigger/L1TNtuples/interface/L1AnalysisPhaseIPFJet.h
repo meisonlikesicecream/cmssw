@@ -16,7 +16,7 @@
 #include "DataFormats/METReco/interface/PFMETFwd.h"
 #include "L1Trigger/L1TNtuples/interface/L1AnalysisPhaseIPFJetDataFormat.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
-#include "DataFormats/Phase2L1ParticleFlow/interface/PFJet.h"
+#include "DataFormats/L1TParticleFlow/interface/PFJet.h"
 #include "DataFormats/L1Trigger/interface/EtSum.h"
 
 namespace L1Analysis
