@@ -41,7 +41,6 @@ l1PhaseIITree = cms.EDAnalyzer("L1PhaseIITreeProducer",
    caloTauToken = cms.InputTag("L1CaloJetProducer","L1CaloTauCollectionBXV"),
    caloJetToken = cms.InputTag("L1CaloJetProducer","L1CaloJetCollectionBXV"),
    caloJetHTTToken = cms.InputTag("L1CaloJetHTTProducer","CaloJetHTT"),
-
    muonKalman = cms.InputTag("simKBmtfDigis","BMTF"),
    muonOverlap = cms.InputTag("simOmtfDigis","OMTF"),
    muonEndcap = cms.InputTag("simEmtfDigis","EMTF"),
