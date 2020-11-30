@@ -513,7 +513,7 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
         // Use to check behaviour with bin edges/pf region edges
         std::pair< double, double > pfRegionEdges = pfRegionEtaPhiLowEdges( pfRegionIndex );
         int digitisedEta = floor( ( eta - pfRegionEdges.second ) / _etalsb );
-        int digitisedPhi = floor( phi / _philsb );
+        int digitisedPhi = floor( ( phi - pfRegionEdges.first ) / _philsb );
 
         if ( _debug )  std::cout << "Digi (int) eta, phi : " << digitisedEta << " " << digitisedPhi << std::endl;
 
@@ -528,6 +528,7 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
         }
         else {
           for ( int i = 0; i < etaAxis->GetNbins(); ++i ) {
+            if ( etaAxis->GetBinUpEdge(i) < pfRegionEdges.second ) continue;
             int digiEdgeBinUp =  floor( ( etaAxis->GetBinUpEdge(i) - pfRegionEdges.second ) / _etalsb );
             if ( digiEdgeBinUp == digitisedEta ){
               digitisedEta += 1;
@@ -537,13 +538,14 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
         }
 
         TAxis* phiAxis = caloGrid.GetYaxis();
-        int digiPhiEdgeLastBinUp = floor( ( pfRegionUpEdges.first ) / _etalsb );
+        int digiPhiEdgeLastBinUp = floor( ( pfRegionUpEdges.first - pfRegionEdges.first ) / _etalsb );
         if ( digitisedPhi >= digiPhiEdgeLastBinUp ) {
           digitisedPhi = digiPhiEdgeLastBinUp-1;
         }
         else {
           for ( int i = 0; i < phiAxis->GetNbins(); ++i ) {
-            int digiEdgeBinUp =  floor( phiAxis->GetBinUpEdge(i) / _philsb );
+            if ( phiAxis->GetBinUpEdge(i) < pfRegionEdges.first ) continue;
+            int digiEdgeBinUp =  floor( ( phiAxis->GetBinUpEdge(i) - pfRegionEdges.first ) / _philsb );
             if ( digiEdgeBinUp == digitisedPhi ){
               digitisedPhi += 1;
               if ( _debug ) std::cout << "Changed digi phi to : " << digitisedPhi << std::endl;
@@ -553,7 +555,7 @@ void Phase1L1TJetProducer::_fillCaloGrid(TH2F & caloGrid, const Container & trig
 
         // Convert digitised eta and phi back to floatin point quantities with reduced precision
         eta = ( digitisedEta + 0.5 ) * _etalsb + pfRegionEdges.second;
-        phi = ( digitisedPhi + 0.5 ) * _philsb;
+        phi = ( digitisedPhi + 0.5 ) * _philsb + pfRegionEdges.first;
 
 
         if ( _debug )  std::cout << "Digitised eta phi : " << eta << " " << phi << " " << caloGrid.FindBin( eta, phi) << std::endl;
@@ -638,13 +640,13 @@ l1t::EtSum Phase1L1TJetProducer::_computeMET( const TH2F & caloGrid, double etaC
   const auto highEtaBin = caloGrid.GetXaxis()->FindBin( etaCut ) - 1;
   const auto phiProjection = caloGrid.ProjectionY( "temp", lowEtaBin, highEtaBin );
 
-  unsigned int totalDigiPx{0};
-  unsigned int totalDigiPy{0};
+  int totalDigiPx{0};
+  int totalDigiPy{0};
 
   for ( int i = 1; i < phiProjection->GetNbinsX()+1; ++i ) {
     double pt = phiProjection->GetBinContent( i );
-    totalDigiPx += floor( floor( pt / 0.25 ) * _cosPhi[i-1] );
-    totalDigiPy += floor( floor( pt / 0.25 ) * _sinPhi[i-1] );
+    totalDigiPx += trunc( floor( pt / 0.25 ) * _cosPhi[i-1] );
+    totalDigiPy += trunc( floor( pt / 0.25 ) * _sinPhi[i-1] );
 
     if ( _debug ) std::cout << i << "\t" << phiProjection->GetBinContent( i ) << "\t" << _sinPhi[i-1] << "\t" << floor( floor( pt / 0.25 ) * _sinPhi[i-1] ) << "\t" << _cosPhi[i-1] << "\t" << floor( floor( pt / 0.25 ) * _cosPhi[i-1] ) << std::endl;
   }

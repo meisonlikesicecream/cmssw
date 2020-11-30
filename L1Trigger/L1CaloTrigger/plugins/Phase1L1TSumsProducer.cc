@@ -250,9 +250,14 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
     }
     
     // checking if above threshold
-    lTotalJetPx += floor( digiJetPtSum * lCosPhi );
-    lTotalJetPy += floor( digiJetPtSum * lSinPhi );
-
+    lTotalJetPx += trunc( digiJetPtSum * lCosPhi );
+    lTotalJetPy += trunc( digiJetPtSum * lSinPhi );
+    // if ( digiJetPtSum > 0 ) {
+    //   std::cout << "JetPtSum : " << iPhi << " " <<  digiJetPtSum << std::endl;
+    //   std::cout << lCosPhi << " " << lSinPhi << std::endl;
+    //   std::cout << digiJetPtSum * lCosPhi << " " << digiJetPtSum * lSinPhi << std::endl;
+    //   std::cout << lTotalJetPx << " " << lTotalJetPy << std::endl;
+    // }
   }
 
   double lMHT = floor( sqrt(lTotalJetPx * lTotalJetPx + lTotalJetPy * lTotalJetPy) ) * 0.25;
