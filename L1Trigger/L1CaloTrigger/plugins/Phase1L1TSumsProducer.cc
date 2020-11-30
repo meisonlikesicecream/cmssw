@@ -154,10 +154,11 @@ void Phase1L1TSumsProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
   std::unique_ptr< std::vector<l1t::EtSum> > lSumVectorPtr(new std::vector<l1t::EtSum>(0));
   lSumVectorPtr -> push_back(lHT);
   lSumVectorPtr -> push_back(lMHT);
-  //std::cout << "HT-MET sums prod: " << lHT.pt() << "\t" << lMET.pt() << std::endl;
+  // std::cout << "HT-MHT sums prod: " << lHT.pt() << "\t" << lMHT.pt() << std::endl;
   //std::cout << "MET-MHT sums prod: " << lMET.pt() << "\t" << lMHT.pt() << std::endl;
   //std::cout << "MHT sums prod: " << lMHT.pt() << std::endl;
-
+  std::cout << "HT: " << lHT.pt() << std::endl;
+  std::cout << "MHT: " << lMHT.pt() << std::endl;
   //saving sums
   iEvent.put(std::move(lSumVectorPtr), this -> _outputCollectionName);
 
@@ -183,7 +184,6 @@ l1t::EtSum Phase1L1TSumsProducer::_computeHT(const std::vector<reco::CaloJet>& l
       (lJetEta >= this -> _etaUp)
     ) continue;
 
-    // std::cout << "HT : " << lJetPt >= this -> _htPtThreshold << " " << std::fabs( lJetEta ) < _htAbsEtaCut << " " << (lJetPt >= this -> _htPtThreshold && std::fabs( lJetEta ) < _htAbsEtaCut ) << " " << lHT << std::endl;
     lHT += (lJetPt >= this -> _htPtThreshold && std::fabs( lJetEta ) < _htAbsEtaCut ) ? lJetPt : 0;
   }
 
@@ -218,17 +218,6 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
     if ( jet.pt() >= this -> _mhtPtThreshold && std::fabs( jet.eta() ) < _mhtAbsEtaCut ) {
       unsigned int digiJetPt = floor( jet.pt() / 0.25 );
       jetPtInPhiBins[iPhi] += digiJetPt;
-
-      if ( _debug ) {
-        std::cout << "Jet pt : " << jet.pt() << " " << jet.pt() / 0.25 << " " << jet.eta() << " " << jet.phi() << std::endl;
-      }
-    }
-  }
-
-  if ( _debug ) {
-    std::cout << "Jet pt sums in phi bins : " << std::endl;
-    for (const auto& pt : jetPtInPhiBins ) {
-      std::cout << pt << " " << std::endl;
     }
   }
 
@@ -239,16 +228,7 @@ l1t::EtSum Phase1L1TSumsProducer::_computeMHT(const std::vector<reco::CaloJet>& 
     // retrieving sin cos from LUT emulator
     double lSinPhi = this -> _sinPhi[iPhi];
     double lCosPhi = this -> _cosPhi[iPhi];
-
-    if ( _debug ) {
-      if ( digiJetPtSum > 0 ) {
-        std::cout << "Jet pt sum : " << digiJetPtSum << std::endl;
-        std::cout << "sin cos : " << lSinPhi << " " << lCosPhi << std::endl;
-        std::cout << "Px, py : " << floor( digiJetPtSum * lCosPhi ) << " " << floor( digiJetPtSum * lSinPhi ) << std::endl;
-        std::cout << "lTotalJetPx/Py : " << lTotalJetPx << " " << lTotalJetPy << std::endl;
-      }
-    }
-    
+ 
     // checking if above threshold
     lTotalJetPx += trunc( digiJetPtSum * lCosPhi );
     lTotalJetPy += trunc( digiJetPtSum * lSinPhi );
