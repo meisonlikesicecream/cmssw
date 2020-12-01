@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from math import pi
 import FWCore.Utilities.FileUtils as FileUtils # ADDED
+import FWCore.ParameterSet.VarParsing as VarParsing
 
 process = cms.Process("TEST")
 process.TFileService = cms.Service('TFileService', fileName = cms.string("MyTTrees.root"))
@@ -16,13 +17,23 @@ process.SaveSums = cms.EDAnalyzer("SaveGenSumsAndL1Sums",
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+# Parsing of inputs and outputs
+options = VarParsing.VarParsing ('analysis')
+
+# defaults
+options.inputFiles = 'file:/home/ppd/ceo15647/TriggerStudy/CMSSW_11_1_3/src/out.root'
+options.outputFile = 'file:myOutputFile_debug.root'
+
+# get and parse command line arguments
+options.parseArguments()
+
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # fileList = FileUtils.loadListFromFile('ttbar.list')
 # readFiles = cms.untracked.vstring(*fileList)
 
 process.source = cms.Source("PoolSource",
-  fileNames = cms.untracked.vstring("file:/hdfs/user/sb17498/CMS_Phase_2/jetMETStudies/QCD_TTBar_PU200_10_4_0_MTD/TTBAR_QCD_Merged.root"),
+  fileNames = cms.untracked.vstring(options.inputFiles),
   #fileNames = cms.untracked.vstring("file:/hdfs/user/sb17498/CMS_Phase_2/jetMETStudies/SingleNeutrino_PU200_104XMTD/SingleNeutrino_PU200.root"),
   #fileNames = cms.untracked.vstring(
   #  "file:pf500.root",
@@ -45,7 +56,7 @@ process.load('L1Trigger.Phase2L1ParticleFlow.l1pfJetMet_cff')
 process.l1PFJets = cms.Sequence( process.ak4PFL1Puppi + process.ak4PFL1PuppiCorrected )
 
 process.out = cms.OutputModule("PoolOutputModule",
-  fileName = cms.untracked.string('myOutputFile_debug.root'),
+  fileName = cms.untracked.string(options.outputFile),
   outputCommands = cms.untracked.vstring(
     "drop *",
     "keep *_Phase1L1TJetProducer*_*_*",
@@ -96,7 +107,7 @@ process.out = cms.OutputModule("PoolOutputModule",
 process.p = cms.Path(process.Phase1L1TJetsSequence * process.Phase1L1TJetsSequence9x9 * process.Phase1L1TJetsSequence9x9trimmed * process.l1PFJets * process.l1PFMetPuppi )
 # process.p = cms.Path(process.Phase1L1TJetsSequence )
 
-process.e = cms.EndPath(process.out * process.outnano)
+#process.e = cms.EndPath(process.out * process.outnano)
 
 
 # process.out = cms.OutputModule("PoolOutputModule",
@@ -117,4 +128,4 @@ process.e = cms.EndPath(process.out * process.outnano)
 
 # process.p = cms.Path(process.Phase1L1TJetsSequence)
 
-# process.e = cms.EndPath(process.out)
+process.e = cms.EndPath(process.out)

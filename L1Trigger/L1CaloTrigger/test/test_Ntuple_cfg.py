@@ -17,11 +17,14 @@ options.register('skipEvents',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Number of events to skip")
-options.register('outFile',
-                 'L1Ntuple.root',
-                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output file')
+# options.register('outFile',
+#                  'L1Ntuple.root',
+#                   VarParsing.VarParsing.multiplicity.singleton,
+#                  VarParsing.VarParsing.varType.string,
+#                  'Output file')
+
+options.inputFiles = 'file:/home/ppd/ceo15647/TriggerStudy/CMSSW_11_1_3/src/myOutputFile_debug.root'
+options.outputFile = 'L1Ntuple.root'
 
 options.parseArguments()
 
@@ -34,7 +37,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.source = process.source = cms.Source("PoolSource",
   # fileNames = cms.untracked.vstring( 'file:SingleNu_big.root' )
-  fileNames = cms.untracked.vstring( 'file:myOutputFile_debug.root' )
+  fileNames = cms.untracked.vstring(options.inputFiles)
 )
 
 
@@ -49,7 +52,7 @@ process.load("L1Trigger.L1TNtuples.l1PhaseIPFJetTreeProducer_cfi")
 
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('L1Ntuple_9x9_debug.root')
+    fileName = cms.string(options.outputFile),
 )
 
 # process.p = cms.Path(process.l1PhaseIPFJetTree+process.l1PhaseIPFJetTree9x9+process.l1PhaseIPFJetTree9x9trimmed)
