@@ -61,5 +61,6 @@ Phase1L1TJetProducer = cms.EDProducer('Phase1L1TJetProducer',
   cosPhi = cosPhi,
   metAbsEtaCut = cms.double(3),
   metHFAbsEtaCut = cms.double(5),
+  metWithTrksAbsEtaCut = cms.double(2.4),
   debug = cms.bool(False)
 )

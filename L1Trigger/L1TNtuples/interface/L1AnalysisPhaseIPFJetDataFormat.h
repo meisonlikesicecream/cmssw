@@ -28,6 +28,7 @@ namespace L1Analysis
       phaseIPFJetHt = 0;
       phaseIPFJetMET = 0;
       phaseIPFJetMETHF = 0;
+      phaseIPFJetMETWithTrks = 0;
       phaseIPFJetMHT = 0;
 
       nAK4PFJets = 0;
@@ -57,6 +58,7 @@ namespace L1Analysis
     double phaseIPFJetHt;
     double phaseIPFJetMET;
     double phaseIPFJetMETHF;
+    double phaseIPFJetMETWithTrks;
     double phaseIPFJetMHT;
 
     unsigned short int nAK4PFJets;

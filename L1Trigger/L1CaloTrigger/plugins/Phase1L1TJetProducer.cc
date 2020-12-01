@@ -123,6 +123,8 @@ public:
       double metAbsEtaCut_;
       // input eta cut for metHF calculation
       double metHFAbsEtaCut_;
+      // input eta cut for met with tracks (eta < |2.4|) calculation
+      double metWithTrksAbsEtaCut_;
       bool debug_;
 
       std::string outputCollectionName_;
@@ -152,6 +154,7 @@ Phase1L1TJetProducer::Phase1L1TJetProducer(const edm::ParameterSet& iConfig)
       cosPhi_(iConfig.getParameter<std::vector<double> >("cosPhi")),
       metAbsEtaCut_(iConfig.getParameter<double>("metAbsEtaCut")),
       metHFAbsEtaCut_(iConfig.getParameter<double>("metHFAbsEtaCut")),
+      metWithTrksAbsEtaCut_(iConfig.getParameter<double>("metWithTrksAbsEtaCut")),
       debug_(iConfig.getParameter<bool>("debug")),
       outputCollectionName_(iConfig.getParameter<std::string>("outputCollectionName")) {
   caloGrid_ =
@@ -224,10 +227,12 @@ void Phase1L1TJetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 
   l1t::EtSum lMET = computeMET( *(caloGrid_), metAbsEtaCut_, l1t::EtSum::EtSumType::kMissingEt );
   l1t::EtSum lMETHF = computeMET( *(caloGrid_), metHFAbsEtaCut_, l1t::EtSum::EtSumType::kMissingEtHF);
+  l1t::EtSum lMETWithTrks = computeMET( *(caloGrid_), metWithTrksAbsEtaCut_, l1t::EtSum::EtSumType::kMissingEtWithTrks);
 
   std::unique_ptr< std::vector<l1t::EtSum> > lSumVectorPtr(new std::vector<l1t::EtSum>(0));
   lSumVectorPtr -> push_back(lMET);
   lSumVectorPtr -> push_back(lMETHF);
+  lSumVectorPtr -> push_back(lMETWithTrks);
   // std::cout << "MET sums prod: " << lMET.pt() << std::endl;
 
   //saving sums
